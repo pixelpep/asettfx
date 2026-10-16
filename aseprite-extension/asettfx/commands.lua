@@ -10,6 +10,23 @@ local M = {}
 
 local MAX_REPORT_LINES = 14
 
+-- Said by the spacing line of the dialog, so the list of checks does not repeat them.
+local SHOWN_ELSEWHERE = { ["mode-detected"] = true, ["marker-ignored"] = true }
+
+local MODE_NOTES = {
+  detected = "Magenta found: variable spacing selected. Choose Monospace to ignore the magenta.",
+  none = "No magenta found: monospace spacing.",
+  chosen = "Magenta found but ignored: monospace spacing selected.",
+}
+
+local function without_mode_notes(records)
+  local out = {}
+  for _, r in ipairs(records) do
+    if not SHOWN_ELSEWHERE[r.id] then out[#out + 1] = r end
+  end
+  return out
+end
+
 local function context(env)
   env = env or {}
   local sprite = env.sprite
@@ -65,21 +82,32 @@ local function export_flow(c)
     inspected = session.inspect(c.sprite, c.frame, manual)
   end
 
+  local mode_choice  -- nil lets the image decide
+  local entered = {}  -- what the user typed, kept when the dialog is shown again
   while true do
-    local lines = report.lines(inspected.records, MAX_REPORT_LINES)
+    local lines = report.lines(without_mode_notes(inspected.records), MAX_REPORT_LINES)
     local answer = c.ui.export_dialog({
       lines = lines, can_export = inspected.can_export,
-      family = c.prefs.family or (inspected.meta and inspected.meta.name) or title_of(c.sprite),
-      copyright = c.prefs.copyright or "", version = c.prefs.version or "Version 1.000",
-      path = default_path(c),
+      mode = inspected.mode or "mono", mode_note = MODE_NOTES[inspected.mode_reason] or "",
+      magenta_found = inspected.magenta_found,
+      aliases = entered.aliases ~= nil and entered.aliases or c.prefs.aliases ~= false,
+      family = entered.family or c.prefs.family or (inspected.meta and inspected.meta.name) or title_of(c.sprite),
+      copyright = entered.copyright or c.prefs.copyright or "",
+      version = entered.version or c.prefs.version or "Version 1.000",
+      path = entered.path or default_path(c),
     })
     if not answer then return end
+    entered = { family = answer.family, copyright = answer.copyright, version = answer.version,
+      path = answer.path, aliases = answer.aliases }
 
-    if answer.action == "settings" then
+    if answer.action == "mode" then
+      mode_choice = answer.mode
+      inspected = session.inspect(c.sprite, c.frame, manual, override, mode_choice)
+    elseif answer.action == "settings" then
       local edited = ask_settings(c, inspected.meta and form.from_meta(inspected.meta) or form.defaults(c.sprite))
       if edited then
         manual, override = edited, true
-        inspected = session.inspect(c.sprite, c.frame, manual, override)
+        inspected = session.inspect(c.sprite, c.frame, manual, override, mode_choice)
       end
     elseif answer.action == "export" then
       local path = ensure_ttf(answer.path)
@@ -89,6 +117,7 @@ local function export_flow(c)
         local built = export.build(inspected, {
           family = answer.family ~= "" and answer.family or nil,
           copyright = answer.copyright, version = answer.version ~= "" and answer.version or nil,
+          aliases = answer.aliases,
         })
         if not built.ok then
           inspected.records = built.records
@@ -100,6 +129,7 @@ local function export_flow(c)
           else
             settings.remember(c.sprite, inspected.meta)
             c.prefs.family, c.prefs.copyright, c.prefs.version = answer.family, answer.copyright, answer.version
+            c.prefs.aliases = answer.aliases
             c.prefs.directory = app.fs.filePath(path)
             c.alert{ title = "ASETTFX", buttons = "OK", text = {
               "Font written: " .. path,

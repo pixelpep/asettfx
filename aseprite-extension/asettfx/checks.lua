@@ -8,12 +8,20 @@ local function plural(n, one, many)
   return n == 1 and one or many
 end
 
--- "U+0041, U+0042 and 3 more" style list, at most MAX_NAMED code points.
-local function named(cps)
+-- U+005F "_" (row 4, column 16): the character when it is printable ASCII, and where its cell is in the grid.
+local function describe(glyph)
+  local text = string.format("U+%04X", glyph.cp)
+  if glyph.cp >= 0x21 and glyph.cp <= 0x7E then text = text .. ' "' .. string.char(glyph.cp) .. '"' end
+  if glyph.row and glyph.col then text = text .. string.format(" (row %d, column %d)", glyph.row + 1, glyph.col + 1) end
+  return text
+end
+
+-- "U+0041 "A" (row 2, column 2), U+0042 ... and 3 more" style list, at most MAX_NAMED glyphs.
+local function named(glyphs)
   local parts = {}
-  for i = 1, math.min(#cps, MAX_NAMED) do parts[i] = string.format("U+%04X", cps[i]) end
-  local text = table.concat(parts, ", ")
-  if #cps > MAX_NAMED then text = text .. ", and " .. (#cps - MAX_NAMED) .. " more" end
+  for i = 1, math.min(#glyphs, MAX_NAMED) do parts[i] = describe(glyphs[i]) end
+  local text = table.concat(parts, "; ")
+  if #glyphs > MAX_NAMED then text = text .. "; and " .. (#glyphs - MAX_NAMED) .. " more" end
   return text
 end
 
@@ -76,9 +84,9 @@ function M.run(ctx)
       local empty, mixed, beyond = {}, {}, {}
       for _, glyph in ipairs(a.glyphs) do
         if glyph.inside then
-          if not glyph.has_ink and not glyph.blank then empty[#empty + 1] = glyph.cp end
-          if glyph.mixed then mixed[#mixed + 1] = glyph.cp end
-          if glyph.beyond then beyond[#beyond + 1] = glyph.cp end
+          if not glyph.has_ink and not glyph.blank then empty[#empty + 1] = glyph end
+          if glyph.mixed then mixed[#mixed + 1] = glyph end
+          if glyph.beyond then beyond[#beyond + 1] = glyph end
         end
       end
       if #empty > 0 and a.counts.ink > 0 then
@@ -93,8 +101,12 @@ function M.run(ctx)
         add("ink-beyond-width", "warning", string.format("Ink beyond the magenta in %d %s: %s",
           #beyond, plural(#beyond, "character", "characters"), named(beyond)))
       end
-      if a.counts.marker_pixels > 0 and (s.mode == "mono" or s.width_source == "auto") then
-        add("marker-ignored", "info", "Magenta is ignored in this mode.")
+      if ctx.mode_reason == "detected" then
+        add("mode-detected", "info", "Magenta found: variable spacing selected.")
+      elseif ctx.mode_reason == "none" then
+        add("mode-detected", "info", "No magenta found: monospace spacing.")
+      elseif ctx.mode_reason == "chosen" then
+        add("marker-ignored", "info", "Magenta found but ignored: monospace spacing selected.")
       end
       if a.counts.guide > 0 then
         add("template-visible", "warning",

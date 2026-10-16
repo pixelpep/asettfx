@@ -146,7 +146,8 @@ return function(T)
     local path = out_path("edit")
     local env, shown = env_for(sprite, function(dlg, n)
       if dlg.title:find("template settings") then
-        T.eq(dlg.data.mode, form.MODE_LABELS.var, "the form starts from the stored settings")
+        T.eq(dlg.data.cols, 2, "the form starts from the stored settings")
+        T.eq(dlg.data.charset, form.to_dialog(form.from_meta(VAR)).charset)
         dlg.data.spacing = 1
         dlg.click("ok")
       elseif n == 1 then
@@ -160,7 +161,66 @@ return function(T)
     T.eq(#shown, 3)
     local font = reader.parse(assert(read_file(path)))
     T.eq(font.hmtx[1].advance, 7 * 64, "6 plus 1 pixel of extra spacing")
-    T.list_eq(shown[3].texts(), { "No problem found." }, "the edited settings are not reported as damaged or absent")
+    local texts = table.concat(shown[3].texts(), "\n")
+    T.truthy(texts:find("No problem found.", 1, true), texts)
+    T.truthy(not texts:find("damaged") and not texts:find("not found: using"), "the edited settings are not reported as damaged or absent")
+    os.remove(path)
+  end)
+
+  T.test("the spacing is chosen in the export dialog, and a change shows the dialog again with what was typed", function()
+    local sprite = make_sprite()
+    settings.remember(sprite, VAR)
+    local path = out_path("mode")
+    os.remove(path)
+    local env, shown = env_for(sprite, function(dlg, n)
+      if n == 1 then
+        T.eq(dlg.initial("spacing_mode").option, form.MODE_LABELS.var, "magenta found: variable spacing")
+        T.eq(dlg.initial("spacing_mode").enabled, true)
+        T.truthy(dlg.initial("mode_note").text:find("Magenta found: variable spacing selected"))
+        dlg.data.family = "Typed Once"
+        dlg.change("spacing_mode", form.MODE_LABELS.mono)
+      else
+        T.eq(dlg.initial("spacing_mode").option, form.MODE_LABELS.mono, "the choice is kept")
+        T.eq(dlg.initial("family").text, "Typed Once", "what was typed is kept")
+        T.truthy(dlg.initial("mode_note").text:find("ignored: monospace"))
+        dlg.data.path = path
+        dlg.click("export")
+      end
+    end)
+    T.eq(commands.export(env), path)
+    T.eq(#shown, 2)
+    local font = reader.parse(assert(read_file(path)))
+    T.eq(font.hmtx[1].advance, 8 * 64, "monospace: the full cell, magenta ignored")
+    T.eq(font.names["3:1"], "Typed Once")
+    os.remove(path)
+  end)
+
+  T.test("without magenta the spacing is monospace and cannot be changed", function()
+    local sprite = Sprite(16, 8, ColorMode.RGB)
+    local img = Image(16, 8, ColorMode.RGB)
+    paint(img, 0, 0, A, 8)
+    paint(img, 8, 0, B, 8)  -- no magenta: marker_from beyond the cell
+    sprite:newCel(sprite.layers[1], 1, img, Point(0, 0))
+    settings.remember(sprite, VAR)
+    local env, shown = env_for(sprite, function(dlg) dlg.click("cancel") end)
+    commands.export(env)
+    T.eq(shown[1].initial("spacing_mode").option, form.MODE_LABELS.mono)
+    T.eq(shown[1].initial("spacing_mode").enabled, false)
+    T.eq(shown[1].initial("mode_note").text, "No magenta found: monospace spacing.")
+  end)
+
+  T.test("the typography option is remembered", function()
+    local sprite = make_sprite()
+    settings.remember(sprite, VAR)
+    local path = out_path("typo")
+    local env = env_for(sprite, function(dlg)
+      T.eq(dlg.initial("aliases").selected, true, "on by default")
+      dlg.data.aliases = false
+      dlg.data.path = path
+      dlg.click("export")
+    end)
+    commands.export(env)
+    T.eq(env.prefs.aliases, false)
     os.remove(path)
   end)
 

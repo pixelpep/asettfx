@@ -10,7 +10,7 @@ Before writing the font, the extension runs these checks and lists the results i
 | **warning** | The export goes ahead. The dialog shows the message in orange, so the user can cancel and fix the drawing. |
 | **info** | Shown in grey, for context. |
 
-Messages are listed errors first, then warnings, then info. At most 8 characters are named per message (as `U+0041`), followed by "and N more".
+Messages are listed errors first, then warnings, then info. At most 8 characters are named per message, followed by "and N more". A character is named with its code point, the character itself when it is printable ASCII, and where its cell is in the grid, counted from 1: `U+005F "_" (row 4, column 16)`; the entries are separated by semicolons.
 
 ## Checks
 
@@ -31,7 +31,7 @@ The image is compared with `cols * cell.w` by `rows * cell.h`. A resized canvas 
 | Id | Level | Condition | Message |
 |---|---|---|---|
 | `size-mismatch` | warning | image size differs from the grid size | Image is 128x120 but the grid expects 128x112. |
-| `cells-outside` | warning | some mapped cells are not entirely inside the image; they are skipped | 6 cells are outside the image and were skipped: U+0041, ... |
+| `cells-outside` | warning | some mapped cells are not entirely inside the image; they are skipped | 6 cells are outside the image and were skipped: U+0041 "A" (row 3, column 1); ... |
 | `extra-area` | warning | the image extends past the grid; the extra pixels are ignored | 8 pixel rows below the grid are ignored. |
 | `no-cells` | error | no mapped cell is entirely inside the image | The image does not contain any cell of the grid. |
 | `cell-size-unusual` | info | `cell.w` or `cell.h` is not a multiple of 8 | Cell size 7x9 is not a multiple of 8. |
@@ -49,14 +49,16 @@ The image is compared with `cols * cell.w` by `rows * cell.h`. A resized canvas 
 |---|---|---|---|
 | `no-ink` | error | no ink pixel in any mapped cell | No glyph found. Draw in black, with the template layer hidden. |
 | `impure-pixels` | warning | pixels that are not exactly black, white or magenta after flattening | 12 pixels are not pure black, white or magenta and were thresholded. |
-| `empty-glyphs` | warning | mapped, non-blank characters (blank = space, control, format) with no ink | 14 characters are empty: U+0041, ... |
-| `marker-mixed` | warning | a column mixes marker and non-marker pixels (`var` mode, `widthSource = magenta`) | 3 characters have a partial magenta column: U+0041, ... |
-| `ink-beyond-width` | warning | ink at or beyond the first marker column (clipped) | Ink beyond the magenta in 2 characters: U+0041, ... |
-| `marker-ignored` | info | magenta present in `mono` mode, or with `widthSource = auto` | Magenta is ignored in this mode. |
+| `empty-glyphs` | warning | mapped, non-blank characters (blank = space, control, format) with no ink | 14 characters are empty: U+0041 "A" (row 2, column 2); ... |
+| `marker-mixed` | warning | a column mixes marker and non-marker pixels (`var` mode, `widthSource = magenta`) | 3 characters have a partial magenta column: U+0041 "A" (row 2, column 2); ... |
+| `ink-beyond-width` | warning | ink at or beyond the first marker column (clipped) | Ink beyond the magenta in 2 characters: U+0041 "A" (row 2, column 2); ... |
+| `mode-detected` | info | the spacing was chosen from the image | Magenta found: variable spacing selected. / No magenta found: monospace spacing. |
+| `marker-ignored` | info | magenta is present and the user chose monospace | Magenta found but ignored: monospace spacing selected. |
 | `template-visible` | warning | at least one pixel equals a guide color of the template (grey, blue) | The template layer looks visible. It is read as background, but hide it to be safe. |
 
 ## Behavior details
 
+- The export dialog shows `mode-detected` and `marker-ignored` on its spacing line instead of in the list of checks.
 - `empty-glyphs` is only reported when some ink exists. A sprite with no drawing at all gets `no-ink` instead, not a long list of empty characters.
 - `impure-pixels` and `template-visible` are still reported when there is no ink: a visible template with nothing drawn on it is exactly the case they explain.
 - `meta-invalid` is reported only when no valid source was found. A damaged PNG chunk followed by valid sprite properties is silent.

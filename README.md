@@ -24,7 +24,7 @@ Export a font from the command line, with the same checks the dialog will show: 
 1. Open the web tool and choose a character set, spacing mode (monospace or variable) and cell size.
 2. Download the PNG template: a grey ghost of each character to draw, blue baseline ticks, and in variable-space mode, optionally magenta width columns pre-filled from the hint font. Settings are stored in a PNG `tEXt` chunk.
 3. Open the PNG in Aseprite and draw each glyph in black on a layer above it. The template is only a guide.
-4. In variable-space mode, paint pure magenta `#FF00FF` over the unused columns on the right of a glyph to set its width. To keep the pre-filled magenta, copy it from the template onto your drawing layer.
+4. To make a variable-width font, paint pure magenta `#FF00FF` over the unused columns on the right of a glyph. To keep the pre-filled magenta, copy it from the template onto your drawing layer. The export dialog detects magenta and selects variable spacing; with no magenta the font is monospace. You can still choose monospace when magenta is present, and it is then ignored.
 5. Hide the template layer, then run **File → Scripts → ASETTFX → Export as TTF...**. Every visible layer is flattened over white (a white or a transparent background are equivalent), and black pixels become the glyphs.
 
 If the settings are missing or corrupted, a dialog asks for the grid parameters. Before exporting, the dialog lists any problems it found: wrong image size, empty characters, pixels that are not pure black, white or magenta, partial magenta columns and more. Warnings do not block the export; errors do. See [spec/CHECKS.md](spec/CHECKS.md).

@@ -13,6 +13,17 @@ How the glyph analysis of [GRID.md](GRID.md) becomes a `.ttf` file. Metrics are 
 
 Glyphs follow code point order after `.notdef`. Cells that are unassigned, outside the image, or clipped are not glyphs.
 
+## Typographic aliases
+
+Word processors replace the plain quote, hyphen and space by typographic characters that a pixel font rarely draws, so the text would fall back to another font. When the font has the plain glyph and has no glyph of its own for the typographic character, the `cmap` also maps the typographic character to the plain glyph. No glyph is added, and a drawn character is never replaced. The export dialog has a check box for it, on by default.
+
+| Plain glyph | Typographic characters |
+|---|---|
+| `'` U+0027 | U+2018, U+2019, U+201B |
+| `"` U+0022 | U+201C, U+201D, U+201F |
+| `-` U+002D | U+2010, U+2011, U+2012, U+2013 (en dash), U+2014 (em dash), U+2212 (minus) |
+| space U+0020 | U+00A0 (no-break space) |
+
 ## Outlines
 
 - Every outline is made of straight segments with on-curve points only. One pixel is 64 font units.
@@ -30,7 +41,7 @@ Glyphs follow code point order after `.notdef`. Cells that are unassigned, outsi
 | `hhea`, `hmtx` | ascender `(cell.h - baseline) * 64`, descender `-baseline * 64`, line gap 0; one full metric (advance, left side bearing) per glyph |
 | `maxp` | version 1.0, no instructions |
 | `OS/2` | version 4, weight 400, width class 5, `fsSelection` regular plus use-typo-metrics; typo metrics equal to hhea; win ascent and descent widened to cover the outlines; `sxHeight` and `sCapHeight` as in GRID.md section 5; first and last character from the cmap (capped at U+FFFF); Unicode ranges set for the blocks the font covers (Basic Latin, Latin-1, Latin Extended A and B, IPA, Spacing Modifiers, Combining Diacriticals, Greek, Cyrillic, General Punctuation, Currency Symbols, and Non-Plane 0); code page Latin 1 |
-| `cmap` | format 4 for U+0000 to U+FFFF under (0,3) and (3,1); format 12 under (0,4) and (3,10) only when a character is above U+FFFF |
+| `cmap` | one entry per character, plus the typographic aliases above; format 4 for U+0000 to U+FFFF under (0,3) and (3,1); format 12 under (0,4) and (3,10) only when a character is above U+FFFF |
 | `name` | copyright (if given), family, subfamily (default `Regular`), unique id, full name, version, PostScript name; written for Windows (UTF-16BE) and, when every string is ASCII, for Macintosh |
 | `post` | format 3.0 (no glyph names); `isFixedPitch` set when every advance is equal; underline 1 pixel thick, 1 pixel below the baseline |
 

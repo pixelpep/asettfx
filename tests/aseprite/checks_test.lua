@@ -56,14 +56,14 @@ return function(T)
 
   T.test("size mismatch, cells outside and extra area", function()
     local a = analysis({
-      outside = { 0x42 },
+      outside = { glyph(0x42, { col = 1, row = 0 }) },
       geometry = { image_w = 20, image_h = 12, grid_w = 16, grid_h = 8 },
       counts = { impure = 0, ink = 5, marker_pixels = 0, guide = 0, assigned = 2, inside = 1 },
     })
     local r = run({ analysis = a })
     T.list_eq(ids(r), { "size-mismatch:warning", "cells-outside:warning", "extra-area:warning", "extra-area:warning" })
     T.eq(r[1].message, "Image is 20x12 but the grid expects 16x8.")
-    T.eq(r[2].message, "1 cell is outside the image and was skipped: U+0042")
+    T.eq(r[2].message, '1 cell is outside the image and was skipped: U+0042 "B" (row 1, column 2)')
     T.eq(r[3].message, "4 pixel columns to the right of the grid are ignored.")
     T.eq(r[4].message, "4 pixel rows below the grid are ignored.")
   end)
@@ -101,7 +101,7 @@ return function(T)
     local r = run({ analysis = analysis({ glyphs = gs }) })
     T.list_eq(ids(r), { "empty-glyphs:warning" })
     T.eq(r[1].message,
-      "10 characters are empty: U+0041, U+0042, U+0043, U+0044, U+0045, U+0046, U+0047, U+0048, and 2 more")
+      '10 characters are empty: U+0041 "A"; U+0042 "B"; U+0043 "C"; U+0044 "D"; U+0045 "E"; U+0046 "F"; U+0047 "G"; U+0048 "H"; and 2 more')
   end)
 
   T.test("a template with no drawing yet reports no-ink, and no empty glyphs", function()
@@ -114,14 +114,31 @@ return function(T)
     local gs = { glyph(0x41, { mixed = true }), glyph(0x42, { beyond = true }) }
     local r = run({ analysis = analysis({ glyphs = gs }) })
     T.list_eq(ids(r), { "marker-mixed:warning", "ink-beyond-width:warning" })
-    T.eq(r[1].message, "1 character has a partial magenta column: U+0041")
-    T.eq(r[2].message, "Ink beyond the magenta in 1 character: U+0042")
+    T.eq(r[1].message, '1 character has a partial magenta column: U+0041 "A"')
+    T.eq(r[2].message, 'Ink beyond the magenta in 1 character: U+0042 "B"')
   end)
 
-  T.test("magenta is ignored in monospace, a visible template is noticed", function()
+  T.test("a visible template is noticed", function()
     local counts = { impure = 0, ink = 4, marker_pixels = 6, guide = 3, assigned = 2, inside = 2 }
-    local r = run({ settings = settings({ mode = "mono" }), analysis = analysis({ counts = counts }) })
-    T.list_eq(ids(r), { "template-visible:warning", "marker-ignored:info" })
+    T.list_eq(ids(run({ analysis = analysis({ counts = counts }) })), { "template-visible:warning" })
+  end)
+
+  T.test("the spacing is explained: magenta found, none found, or magenta ignored by choice", function()
+    local detected = run({ mode_reason = "detected" })
+    T.list_eq(ids(detected), { "mode-detected:info" })
+    T.eq(detected[1].message, "Magenta found: variable spacing selected.")
+    local none = run({ mode_reason = "none" })
+    T.eq(none[1].message, "No magenta found: monospace spacing.")
+    local chosen = run({ mode_reason = "chosen" })
+    T.list_eq(ids(chosen), { "marker-ignored:info" })
+    T.eq(chosen[1].message, "Magenta found but ignored: monospace spacing selected.")
+    T.list_eq(ids(run({ mode_reason = "ok" })), {})
+  end)
+
+  T.test("positions are one-based, printable ASCII is quoted, other characters are not", function()
+    local gs = { glyph(0x5F, { has_ink = false, col = 15, row = 3 }), glyph(0xE9, { has_ink = false, col = 0, row = 0 }) }
+    local r = run({ analysis = analysis({ glyphs = gs }) })
+    T.eq(r[1].message, '2 characters are empty: U+005F "_" (row 4, column 16); U+00E9 (row 1, column 1)')
   end)
 
   T.test("unusual cell size is informative", function()

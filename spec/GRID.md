@@ -46,6 +46,8 @@ Compositing a semi-transparent pixel over white is part of flattening, so a tran
 
 ## 4. Advance and left edge
 
+**Which spacing applies.** At export the spacing follows what is drawn, not what the template said. If the image holds magenta in the cells of the grid, the spacing is `var` with `widthSource = magenta`. If it holds none, the spacing is `mono`, and variable spacing is not offered. When magenta is present the user may still choose `mono`; the magenta is then read as empty background. The `mode` and `widthSource` in the metadata only describe how the template was made; `widthSource = auto` is not offered by the Aseprite dialogs.
+
 A column of a cell is a *marker column* when every pixel of that column is a marker.
 A column that mixes marker and non-marker pixels is not a marker column, and the exporter warns.
 

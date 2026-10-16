@@ -23,11 +23,7 @@ function M.settings_form(initial, message, D)
   dlg:separator{ id = "sep_chars", text = "Characters, in reading order" }
   dlg:combobox{ id = "charset", label = "Character set", option = values.charset, options = form.charset_labels() }
   dlg:entry{ id = "custom", label = "Custom ranges", text = values.custom }
-  dlg:separator{ id = "sep_spacing", text = "Spacing" }
-  dlg:combobox{ id = "mode", label = "Mode", option = values.mode,
-    options = { form.MODE_LABELS.mono, form.MODE_LABELS.var } }
-  dlg:combobox{ id = "width_source", label = "Width from", option = values.width_source,
-    options = { form.WIDTH_LABELS.magenta, form.WIDTH_LABELS.auto } }
+  dlg:separator{ id = "sep_spacing", text = "Spacing and metrics" }
   dlg:number{ id = "spacing", label = "Extra spacing (px)", text = tostring(values.spacing), decimals = 0 }
   dlg:number{ id = "baseline", label = "Rows below the baseline", text = tostring(values.baseline), decimals = 0 }
   dlg:check{ id = "ink_light", label = "Ink", text = "light ink on a dark background", selected = values.ink_light }
@@ -41,13 +37,31 @@ function M.settings_form(initial, message, D)
   return result
 end
 
--- model: {lines, can_export, family, copyright, version, path}
--- Returns nil when cancelled, otherwise {action = "export" | "settings", family, copyright, version, path}.
+-- model: {lines, can_export, mode ("mono" | "var"), mode_note, magenta_found, family, copyright, version, path, aliases}
+-- Returns nil when cancelled, otherwise {action = "export" | "settings" | "mode", mode, aliases, family, copyright,
+-- version, path}. "mode" means the user changed the spacing: the caller checks again and shows the dialog again.
 function M.export_dialog(model, D)
   D = D or Dialog
   local dlg = D{ title = TITLE .. " - export TTF" }
   local answer
+  local function collect(action)
+    answer = {
+      action = action,
+      mode = form.mode_from_label(dlg.data.spacing_mode),
+      aliases = dlg.data.aliases == true,
+      family = dlg.data.family, copyright = dlg.data.copyright,
+      version = dlg.data.version, path = dlg.data.path,
+    }
+    dlg:close()
+  end
 
+  dlg:separator{ id = "sep_spacing", text = "Spacing" }
+  dlg:combobox{ id = "spacing_mode", label = "Spacing", option = form.MODE_LABELS[model.mode],
+    options = { form.MODE_LABELS.mono, form.MODE_LABELS.var }, enabled = model.magenta_found,
+    onchange = function() collect("mode") end }
+  dlg:newrow()
+  dlg:label{ id = "mode_note", text = model.mode_note }
+  dlg:newrow()
   dlg:separator{ id = "sep_checks", text = "Checks" }
   if #model.lines == 0 then
     dlg:label{ id = "check_none", text = "No problem found." }
@@ -61,18 +75,12 @@ function M.export_dialog(model, D)
   dlg:entry{ id = "family", label = "Family name", text = model.family }
   dlg:entry{ id = "copyright", label = "Copyright", text = model.copyright }
   dlg:entry{ id = "version", label = "Version", text = model.version }
+  dlg:check{ id = "aliases", label = "Typography",
+    text = "Typographic quotes, dashes and no-break space use the plain glyphs", selected = model.aliases }
   dlg:file{ id = "path", label = "Save as", title = "Save the font", save = true,
     filename = model.path, filetypes = { "ttf" } }
   dlg:newrow()
 
-  local function collect(action)
-    answer = {
-      action = action,
-      family = dlg.data.family, copyright = dlg.data.copyright,
-      version = dlg.data.version, path = dlg.data.path,
-    }
-    dlg:close()
-  end
   dlg:button{ id = "export", text = "Export", focus = model.can_export, enabled = model.can_export,
     onclick = function() collect("export") end }
   dlg:button{ id = "settings", text = "Settings...", onclick = function() collect("settings") end }

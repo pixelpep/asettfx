@@ -18,6 +18,14 @@ First version, planned as 0.1.0. Not released yet.
 - Tests: `npm test` (47 tests) and `npm run test:aseprite` (106 tests run inside Aseprite's batch mode; the dialogs are tested with a stand-in for `Dialog`, since batch mode has no UI).
 - Project documentation: `README.md`, `docs/PROGRESS.md`; Apache-2.0 `LICENSE` and `NOTICE` (copyright pixelPep inc., based on the code of [ase2ttf](https://github.com/nuskey8/ase2ttf)).
 
+### Changed after the first trial in Aseprite
+
+- The spacing is chosen at the top of the export dialog and follows the image: magenta found means variable spacing, none means monospace; monospace can be chosen anyway and the magenta is then ignored. The Settings form no longer asks for it.
+- Warnings name the characters with their row and column in the grid, for example `U+005F "_" (row 4, column 16)`.
+- The template shows a ghost for every printable character, including thin ones such as the underscore.
+- Typographic quotes, dashes and the no-break space reuse the plain glyphs when they are not drawn (check box *Typography*, on by default).
+- Fewer file permission prompts: the sprite's own settings are read first, and a sidecar file is only opened when it exists.
+
 ### Known limits
 
 - No kerning, no hinting. Characters that were not drawn are left out of the font.

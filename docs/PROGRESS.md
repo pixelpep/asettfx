@@ -1,14 +1,18 @@
 # Progress
 
-Last updated: 2026-10-16
+Last updated: 2026-10-16 (after the first trial in Aseprite)
 
 ## Status
 
 All five steps are written: the spec, the web template generator, the Lua pipeline, and the Aseprite menu commands and dialogs with packaging. The pipeline is tested automatically (47 node tests, 106 Lua tests run inside Aseprite). What remains is trying it for real: Aseprite's batch mode has no UI, so the dialogs are covered by tests with a stand-in for `Dialog`, not by the real window.
 
+## First trial in Aseprite (2026-10-16)
+
+The menu appeared at the right place. Feedback and what was done: many file permission prompts (the settings in the sprite are now read first and a sidecar file is only opened if it exists); a warning named U+005F but the cell was hard to find (warnings give the row and column, and the template now always shows a ghost, even for thin characters such as the underscore); the spacing choice was hidden in the settings form (it is now at the top of the export dialog, detected from the magenta, with monospace still selectable); the typed apostrophe came from another font (word processors type U+2019, so typographic quotes, dashes and the no-break space now reuse the plain glyphs).
+
 ## Next
 
-1. [ ] Try the packaged extension in Aseprite: menu entry, dialogs, the file-access permission prompt, a real export. Fix what the real window shows.
+1. [ ] Try the new build in Aseprite: the spacing line and its re-check, the Typography option, the position in the warnings, the number of permission prompts. Fix what the real window shows.
 2. [ ] Try a real font end to end: generate a template, draw, export, install the TTF (Font Book, Figma).
 3. [ ] Decide on a first release: version, release notes from `CHANGELOG.md`, a GitHub release carrying the `.aseprite-extension` file.
 

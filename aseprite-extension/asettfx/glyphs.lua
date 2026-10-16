@@ -55,7 +55,7 @@ function M.analyze(src, settings)
       result.glyphs[#result.glyphs + 1] = glyph
 
       if not glyph.inside then
-        result.outside[#result.outside + 1] = cp
+        result.outside[#result.outside + 1] = glyph
       else
         counts.inside = counts.inside + 1
         local cls = {}

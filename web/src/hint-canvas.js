@@ -8,7 +8,7 @@
 
   const SCALE = 8;
   const CAP_RATIO = 0.7;   // cap height / font size, typical for Latin fonts
-  const THRESHOLD = 0.4;   // share of a pixel that must be covered to count as ink
+  const THRESHOLDS = [0.4, 0.25, 0.12];  // share of a pixel that must be covered to count as ink; thin glyphs retry lower
 
   // options: {fontFamily, weight, align}. align is 'center' (default) or 'left' (1 px from the left edge).
   // Returns maskProvider(cp, cellW, cellH, baseline).
@@ -48,7 +48,7 @@
       ctx.fillText(text, left ? SCALE : W / 2, (h - baseline) * SCALE);
 
       const data = ctx.getImageData(0, 0, W, H).data;
-      const mask = new Uint8Array(w * h);
+      const cover = new Float64Array(w * h);
       const full = SCALE * SCALE * 255;
       for (let y = 0; y < h; y++) {
         for (let x = 0; x < w; x++) {
@@ -57,8 +57,19 @@
             const row = ((y * SCALE + sy) * W + x * SCALE) * 4 + 3;
             for (let sx = 0; sx < SCALE; sx++) sum += data[row + sx * 4];
           }
-          if (sum / full >= THRESHOLD) mask[y * w + x] = 1;
+          cover[y * w + x] = sum / full;
         }
+      }
+      // A thin stroke such as the underscore or a dot can stay under the first threshold everywhere:
+      // lower it until something shows, so that no printable character leaves an empty cell.
+      const mask = new Uint8Array(w * h);
+      for (const threshold of THRESHOLDS) {
+        let any = false;
+        for (let i = 0; i < cover.length; i++) {
+          mask[i] = cover[i] >= threshold ? 1 : 0;
+          if (mask[i]) any = true;
+        }
+        if (any) break;
       }
       return mask;
     };
@@ -72,5 +83,5 @@
     return provider;
   }
 
-  return { create, SCALE, THRESHOLD };
+  return { create, SCALE, THRESHOLDS };
 });

@@ -1,5 +1,5 @@
--- Finds the template settings of a sprite, in the order of spec/METADATA.md:
--- the PNG on disk, the sprite properties, a sidecar file. The manual dialog is the caller's last resort.
+-- Finds the template settings of a sprite, in the order of spec/METADATA.md: the sprite properties (no file access),
+-- the PNG on disk, a sidecar file. The manual dialog is the caller's last resort.
 local jsonutil = require("asettfx.jsonutil")
 local meta = require("asettfx.meta")
 local png_meta = require("asettfx.png_meta")
@@ -30,6 +30,7 @@ end
 local function from_sidecar(filename)
   local path = sidecar_path(filename)
   if not path then return { status = "absent" } end
+  if not app.fs.isFile(path) then return { status = "absent" } end  -- Aseprite asks permission for each file it opens
   local text = png_meta.read_file(path)
   if not text then return { status = "absent" } end
   return from_text(text)
@@ -45,8 +46,8 @@ end
 function M.resolve(sprite)
   local invalid
   local sources = {
-    { "png", function() return from_png(sprite.filename) end },
     { "properties", function() return from_properties(sprite) end },
+    { "png", function() return from_png(sprite.filename) end },
     { "sidecar", function() return from_sidecar(sprite.filename) end },
   }
   for _, source in ipairs(sources) do

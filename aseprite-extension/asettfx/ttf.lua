@@ -35,6 +35,42 @@ local function is_space(cp)
   return false
 end
 
+-- Typographic characters that word processors insert in place of the plain ones. When the font has the plain glyph
+-- and no glyph of its own for the typographic character, the character uses the plain glyph.
+local ALIASES = {
+  [0x2018] = 0x27, [0x2019] = 0x27, [0x201B] = 0x27,                                -- single quotes -> '
+  [0x201C] = 0x22, [0x201D] = 0x22, [0x201F] = 0x22,                                -- double quotes -> "
+  [0x2010] = 0x2D, [0x2011] = 0x2D, [0x2012] = 0x2D, [0x2013] = 0x2D, [0x2014] = 0x2D, [0x2212] = 0x2D,  -- dashes, minus -> -
+  [0x00A0] = 0x20,                                                                  -- no-break space -> space
+}
+
+-- Returns how many characters were added to glyphs as aliases.
+local function add_aliases(glyphs)
+  local by_cp = {}
+  for _, g in ipairs(glyphs) do if g.cp then by_cp[g.cp] = g end end
+  local cps = {}
+  for cp in pairs(ALIASES) do cps[#cps + 1] = cp end
+  table.sort(cps)
+  local added = 0
+  for _, cp in ipairs(cps) do
+    local target = by_cp[ALIASES[cp]]
+    if target and not by_cp[cp] then
+      target.aliases = target.aliases or {}
+      target.aliases[#target.aliases + 1] = cp
+      added = added + 1
+    end
+  end
+  return added
+end
+
+-- Every code point a glyph answers to: its own, then its aliases.
+local function code_points(g)
+  local out = {}
+  if g.cp then out[1] = g.cp end
+  for _, cp in ipairs(g.aliases or {}) do out[#out + 1] = cp end
+  return out
+end
+
 -- Glyphs ------------------------------------------------------------------
 
 local function convert(contours, settings)
@@ -185,10 +221,10 @@ local function unicode_ranges(glyphs)
   local words = { 0, 0, 0, 0 }
   local function set(bit) local w = bit // 32 + 1; words[w] = words[w] | (1 << (bit % 32)) end
   for _, g in ipairs(glyphs) do
-    if g.cp then
-      if g.cp > 0xFFFF then set(57) end
+    for _, cp in ipairs(code_points(g)) do
+      if cp > 0xFFFF then set(57) end
       for _, b in ipairs(BLOCKS) do
-        if g.cp >= b[1] and g.cp <= b[2] then set(b[3]) end
+        if cp >= b[1] and cp <= b[2] then set(b[3]) end
       end
     end
   end
@@ -207,7 +243,7 @@ local function build_os2(info, settings, glyphs)
   local total, count, first, last = 0, 0, 0xFFFF, 0
   for _, g in ipairs(glyphs) do
     if g.advance > 0 then total = total + g.advance; count = count + 1 end
-    if g.cp then first = math.min(first, g.cp); last = math.max(last, g.cp) end
+    for _, cp in ipairs(code_points(g)) do first = math.min(first, cp); last = math.max(last, cp) end
   end
   local ranges = unicode_ranges(glyphs)
   local half_w, half_h = settings.cell_w * SCALE // 2, settings.cell_h * SCALE // 2
@@ -230,8 +266,9 @@ local function build_cmap(glyphs)
   -- code point -> glyph id, in order
   local entries = {}
   for gid, g in ipairs(glyphs) do
-    if g.cp then entries[#entries + 1] = { cp = g.cp, gid = gid - 1 } end
+    for _, cp in ipairs(code_points(g)) do entries[#entries + 1] = { cp = cp, gid = gid - 1 } end
   end
+  table.sort(entries, function(a, b) return a.cp < b.cp end)
 
   local function groups(limit)
     local out = {}
@@ -338,12 +375,14 @@ end
 -- Entry point ---------------------------------------------------------------
 
 -- analysis: glyphs.analyze result; settings: meta.with_defaults.
--- options: family, subfamily, copyright, version, timestamp (unix seconds).
--- Returns the font as a binary string and an info table {glyphs, bytes, codepoints}.
+-- options: family, subfamily, copyright, version, timestamp (unix seconds), aliases (default true: typographic
+-- quotes, dashes and the no-break space reuse the plain glyphs when they are not drawn).
+-- Returns the font as a binary string and an info table {glyphs, bytes, aliases}.
 function M.build(analysis, settings, options)
   options = options or {}
   local glyphs = collect(analysis, settings)
   if #glyphs < 2 then error("no glyph to export") end
+  local aliases = options.aliases ~= false and add_aliases(glyphs) or 0
 
   local info = { long_loca = false }
   for _, g in ipairs(glyphs) do
@@ -415,7 +454,7 @@ function M.build(analysis, settings, options)
   local adjustment = (0xB1B0AFBA - checksum(font)) & 0xFFFFFFFF
   font = font:sub(1, info.head_offset + 8) .. u32(adjustment) .. font:sub(info.head_offset + 13)
 
-  info.glyphs, info.bytes = #glyphs, #font
+  info.glyphs, info.bytes, info.aliases = #glyphs, #font, aliases
   return font, info
 end
 

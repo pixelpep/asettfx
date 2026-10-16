@@ -240,6 +240,44 @@ return function(T)
     T.eq(#prop.tables.post.data, 32)
   end)
 
+  T.test("typographic quotes, dashes and no-break space reuse the plain glyphs", function()
+    local list = { glyph(0x20, nil, 3), glyph(0x22, O, 5), glyph(0x27, O, 5), glyph(0x2D, O, 5), glyph(0x41, H, 5) }
+    local _, info, f = build(list)
+    local map = f.cmap["3,1"].map
+    T.eq(map[0x2019], map[0x27]); T.eq(map[0x2018], map[0x27]); T.eq(map[0x201B], map[0x27])
+    T.eq(map[0x201C], map[0x22]); T.eq(map[0x201D], map[0x22])
+    T.eq(map[0x2013], map[0x2D]); T.eq(map[0x2014], map[0x2D]); T.eq(map[0x2212], map[0x2D])
+    T.eq(map[0xA0], map[0x20])
+    T.eq(f.num_glyphs, 6, "aliases add code points, not glyphs")
+    T.eq(map[0x201F], map[0x22]); T.eq(map[0x2010], map[0x2D]); T.eq(map[0x2011], map[0x2D]); T.eq(map[0x2012], map[0x2D])
+    T.eq(info.aliases, 13)
+    T.eq(map[0x2026], nil, "no alias for characters without a plain equivalent")
+    T.eq(f.cmap["0,3"].map[0x2019], map[0x27])
+    local os2 = f.tables["OS/2"].data
+    T.eq(string.unpack(">I2", os2, 67), 0x2212, "last character index covers the aliases")
+    T.truthy(string.unpack(">I4", os2, 43) & 1 ~= 0)
+    T.truthy(string.unpack(">I4", os2, 43) & (1 << 31) ~= 0, "General Punctuation block")
+  end)
+
+  T.test("a drawn typographic character keeps its own glyph, and aliases can be turned off", function()
+    local list = { glyph(0x27, O, 5), glyph(0x2019, H, 5) }
+    local _, info, f = build(list)
+    local map = f.cmap["3,1"].map
+    T.truthy(map[0x2019] ~= map[0x27], "the drawn U+2019 is not replaced")
+    T.eq(info.aliases, 2, "only U+2018 and U+201B are added")
+    T.eq(map[0x2018], map[0x27])
+
+    local _, off, g = build({ glyph(0x27, O, 5) }, nil, { aliases = false })
+    T.eq(off.aliases, 0)
+    T.eq(g.cmap["3,1"].map[0x2019], nil)
+  end)
+
+  T.test("no alias without the plain glyph", function()
+    local _, info, f = build({ glyph(0x41, H, 5) })
+    T.eq(info.aliases, 0)
+    T.eq(f.cmap["3,1"].map[0xA0], nil)
+  end)
+
   T.test("same input and time give identical bytes", function()
     local a = build({ glyph(0x48, H, 5), glyph(0x4F, O, 5) })
     local b = build({ glyph(0x4F, O, 5), glyph(0x48, H, 5) })

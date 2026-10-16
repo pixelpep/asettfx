@@ -7,7 +7,7 @@ local meta = require("asettfx.meta")
 local M = {}
 
 M.CUSTOM_LABEL = "Custom: code point ranges (hex)"
-M.MODE_LABELS = { mono = "Monospace", var = "Variable space (magenta marks the unused width)" }
+M.MODE_LABELS = { mono = "Monospace", var = "Variable space (magenta columns)" }
 M.WIDTH_LABELS = { magenta = "Magenta columns", auto = "Drawn pixels (magenta ignored)" }
 
 local function label_of(labels, id)
@@ -17,6 +17,11 @@ end
 local function id_of(labels, label, default)
   for id, text in pairs(labels) do if text == label then return id end end
   return default
+end
+
+-- "mono" or "var" from the label shown in the spacing combobox.
+function M.mode_from_label(label)
+  return id_of(M.MODE_LABELS, label, "mono")
 end
 
 function M.charset_labels()

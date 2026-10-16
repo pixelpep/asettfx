@@ -40,6 +40,12 @@ function M.new(script)
       if b.onclick then b.onclick() end
       return true
     end
+    -- what the user does with a combobox or checkbox: set the value, then its onchange runs
+    function dlg.change(id, value)
+      dlg.data[id] = value
+      local o = dlg.initial(id)
+      if o and o.onchange then o.onchange() end
+    end
     -- the options a widget was created with (its initial value is options.text, .option or .selected)
     function dlg.initial(id)
       for _, w in ipairs(dlg.widgets) do if w.options.id == id then return w.options end end

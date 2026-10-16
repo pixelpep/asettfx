@@ -26,12 +26,12 @@ A grid that no longer matches the image size, for example after the canvas was r
 
 The exporter resolves settings in this order and takes the first valid source:
 
-1. the PNG on disk (`sprite.filename`), when the sprite was opened from a PNG;
-2. the sprite's own properties, `sprite.properties("asettfx")`, which the export command writes after it has resolved the settings from another source, so they survive saving as `.aseprite` (availability in 1.3.16 to be confirmed);
-3. a sidecar file `<name>.asettfx.json` next to the sprite;
+1. the sprite's own properties, `sprite.properties("asettfx")`, which the export command writes after it has resolved the settings from another source, so they survive saving as `.aseprite`. Reading them opens no file, and Aseprite asks the user to approve each file a script opens, so this source comes first;
+2. the PNG on disk (`sprite.filename`), when the sprite was opened from a PNG;
+3. a sidecar file `<name>.asettfx.json` next to the sprite, looked at only if the file exists;
 4. the manual dialog, whose result is saved into the sprite properties as well.
 
-Aseprite does not keep PNG text chunks when it saves a `.aseprite`, so step 2 is what makes the settings survive.
+Aseprite does not keep PNG text chunks when it saves a `.aseprite`, so step 1 is what makes the settings survive.
 
 ## Compatibility
 
