@@ -1,0 +1,9 @@
+# Local reference resources (not redistributed)
+/ase2ttf-0.2.0/
+/gbstudio_style-fonts/
+
+# OS / editor
+.DS_Store
+
+dist/
+.vscode/

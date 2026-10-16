@@ -1,0 +1,13 @@
+{
+  "v": 1,
+  "tool": "asettfx-web/0.1",
+  "name": "Pixel Mono",
+  "cell": { "w": 8, "h": 8 },
+  "grid": { "cols": 16, "rows": 6 },
+  "mode": "mono",
+  "ink": "dark",
+  "marker": "#FF00FF",
+  "map": ["0020-007E"],
+  "metrics": { "baseline": 1, "spacing": 0 },
+  "guide": { "checker": true, "baseline": true, "hint": "ghost", "hintFont": "Menlo, Consolas, monospace" }
+}

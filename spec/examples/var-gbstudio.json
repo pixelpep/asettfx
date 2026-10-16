@@ -1,0 +1,14 @@
+{
+  "v": 1,
+  "tool": "asettfx-web/0.1",
+  "name": "Pixel Variable",
+  "cell": { "w": 8, "h": 8 },
+  "grid": { "cols": 16, "rows": 14 },
+  "mode": "var",
+  "widthSource": "magenta",
+  "ink": "light",
+  "marker": "#FF00FF",
+  "map": ["0020-00FF"],
+  "metrics": { "baseline": 1, "spacing": 0, "xHeight": 5, "capHeight": 6 },
+  "guide": { "checker": true, "baseline": true, "hint": "ghost", "prefill": true, "hintFont": "Menlo, Consolas, monospace" }
+}

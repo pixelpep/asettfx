@@ -1,0 +1,6 @@
+{
+  "id": "ascii",
+  "label": "ASCII printable (U+0020-U+007E)",
+  "map": ["0020-007E"],
+  "cols": 16
+}

@@ -1,0 +1,170 @@
+{
+ "description": "Shared by the JavaScript and Lua code point map parsers. cells uses -1 for an unassigned cell; hexList is the custom range entry of the web tool and of the Aseprite settings form.",
+ "cases": [
+  {
+   "name": "range, gap and single",
+   "tokens": [
+    "0041-0043",
+    "_",
+    "20AC"
+   ],
+   "cells": [
+    65,
+    66,
+    67,
+    -1,
+    8364
+   ]
+  },
+  {
+   "name": "lowercase hex",
+   "tokens": [
+    "00e9"
+   ],
+   "cells": [
+    233
+   ]
+  },
+  {
+   "name": "six digit code point",
+   "tokens": [
+    "10FFFF"
+   ],
+   "cells": [
+    1114111
+   ]
+  },
+  {
+   "name": "single entry range",
+   "tokens": [
+    "0041-0041"
+   ],
+   "cells": [
+    65
+   ]
+  },
+  {
+   "name": "short hex",
+   "tokens": [
+    "41"
+   ],
+   "error": true
+  },
+  {
+   "name": "not hex",
+   "tokens": [
+    "GGGG"
+   ],
+   "error": true
+  },
+  {
+   "name": "reversed",
+   "tokens": [
+    "0043-0041"
+   ],
+   "error": true
+  },
+  {
+   "name": "surrogate",
+   "tokens": [
+    "D800"
+   ],
+   "error": true
+  },
+  {
+   "name": "above Unicode",
+   "tokens": [
+    "110000"
+   ],
+   "error": true
+  },
+  {
+   "name": "three parts",
+   "tokens": [
+    "0041-0042-0043"
+   ],
+   "error": true
+  },
+  {
+   "name": "range across surrogates",
+   "tokens": [
+    "D7FF-E000"
+   ],
+   "error": true
+  },
+  {
+   "name": "empty token",
+   "tokens": [
+    ""
+   ],
+   "error": true
+  }
+ ],
+ "blank": {
+  "blank": [
+   0,
+   31,
+   32,
+   127,
+   133,
+   160,
+   173,
+   8203,
+   8200,
+   65279
+  ],
+  "notBlank": [
+   33,
+   65,
+   126,
+   161,
+   174,
+   19968,
+   128512
+  ]
+ },
+ "hexList": [
+  {
+   "input": "U+20-7E, 00C0-00FF 20ac _",
+   "tokens": [
+    "0020-007E",
+    "00C0-00FF",
+    "20AC",
+    "_"
+   ]
+  },
+  {
+   "input": "41-5A 61-7A",
+   "tokens": [
+    "0041-005A",
+    "0061-007A"
+   ]
+  },
+  {
+   "input": "0x41",
+   "tokens": [
+    "0041"
+   ]
+  },
+  {
+   "input": "",
+   "tokens": []
+  },
+  {
+   "input": "zz",
+   "error": true
+  },
+  {
+   "input": "41-",
+   "error": true
+  },
+  {
+   "input": "U+110000",
+   "error": true
+  },
+  {
+   "input": "0043-0041",
+   "error": true
+  }
+ ]
+}

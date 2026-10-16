@@ -1,0 +1,6 @@
+{
+  "id": "gbstudio",
+  "label": "GB Studio layout (U+0020-U+00FF, 16 x 14 cells)",
+  "map": ["0020-00FF"],
+  "cols": 16
+}

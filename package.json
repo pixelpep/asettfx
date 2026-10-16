@@ -1,0 +1,18 @@
+{
+  "name": "asettfx",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Aseprite to TTF bitmap font suite: template generator and Aseprite extension",
+  "license": "Apache-2.0",
+  "repository": "github:pixelpep/asettfx",
+  "scripts": {
+    "gen:charsets": "node tools/gen-charsets.mjs",
+    "gen:blank": "node tools/gen-blank.mjs",
+    "gen:fixtures": "node tools/make-fixtures.mjs",
+    "test": "node --test tests/web/*.test.js",
+    "test:aseprite": "sh tools/run-aseprite-tests.sh",
+    "inspect": "sh tools/inspect.sh",
+    "pack": "sh tools/pack.sh",
+    "check:package": "sh tools/check-package.sh"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "name": "asettfx",
+  "displayName": "ASETTFX",
+  "description": "Export pixel-art glyphs drawn on a template grid to a TrueType font",
+  "version": "0.1.0",
+  "author": { "name": "pixelPep inc.", "url": "https://github.com/pixelpep/asettfx" },
+  "publisher": "pixelpep",
+  "license": "Apache-2.0",
+  "categories": [ "Scripts" ],
+  "contributes": {
+    "scripts": [
+      { "path": "./asettfx.lua" }
+    ]
+  }
+}

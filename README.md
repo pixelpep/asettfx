@@ -1,0 +1,60 @@
+# ASETTFX
+
+Turn pixel-art glyphs drawn in [Aseprite](https://www.aseprite.org/) into a valid bitmap-style TrueType font (`.ttf`), for game engines and design tools such as Figma.
+
+> **Status: first version, not yet released.** The spec, the web template generator and the Aseprite extension (reading, checks, TTF writer, menu and dialogs) are written. The pipeline is tested automatically; the dialogs have not been tried in the Aseprite window yet. See [Roadmap](#roadmap).
+
+ASETTFX has two parts:
+
+1. **Template generator** (`web/`): a small HTML/JS/Canvas tool that produces a PNG template for a bitmap font grid, with the settings embedded in the PNG.
+2. **Aseprite extension** (`aseprite-extension/`): a Lua extension that reads the template settings, lets you draw the glyphs, and exports the `.ttf`.
+
+## Install the extension
+
+`sh tools/pack.sh` builds `dist/asettfx-<version>.aseprite-extension`; double-click it to install in Aseprite. While developing, `sh tools/install-dev.sh` copies the files into Aseprite's extensions folder instead (restart Aseprite after). See [aseprite-extension/README.md](aseprite-extension/README.md).
+
+## Try the template generator
+
+No build and no server: open `web/index.html` in a browser. Tests: `npm test` (node 18 or later, no dependencies). The Lua tests run inside Aseprite: `npm run test:aseprite` (set `ASEPRITE` to the executable if it is not at the macOS default path). To see what the exporter reads from your own file, without any UI yet: `sh tools/inspect.sh my-font.png [characters]` (or `.aseprite`). It prints the settings found, the export checks and the width of every character.
+
+Export a font from the command line, with the same checks the dialog will show: `sh tools/export.sh my-font.aseprite my-font.ttf "My Font"`. A complete example (A to Z, variable width) is built by `sh tools/make-sample.sh some-folder`. To validate a font independently of the Lua writer: `pip install fonttools`, then `python3 tools/validate_ttf.py my-font.ttf 8` (the second argument is the cell height).
+
+## Workflow
+
+1. Open the web tool and choose a character set, spacing mode (monospace or variable) and cell size.
+2. Download the PNG template: a grey ghost of each character to draw, blue baseline ticks, and in variable-space mode, optionally magenta width columns pre-filled from the hint font. Settings are stored in a PNG `tEXt` chunk.
+3. Open the PNG in Aseprite and draw each glyph in black on a layer above it. The template is only a guide.
+4. In variable-space mode, paint pure magenta `#FF00FF` over the unused columns on the right of a glyph to set its width. To keep the pre-filled magenta, copy it from the template onto your drawing layer.
+5. Hide the template layer, then run **File → Scripts → ASETTFX → Export as TTF...**. Every visible layer is flattened over white (a white or a transparent background are equivalent), and black pixels become the glyphs.
+
+If the settings are missing or corrupted, a dialog asks for the grid parameters. Before exporting, the dialog lists any problems it found: wrong image size, empty characters, pixels that are not pure black, white or magenta, partial magenta columns and more. Warnings do not block the export; errors do. See [spec/CHECKS.md](spec/CHECKS.md).
+
+## Grid rules
+
+- The image is exactly `cols × cellW` by `rows × cellH` pixels, with no gutter between cells.
+- Characters are laid out in reading order, mapped through the code point ranges stored in the metadata.
+- Glyph pixels are pure black on white, with no antialiasing.
+- Magenta `#FF00FF` marks pixels that are not part of the glyph. In variable mode, a glyph's advance is the number of non-magenta columns in its cell.
+- 1 pixel = 64 font units, so the font is sharpest at multiples of the cell height.
+
+## Repository layout (planned)
+
+```
+spec/                 metadata schema, grid rules, charsets (shared contract, written)
+web/                  template generator (written)
+aseprite-extension/   Lua extension: reader, checks, outlines, TTF writer, menu commands and dialogs
+tools/                packaging and TTF validation scripts
+tests/                round-trip and export tests
+```
+
+## Roadmap
+
+1. ~~`spec/`: metadata schema, grid rules, charsets~~
+2. ~~Web template generator with PNG chunk injection~~
+3. ~~Lua: PNG metadata reader, cell extraction, width detection, export checks~~
+4. ~~Lua: outline tracing and TrueType writer, plus validation tooling~~
+5. ~~Aseprite UI, commands, packaging as `.aseprite-extension`~~ (to be tried in the Aseprite window)
+
+## License
+
+Apache License 2.0, see [LICENSE](LICENSE) and [NOTICE](NOTICE). The outline extraction and TrueType table layout are derived from [ase2ttf](https://github.com/nuskey8/ase2ttf) by nuskey (Apache-2.0).

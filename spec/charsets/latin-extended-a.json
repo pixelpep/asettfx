@@ -1,0 +1,6 @@
+{
+  "id": "latin-extended-a",
+  "label": "Latin Extended-A (U+0100-U+017F)",
+  "map": ["0100-017F"],
+  "cols": 16
+}

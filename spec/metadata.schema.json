@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/pixelpep/asettfx/spec/metadata.schema.json",
+  "title": "ASETTFX template metadata (v1)",
+  "description": "JSON stored in the PNG tEXt chunk with keyword 'asettfx'. ASCII only. Readers ignore unknown top-level keys.",
+  "type": "object",
+  "required": ["v", "cell", "grid", "mode", "map"],
+  "properties": {
+    "v": {
+      "description": "Schema version.",
+      "const": 1
+    },
+    "tool": {
+      "description": "Generator name and version, informational.",
+      "type": "string",
+      "maxLength": 64
+    },
+    "name": {
+      "description": "Suggested font family name, ASCII.",
+      "type": "string",
+      "maxLength": 64,
+      "pattern": "^[\\x20-\\x7E]*$"
+    },
+    "cell": {
+      "type": "object",
+      "required": ["w", "h"],
+      "additionalProperties": false,
+      "properties": {
+        "w": { "type": "integer", "minimum": 1, "maximum": 256 },
+        "h": { "type": "integer", "minimum": 1, "maximum": 256 }
+      }
+    },
+    "grid": {
+      "type": "object",
+      "required": ["cols", "rows"],
+      "additionalProperties": false,
+      "properties": {
+        "cols": { "type": "integer", "minimum": 1, "maximum": 256 },
+        "rows": { "type": "integer", "minimum": 1, "maximum": 256 }
+      }
+    },
+    "mode": {
+      "description": "mono: every advance is cell.w. var: advance comes from the width markers or from the ink.",
+      "enum": ["mono", "var"]
+    },
+    "widthSource": {
+      "description": "var mode only. magenta: advance = non-marker columns. auto: advance = ink extent, markers ignored.",
+      "enum": ["magenta", "auto"],
+      "default": "magenta"
+    },
+    "ink": {
+      "description": "dark (default): ink is darker than the background, as in black on white. light: the opposite, for images drawn light on dark.",
+      "enum": ["dark", "light"],
+      "default": "dark"
+    },
+    "marker": {
+      "description": "Width marker color. Fixed to pure magenta in v1.",
+      "const": "#FF00FF",
+      "default": "#FF00FF"
+    },
+    "map": {
+      "description": "Code points in reading order, one token per run. 'XXXX' is one code point, 'XXXX-YYYY' an inclusive range (hex, 4 to 6 digits), '_' one unassigned cell. Cells after the last token are unassigned. The total must not exceed cols*rows.",
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 512,
+      "items": {
+        "type": "string",
+        "pattern": "^(_|[0-9A-Fa-f]{4,6}(-[0-9A-Fa-f]{4,6})?)$"
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "baseline": {
+          "description": "Pixel rows below the baseline inside a cell (descender depth).",
+          "type": "integer",
+          "minimum": 0,
+          "default": 0
+        },
+        "spacing": {
+          "description": "Extra pixels added to every advance.",
+          "type": "integer",
+          "minimum": 0,
+          "default": 0
+        },
+        "xHeight": {
+          "description": "Optional, pixels above the baseline.",
+          "type": "integer",
+          "minimum": 0
+        },
+        "capHeight": {
+          "description": "Optional, pixels above the baseline.",
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "guide": {
+      "description": "How the template image was drawn. Informational, never read by the exporter, which only reads the visible layers.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "checker": { "type": "boolean" },
+        "baseline": { "type": "boolean" },
+        "hint": { "enum": ["ghost", "none"] },
+        "prefill": {
+          "description": "Variable mode only. The template image contains magenta width columns derived from the hint font.",
+          "type": "boolean"
+        },
+        "hintFont": { "type": "string", "maxLength": 64 }
+      }
+    }
+  }
+}

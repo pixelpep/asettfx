@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ASETTFX Template Generator</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>ASETTFX template generator</h1>
+  <p>Make a PNG grid template for a bitmap font. Open it in Aseprite and draw each glyph on a layer above it.</p>
+</header>
+
+<main>
+  <form id="settings" autocomplete="off">
+    <fieldset>
+      <legend>Characters</legend>
+      <label>Character set
+        <select id="charset"></select>
+      </label>
+      <label id="custom-row" hidden><span id="custom-label"></span>
+        <textarea id="custom" rows="3" spellcheck="false"></textarea>
+      </label>
+      <label>Columns <input id="cols" type="number" min="1" max="256" value="16"></label>
+      <p id="count" class="note"></p>
+    </fieldset>
+
+    <fieldset>
+      <legend>Cells</legend>
+      <div class="row">
+        <label>Width (px) <input id="cellW" type="number" min="1" max="256" step="1" value="8"></label>
+        <label>Height (px) <input id="cellH" type="number" min="1" max="256" step="1" value="8"></label>
+      </div>
+      <label>Baseline: rows below the letters <input id="baseline" type="number" min="0" max="255" value="1"></label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Spacing</legend>
+      <label>Mode
+        <select id="mode">
+          <option value="mono">Monospace</option>
+          <option value="var">Variable space (magenta marks the unused width)</option>
+        </select>
+      </label>
+      <div id="var-options" hidden>
+        <label>Width from
+          <select id="widthSource">
+            <option value="magenta">Magenta columns</option>
+            <option value="auto">Drawn pixels (magenta ignored)</option>
+          </select>
+        </label>
+        <label class="check"><input id="prefill" type="checkbox" checked> Pre-fill the magenta from the hint font</label>
+        <label>Extra spacing (px) <input id="spacing" type="number" min="0" max="64" value="0"></label>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Guide</legend>
+      <label class="check"><input id="hint" type="checkbox" checked> Show the character in each cell</label>
+      <label class="check"><input id="checker" type="checkbox" checked> Checkerboard</label>
+      <label class="check"><input id="baselineTick" type="checkbox" checked> Baseline ticks</label>
+      <label>Hint font
+        <select id="hintFontChoice"></select>
+      </label>
+      <div id="hint-custom" class="row" hidden>
+        <label>Font name <input id="hintFont" type="text" value="Menlo" maxlength="64"></label>
+        <label class="check"><input id="hintBold" type="checkbox"> Bold</label>
+      </div>
+    </fieldset>
+
+  </form>
+
+  <section id="output">
+    <div class="toolbar">
+      <label class="name">Font name <input id="name" type="text" value="My Pixel Font" maxlength="64"></label>
+      <button id="download" type="button">Download PNG</button>
+      <label class="check"><input id="gridLines" type="checkbox" checked> Grid lines in preview</label>
+      <label>Zoom <input id="zoom" type="number" min="1" max="32" value="4"></label>
+      <span id="size" class="note"></span>
+    </div>
+    <ul id="messages"></ul>
+    <div class="preview"><canvas id="preview"></canvas></div>
+    <details>
+      <summary>Metadata stored in the PNG</summary>
+      <pre id="meta"></pre>
+    </details>
+  </section>
+</main>
+
+<script src="src/png.js"></script>
+<script src="src/charmap.js"></script>
+<script src="src/charsets.js"></script>
+<script src="src/metadata.js"></script>
+<script src="src/template.js"></script>
+<script src="src/generate.js"></script>
+<script src="src/fonts.js"></script>
+<script src="src/hint-canvas.js"></script>
+<script src="src/app.js"></script>
+</body>
+</html>
