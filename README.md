@@ -2,7 +2,7 @@
 
 Turn pixel-art glyphs drawn in [Aseprite](https://www.aseprite.org/) into a valid bitmap-style TrueType font (`.ttf`), for game engines and design tools such as Figma.
 
-> **Status: first version, not yet released.** The spec, the web template generator and the Aseprite extension (reading, checks, TTF writer, menu and dialogs) are written. The pipeline is tested automatically; the dialogs have not been tried in the Aseprite window yet. See [Roadmap](#roadmap).
+> **Status: version 0.1.0.** The spec, the web template generator and the Aseprite extension (reading, checks, TTF writer, menu and dialogs) are written and tried in Aseprite 1.3.16 on macOS. Download the extension from the [Releases](https://github.com/pixelpep/asettfx/releases) page. See [Roadmap](#roadmap).
 
 ASETTFX has two parts:
 
@@ -11,7 +11,7 @@ ASETTFX has two parts:
 
 ## Install the extension
 
-`sh tools/pack.sh` builds `dist/asettfx-<version>.aseprite-extension`; double-click it to install in Aseprite. While developing, `sh tools/install-dev.sh` copies the files into Aseprite's extensions folder instead (restart Aseprite after). See [aseprite-extension/README.md](aseprite-extension/README.md).
+Download `asettfx-<version>.aseprite-extension` from the [Releases](https://github.com/pixelpep/asettfx/releases) page and double-click it. To build it yourself: `sh tools/pack.sh` builds `dist/asettfx-<version>.aseprite-extension`. While developing, `sh tools/install-dev.sh` copies the files into Aseprite's extensions folder instead (restart Aseprite after). See [aseprite-extension/README.md](aseprite-extension/README.md).
 
 ## Try the template generator
 
@@ -53,7 +53,9 @@ tests/                round-trip and export tests
 2. ~~Web template generator with PNG chunk injection~~
 3. ~~Lua: PNG metadata reader, cell extraction, width detection, export checks~~
 4. ~~Lua: outline tracing and TrueType writer, plus validation tooling~~
-5. ~~Aseprite UI, commands, packaging as `.aseprite-extension`~~ (to be tried in the Aseprite window)
+5. ~~Aseprite UI, commands, packaging as `.aseprite-extension`~~
+
+Next: see [docs/PROGRESS.md](docs/PROGRESS.md).
 
 ## License
 

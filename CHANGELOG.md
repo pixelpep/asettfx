@@ -5,7 +5,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
-First version, planned as 0.1.0. Not released yet.
+## [0.1.0] - 2026-10-16
+
+First version.
 
 ### Added
 
@@ -29,4 +31,7 @@ First version, planned as 0.1.0. Not released yet.
 ### Known limits
 
 - No kerning, no hinting. Characters that were not drawn are left out of the font.
-- The dialogs have not been tried in the Aseprite window yet.
+- Tried in Aseprite 1.3.16 on macOS only. Other versions and systems have not been tested.
+
+[Unreleased]: https://github.com/pixelpep/asettfx/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/pixelpep/asettfx/releases/tag/v0.1.0

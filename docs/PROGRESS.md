@@ -1,10 +1,10 @@
 # Progress
 
-Last updated: 2026-10-16 (after the first trial in Aseprite)
+Last updated: 2026-10-16
 
 ## Status
 
-All five steps are written: the spec, the web template generator, the Lua pipeline, and the Aseprite menu commands and dialogs with packaging. The pipeline is tested automatically (47 node tests, 106 Lua tests run inside Aseprite). What remains is trying it for real: Aseprite's batch mode has no UI, so the dialogs are covered by tests with a stand-in for `Dialog`, not by the real window.
+Version 0.1.0 is ready to publish: the spec, the web template generator, the Lua pipeline, and the Aseprite menu commands and dialogs with packaging. It is tested automatically (47 node tests, 116 Lua tests run inside Aseprite; the dialogs use a stand-in for `Dialog` there) and was tried by hand in Aseprite 1.3.16 on macOS. Release notes: `docs/releases/0.1.0.md`.
 
 ## First trial in Aseprite (2026-10-16)
 
@@ -12,9 +12,9 @@ The menu appeared at the right place. Feedback and what was done: many file perm
 
 ## Next
 
-1. [ ] Try the new build in Aseprite: the spacing line and its re-check, the Typography option, the position in the warnings, the number of permission prompts. Fix what the real window shows.
-2. [ ] Try a real font end to end: generate a template, draw, export, install the TTF (Font Book, Figma).
-3. [ ] Decide on a first release: version, release notes from `CHANGELOG.md`, a GitHub release carrying the `.aseprite-extension` file.
+1. [ ] Publish 0.1.0: commit, push, then a GitHub release `v0.1.0` carrying `dist/asettfx-0.1.0.aseprite-extension` with `docs/releases/0.1.0.md` as notes.
+2. [ ] A bigger real font (Latin-1 or the GB Studio 16 x 14 layout, 16 px cells): legibility of accents in 8 px cells, speed on a large image.
+3. [ ] Try the extension on Windows or Linux and on other Aseprite versions.
 
 ## Done
 
