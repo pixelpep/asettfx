@@ -1,10 +1,10 @@
 # Progress
 
-Last updated: 2026-10-16
+Last updated: 2026-10-18
 
 ## Status
 
-Version 0.1.0 is ready to publish: the spec, the web template generator, the Lua pipeline, and the Aseprite menu commands and dialogs with packaging. It is tested automatically (47 node tests, 116 Lua tests run inside Aseprite; the dialogs use a stand-in for `Dialog` there) and was tried by hand in Aseprite 1.3.16 on macOS. Release notes: `docs/releases/0.1.0.md`.
+Version 0.1.0 is published (https://github.com/pixelpep/asettfx/releases/tag/v0.1.0): the spec, the web template generator, the Lua pipeline, and the Aseprite menu commands and dialogs with packaging. It is tested automatically (47 node tests, 116 Lua tests run inside Aseprite; the dialogs use a stand-in for `Dialog` there) and was tried by hand in Aseprite 1.3.16 on macOS. Release notes: `docs/releases/0.1.0.md`.
 
 ## First trial in Aseprite (2026-10-16)
 
@@ -12,11 +12,12 @@ The menu appeared at the right place. Feedback and what was done: many file perm
 
 ## Next
 
-1. [ ] Publish 0.1.0: commit, push, then a GitHub release `v0.1.0` carrying `dist/asettfx-0.1.0.aseprite-extension` with `docs/releases/0.1.0.md` as notes.
-2. [ ] A bigger real font (Latin-1 or the GB Studio 16 x 14 layout, 16 px cells): legibility of accents in 8 px cells, speed on a large image.
-3. [ ] Try the extension on Windows or Linux and on other Aseprite versions.
+1. [ ] A bigger real font (Latin-1 or the GB Studio 16 x 14 layout, 16 px cells): legibility of accents in 8 px cells, speed on a large image.
+2. [ ] Try the extension on Windows or Linux and on other Aseprite versions.
 
 ## Done
+
+- [x] Release 0.1.0 published on 2026-10-18: tag `v0.1.0` on commit `6a0ddd0`, asset `asettfx-0.1.0.aseprite-extension` (SHA-256 `e2aabbdd...5651c64`), notes from `docs/releases/0.1.0.md`
 
 - [x] Analysis of ase2ttf 0.2.0 (pipeline, table layout, known defects) and of the reference font grids (16x14 cells of 8x8 px, U+0020 to U+00FF, magenta width columns)
 - [x] Repository setup: Apache-2.0 `LICENSE`, `NOTICE`, `.gitignore`, `README.md`
