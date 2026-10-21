@@ -8,8 +8,11 @@
 </head>
 <body>
 <header class="top">
-  <h1>Digiface Matrix</h1>
-  <p>Make a PNG grid template for a bitmap font. Open it in Aseprite and draw each glyph on a layer above it.</p>
+  <div>
+    <h1>Digiface Matrix</h1>
+    <p>Make a PNG grid template for a bitmap font. Open it in Aseprite and draw each glyph on a layer above it.</p>
+  </div>
+  <button id="helpBtn" type="button" class="square secondary" aria-label="How to use" title="How to use">?</button>
 </header>
 
 <main>
@@ -55,13 +58,14 @@
       <summary>Spacing</summary>
       <div class="body">
         <label class="check"><input id="forceMono" type="checkbox"> Force monospace</label>
-        <p id="spacing-note" class="note"></p>
         <div id="var-options" class="body">
           <label class="check"><input id="prefill" type="checkbox" checked> Pre-fill the magenta from the hint font</label>
         </div>
-        <label>Left padding of the characters (px) <input id="hintPadding" type="number" min="0" max="64" value="0"></label>
-        <label title="Raises the characters above the baseline; a negative value lowers them. The baseline itself does not move.">Bottom margin of the characters (px) <input id="hintLift" type="number" min="-64" max="64" value="0"></label>
-        <label>Baseline: rows below the letters <input id="baseline" type="number" min="0" max="255" value="1"></label>
+        <div class="row3">
+          <label title="Moves the guide characters to the right, in pixels.">Left padding <input id="hintPadding" type="number" min="0" max="64" value="0"></label>
+          <label title="Raises the guide characters above the baseline, in pixels; a negative value lowers them. The baseline itself does not move.">Bottom margin <input id="hintLift" type="number" min="-64" max="64" value="0"></label>
+          <label title="Number of rows below the letters, where the baseline ticks are drawn.">Baseline <input id="baseline" type="number" min="0" max="255" value="1"></label>
+        </div>
       </div>
     </details>
   </form>
@@ -93,6 +97,19 @@
     </div>
   </section>
 </main>
+
+<dialog id="helpDialog">
+  <h2>How to use Digiface</h2>
+  <ol>
+    <li>Choose a character set, the cell size and the spacing here. A guide font shows the character to draw in each cell.</li>
+    <li>Download the PNG template.</li>
+    <li>Open it in Aseprite and draw each glyph in black on a layer above it. The template is only a guide.</li>
+    <li>For a variable-width font, paint pure magenta <b>#FF00FF</b> over the unused columns on the right of each glyph. Without magenta the font is monospace.</li>
+    <li>Hide the template layer, then choose <b>File &#9656; Scripts &#9656; Digiface &#9656; Export as TTF&hellip;</b>.</li>
+  </ol>
+  <p>The export needs the <a href="https://github.com/pixelpep/digiface/releases" target="_blank" rel="noopener">Digiface for Aseprite extension</a>: download the <code>.aseprite-extension</code> file and double-click it.</p>
+  <form method="dialog"><button id="helpDialogClose">Close</button></form>
+</dialog>
 
 <dialog id="fontDialog">
   <h2 id="fontDialogTitle"></h2>

@@ -250,8 +250,6 @@
     if (chosen) charsetSelect.title = chosen.text;  // the closed list may cut a long label
     const isVar = !$('forceMono').checked;
     $('var-options').hidden = !isVar;
-    $('spacing-note').textContent = isVar ? 'Variable spacing: magenta columns mark the unused width of each character.' : '';
-    $('spacing-note').hidden = !isVar;
     $('hint-options').hidden = !$('hint').checked;
     $('prefill').disabled = !$('hint').checked;
     $('hintPadding').disabled = !$('hint').checked;  // these two place the ghost characters
@@ -347,6 +345,8 @@
     refresh();
   }
   $('fontInfoBtn').addEventListener('click', () => { if (!$('fontInfoBtn').hidden) $('fontDialog').showModal(); });
+  $('helpBtn').addEventListener('click', () => $('helpDialog').showModal());
+  $('helpDialog').addEventListener('click', e => { if (e.target === $('helpDialog')) $('helpDialog').close(); });
   $('fontDialog').addEventListener('click', e => { if (e.target === $('fontDialog')) $('fontDialog').close(); });  // a click outside closes it
   $('applyFont').addEventListener('click', () => applyFit('letters'));
   $('applyFontAll').addEventListener('click', () => applyFit('all'));

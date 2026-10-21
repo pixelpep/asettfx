@@ -7,9 +7,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Changed
 
+- Left padding, Bottom margin and Baseline sit side by side on one line, with shorter labels; the variable spacing note is removed (the help popup explains the magenta).
 - The project is renamed from ASETTFX to **Digiface**: the template generator is **Digiface Matrix** and the extension is **Digiface for Aseprite** (menu *File > Scripts > Digiface*). The rename covers the internal names too, since nobody used them yet: the PNG chunk keyword and the sprite property are `digiface`, the sidecar file is `<name>.digiface.json`, the Lua modules are in `digiface/`, the extension file is `digiface-<version>.aseprite-extension`. Templates and sprites made with the old name are not read. The fonts written by the exporter and the bundled GB Studio fonts carry "Digiface" in their unique identifier.
 
 ### Added
+
+- A "?" button at the top right of the template generator opens a popup with the steps to follow and a link to the Aseprite extension.
 
 - Two more bundled pixel fonts: GB Studio Mono and GB Studio Variable, the default fonts of GB Studio (Chris Maltby, MIT License), made from the PNG files of the GB Studio repository by this project's exporter (`sh tools/make-gbs-fonts.sh`, reproducible); the sources and the license text are in `web/fonts/source/` and `web/fonts/licenses/`.
 - Eight pixel fonts shipped with the template generator, chosen from the font list: Bytesized (Baltdev, SIL OFL 1.1), Alkhemikal, Digital Disco, Digital Disco Thin, Grape Soda, Kiwi Soda (jeti, CC BY 4.0) and Minecraft Standard, Minecraft Standard Bold (Polda18, CC0). They are included unchanged in `web/fonts/original/`, credited in `web/fonts/LICENSES.md`, `NOTICE` and the README, and loaded only when chosen. Only fonts with a license that allows redistribution are bundled; others can be used with *Pixel font from a file...*. `npm run gen:fonts` rebuilds the font data; a test keeps it in sync.
