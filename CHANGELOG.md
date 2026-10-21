@@ -5,6 +5,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-21
+
+First published version under the name Digiface (the earlier 0.1.0, published as ASETTFX, was withdrawn: nobody used it, and its internal names changed). It includes everything of 0.1.0 below.
+
 ### Changed
 
 - Left padding, Bottom margin and Baseline sit side by side on one line, with shorter labels; the variable spacing note is removed (the help popup explains the magenta).
@@ -51,7 +55,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [0.1.0] - 2026-10-16
 
-First version.
+First version, published as ASETTFX and withdrawn on 2026-10-21 (no tag any more).
 
 ### Added
 
@@ -77,5 +81,5 @@ First version.
 - No kerning, no hinting. Characters that were not drawn are left out of the font.
 - Tried in Aseprite 1.3.16 on macOS only. Other versions and systems have not been tested.
 
-[Unreleased]: https://github.com/pixelpep/digiface/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/pixelpep/digiface/releases/tag/v0.1.0
+[Unreleased]: https://github.com/pixelpep/digiface/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/pixelpep/digiface/releases/tag/v0.2.0

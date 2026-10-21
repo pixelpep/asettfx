@@ -2,7 +2,7 @@
 
 Pixel fonts from Aseprite to TTF. Turn pixel-art glyphs drawn in [Aseprite](https://www.aseprite.org/) into a valid bitmap-style TrueType font (`.ttf`), for game engines and design tools such as Figma.
 
-> **Status: version 0.1.0.** The spec, the web template generator and the Aseprite extension (reading, checks, TTF writer, menu and dialogs) are written and tried in Aseprite 1.3.16 on macOS. Download the extension from the [Releases](https://github.com/pixelpep/digiface/releases) page. See [Roadmap](#roadmap).
+> **Status: version 0.2.0.** The spec, the web template generator and the Aseprite extension (reading, checks, TTF writer, menu and dialogs) are written and tried in Aseprite 1.3.16 on macOS. Download the extension from the [Releases](https://github.com/pixelpep/digiface/releases) page. See [Roadmap](#roadmap).
 
 Digiface has two parts:
 

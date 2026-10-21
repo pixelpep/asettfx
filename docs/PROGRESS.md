@@ -4,7 +4,7 @@ Last updated: 2026-10-21
 
 ## Status
 
-Version 0.1.0 is published (https://github.com/pixelpep/digiface/releases/tag/v0.1.0): the spec, the web template generator, the Lua pipeline, and the Aseprite menu commands and dialogs with packaging. Since then the template generator gained pixel fonts (bundled and from a file, drawn pixel for pixel, with a suggested cell size), a bottom margin and a left padding for the guide characters, and a new page layout; these changes are for the next version. On 2026-10-21 the project was renamed from ASETTFX to Digiface (Digiface Matrix, Digiface for Aseprite), internal names included; the 0.1.0 release still carries the old name and is to be replaced by 0.2.0. It is tested automatically (47 node tests, 116 Lua tests run inside Aseprite; the dialogs use a stand-in for `Dialog` there) and was tried by hand in Aseprite 1.3.16 on macOS. Release notes: `docs/releases/0.1.0.md`.
+Version 0.2.0 is ready to publish (notes in `docs/releases/0.2.0.md`): the spec, the web template generator, the Lua pipeline, and the Aseprite menu commands and dialogs with packaging. Since then the template generator gained pixel fonts (bundled and from a file, drawn pixel for pixel, with a suggested cell size), a bottom margin and a left padding for the guide characters, and a new page layout; these changes are in 0.2.0. On 2026-10-21 the project was renamed from ASETTFX to Digiface (Digiface Matrix, Digiface for Aseprite), internal names included; the 0.1.0 release and its tag were deleted, 0.2.0 replaces it. It is tested automatically (47 node tests, 116 Lua tests run inside Aseprite; the dialogs use a stand-in for `Dialog` there) and was tried by hand in Aseprite 1.3.16 on macOS. Release notes: `docs/releases/0.1.0.md`.
 
 ## First trial in Aseprite (2026-10-16)
 
@@ -21,7 +21,7 @@ The menu appeared at the right place. Feedback and what was done: many file perm
 
 ## Done
 
-- [x] Release 0.1.0 published on 2026-10-18: tag `v0.1.0` on commit `6a0ddd0`, asset `digiface-0.1.0.aseprite-extension` (SHA-256 `e2aabbdd...5651c64`), notes from `docs/releases/0.1.0.md`
+- [x] Release 0.1.0 (published as ASETTFX on 2026-10-18) withdrawn on 2026-10-21 with its tag, after the rename to Digiface; 0.2.0 replaces it
 
 - [x] Analysis of ase2ttf 0.2.0 (pipeline, table layout, known defects) and of the reference font grids (16x14 cells of 8x8 px, U+0020 to U+00FF, magenta width columns)
 - [x] Repository setup: Apache-2.0 `LICENSE`, `NOTICE`, `.gitignore`, `README.md`
