@@ -11,6 +11,28 @@
     "licenseText": "licenses/OFL-Bytesized.txt"
   },
   {
+    "id": "gb-studio-mono",
+    "label": "GB Studio Mono",
+    "file": "GBStudioMono.ttf",
+    "author": "Chris Maltby",
+    "license": "MIT",
+    "licenseUrl": "https://opensource.org/license/mit",
+    "source": "https://github.com/chrismaltby/gb-studio/tree/a227e7dbe5eef9186afabc1b4e27cf873438b4c4/appData/templates/gbs2/assets/fonts",
+    "copyright": "Copyright (c) 2019-2026 Chris Maltby",
+    "licenseText": "licenses/MIT-GB-Studio.txt"
+  },
+  {
+    "id": "gb-studio-variable",
+    "label": "GB Studio Variable",
+    "file": "GBStudioVariable.ttf",
+    "author": "Chris Maltby",
+    "license": "MIT",
+    "licenseUrl": "https://opensource.org/license/mit",
+    "source": "https://github.com/chrismaltby/gb-studio/tree/a227e7dbe5eef9186afabc1b4e27cf873438b4c4/appData/templates/gbs2/assets/fonts",
+    "copyright": "Copyright (c) 2019-2026 Chris Maltby",
+    "licenseText": "licenses/MIT-GB-Studio.txt"
+  },
+  {
     "id": "alkhemikal",
     "label": "Alkhemikal",
     "file": "Alkhemikal.ttf",

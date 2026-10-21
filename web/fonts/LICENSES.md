@@ -23,6 +23,14 @@ Facts below were read on 2026-10-18 from the pages cited, and from the font file
 - The font file included here is version 1.010 as downloaded from DaFont. It is not the Google Fonts build (version 1.000): the shapes of nine ASCII characters differ (`* , ; b i j l p q`), the rest is the same design. The font file carries no copyright line of its own, so the project's notice above accompanies it.
 - Changes: none. As the license asks, the font is not sold by itself and keeps its license notice with every copy.
 
+## GB Studio Mono and GB Studio Variable
+
+- **Author and copyright:** Chris Maltby, Copyright (c) 2019-2026 Chris Maltby. These are the default fonts of GB Studio (https://github.com/chrismaltby/gb-studio).
+- **License: MIT.** The GB Studio repository is under the MIT License, and the font files are part of it; they carry no separate license or credit. The full text, as the repository gives it, is in [licenses/MIT-GB-Studio.txt](licenses/MIT-GB-Studio.txt).
+- **Where they come from:** `gbs-mono.png` and `gbs-var.png` of https://github.com/chrismaltby/gb-studio/tree/a227e7dbe5eef9186afabc1b4e27cf873438b4c4/appData/templates/gbs2/assets/fonts , kept unchanged in [source/](source/). The first commit of these files in that repository is by Chris Maltby (2021-12-02).
+- **Changes:** the PNG files were converted to TrueType fonts by this project's own exporter (`sh tools/make-gbs-fonts.sh`, reproducible), with the grid of GB Studio (16 x 14 cells of 8 x 8 pixels, Windows-1252 order, `spec/charsets/gbstudio.json`) and a baseline of 1; the width columns of `gbs-var.png` give the advances of GB Studio Variable. The font is the same drawing in another format. Typographic quotes, dashes and the no-break space also use the plain glyphs (see `spec/TTF.md`).
+- The repository does not say who drew the glyphs, or whether they come from another work; the MIT License of the repository is the only statement.
+
 ## Minecraft Standard and Minecraft Standard Bold
 
 - **Author:** Polda18. Copyright notice in the font files: `Copyright Polda18 2023`.

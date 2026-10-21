@@ -12,6 +12,7 @@ const ALLOWED = {
   'CC BY 4.0': 'https://creativecommons.org/licenses/by/4.0/',
   'CC0 1.0': 'https://creativecommons.org/publicdomain/zero/1.0/',
   'SIL OFL 1.1': 'https://openfontlicense.org/',
+  MIT: 'https://opensource.org/license/mit',
 };
 
 test('the generated catalog and font data are in sync with web/fonts (run npm run gen:fonts)', async () => {
@@ -36,17 +37,20 @@ test('every bundled font has an author, an allowed license with its link, a sour
   }
 });
 
-test('an OFL font carries its copyright line and the full license text, as the license requires', () => {
+test('a font that needs its license text (OFL, MIT) carries the copyright line and the full text', () => {
   const catalog = JSON.parse(read('web', 'fonts', 'fonts.json').toString('utf8'));
-  const ofl = catalog.filter(f => f.license === 'SIL OFL 1.1');
-  assert.ok(ofl.length >= 1);
-  for (const f of ofl) {
+  const needing = catalog.filter(f => f.license === 'SIL OFL 1.1' || f.license === 'MIT');
+  assert.ok(needing.some(f => f.license === 'SIL OFL 1.1') && needing.some(f => f.license === 'MIT'));
+  for (const f of needing) {
     assert.ok(f.copyright && f.licenseText, f.id);
     const text = read('web', 'fonts', f.licenseText).toString('utf8');
-    assert.ok(text.startsWith(f.copyright), f.id + ': the license file starts with the copyright line');
-    assert.ok(text.includes('SIL OPEN FONT LICENSE Version 1.1'), f.id);
-    assert.ok(text.includes('PERMISSION & CONDITIONS') && text.includes('DISCLAIMER'), f.id + ': complete text');
-    const sandbox = { self: {} };
+    assert.ok(text.includes(f.copyright), f.id + ': the license file has the copyright line');
+    if (f.license === 'SIL OFL 1.1') {
+      assert.ok(text.startsWith(f.copyright) && text.includes('SIL OPEN FONT LICENSE Version 1.1'), f.id);
+      assert.ok(text.includes('PERMISSION & CONDITIONS') && text.includes('DISCLAIMER'), f.id + ': complete text');
+    } else {
+      assert.ok(text.includes('MIT License') && text.includes('Permission is hereby granted') && text.includes('THE SOFTWARE IS PROVIDED "AS IS"'), f.id + ': complete text');
+    }
     const data = read('web', 'fonts', 'data', f.id + '.js').toString('utf8');
     assert.ok(data.includes(f.copyright), f.id + ': the data file names the copyright holder');
   }
@@ -66,5 +70,5 @@ test('each data file holds exactly the original font, which is a TrueType or Ope
 
 test('NOTICE credits the bundled fonts', () => {
   const notice = read('NOTICE').toString('utf8');
-  assert.ok(notice.includes('jeti') && notice.includes('Polda18') && notice.includes('Bytesized Project Authors'));
+  assert.ok(notice.includes('jeti') && notice.includes('Polda18') && notice.includes('Bytesized Project Authors') && notice.includes('Chris Maltby'));
 });

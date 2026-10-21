@@ -13,5 +13,8 @@ The template generator ships these pixel fonts unchanged (see web/fonts/LICENSES
   licensed under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/).
 - Bytesized by Baltdev, Copyright 2024 The Bytesized Project Authors (https://github.com/balt-dev/bytesized-gf),
   licensed under the SIL Open Font License 1.1 (full text in web/fonts/licenses/OFL-Bytesized.txt).
+- GB Studio Mono and GB Studio Variable, the default fonts of GB Studio (https://github.com/chrismaltby/gb-studio),
+  Copyright (c) 2019-2026 Chris Maltby, MIT License (full text in web/fonts/licenses/MIT-GB-Studio.txt),
+  converted from PNG to TrueType by this project.
 - Minecraft Standard and Minecraft Standard Bold by Polda18, Copyright 2023,
   licensed under CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/).

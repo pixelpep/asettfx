@@ -17,6 +17,24 @@
       "copyright": "Copyright 2024 The Bytesized Project Authors (https://github.com/balt-dev/bytesized-gf)"
     },
     {
+      "id": "gb-studio-mono",
+      "label": "GB Studio Mono",
+      "author": "Chris Maltby",
+      "license": "MIT",
+      "licenseUrl": "https://opensource.org/license/mit",
+      "source": "https://github.com/chrismaltby/gb-studio/tree/a227e7dbe5eef9186afabc1b4e27cf873438b4c4/appData/templates/gbs2/assets/fonts",
+      "copyright": "Copyright (c) 2019-2026 Chris Maltby"
+    },
+    {
+      "id": "gb-studio-variable",
+      "label": "GB Studio Variable",
+      "author": "Chris Maltby",
+      "license": "MIT",
+      "licenseUrl": "https://opensource.org/license/mit",
+      "source": "https://github.com/chrismaltby/gb-studio/tree/a227e7dbe5eef9186afabc1b4e27cf873438b4c4/appData/templates/gbs2/assets/fonts",
+      "copyright": "Copyright (c) 2019-2026 Chris Maltby"
+    },
+    {
       "id": "alkhemikal",
       "label": "Alkhemikal",
       "author": "jeti",

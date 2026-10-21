@@ -266,8 +266,10 @@
     const { map, errors } = currentMap();
     const messages = errors.map(e => ['error', e]);
     const cols = num('cols', 16);
-    const count = charmap.expandMap(map).cells.length;
-    $('count').textContent = count + ' characters, ' + (cols >= 1 ? generate.rowsFor(map, cols) : '?') + ' rows';
+    const cells = charmap.expandMap(map).cells;
+    const count = cells.filter(c => c !== null).length;
+    const unused = cells.length - count;
+    $('count').textContent = count + ' characters' + (unused ? ' and ' + unused + ' unused cells' : '') + ', ' + (cols >= 1 ? generate.rowsFor(map, cols) : '?') + ' rows';
 
     let result = { ok: false, errors: [] };
     if (!errors.length && map.length) {

@@ -7,6 +7,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Added
 
+- Two more bundled pixel fonts: GB Studio Mono and GB Studio Variable, the default fonts of GB Studio (Chris Maltby, MIT License), made from the PNG files of the GB Studio repository by this project's exporter (`sh tools/make-gbs-fonts.sh`, reproducible); the sources and the license text are in `web/fonts/source/` and `web/fonts/licenses/`.
 - Eight pixel fonts shipped with the template generator, chosen from the font list: Bytesized (Baltdev, SIL OFL 1.1), Alkhemikal, Digital Disco, Digital Disco Thin, Grape Soda, Kiwi Soda (jeti, CC BY 4.0) and Minecraft Standard, Minecraft Standard Bold (Polda18, CC0). They are included unchanged in `web/fonts/original/`, credited in `web/fonts/LICENSES.md`, `NOTICE` and the README, and loaded only when chosen. Only fonts with a license that allows redistribution are bundled; others can be used with *Pixel font from a file...*. `npm run gen:fonts` rebuilds the font data; a test keeps it in sync.
 
 - *Pixel font from a file...* in the template generator: choose a `.ttf` or `.otf` on your computer. The generator detects whether it is a pixel font and at which size one font pixel is one pixel, draws the ghost characters at that size (identical to the font's outlines, pixel for pixel; checked on 10 fonts and 920 characters), and offers a button that sets the cell size and baseline the font needs. The font file stays in the browser.
@@ -35,6 +36,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - The template generator shows, right after the font name field, the file name the template will be saved under, for example `→ my-pixel-font-8x8-template.png`. Accents are removed from it (`Café` becomes `cafe`).
 
 ### Fixed
+
+- The *GB Studio layout* character set followed Latin-1, but the grid of GB Studio's own fonts (`gbs-mono.png`, `gbs-var.png`) follows Windows-1252: where Latin-1 has control characters (positions 0x80 to 0x9F), GB Studio draws the euro sign, the typographic quotes, the ellipsis, the dashes, the trademark sign, `Œ œ Š š Ž ž Ÿ ƒ ˆ ˜ † ‡ ‰ ‹ ›` and so on, and 11 cells are unused (0x7F, 0x81, 0x8D, 0x8F, 0x90, 0x9D, 0xA0, 0xAD, 0xBC, 0xBD, 0xBE). The preset now maps those 213 characters and leaves the 11 cells unassigned; a test checks it against the Windows-1252 table. The generator counts "213 characters and 11 unused cells" instead of 224 characters.
 
 - The Lua reader turned `1.5` into `1` (Aseprite's `math.tointeger` truncates), so a fractional cell width or baseline in the settings was accepted. Fractional numbers are now kept and rejected; the shared conformance cases cover it.
 - A font name with accents or other non-ASCII characters was refused by the generator (the download button was disabled with a cryptic message) and by the metadata validators. It is accepted now, up to 64 characters, stored with `\u` escapes so the PNG chunk stays ASCII, and read back correctly by the Aseprite extension.

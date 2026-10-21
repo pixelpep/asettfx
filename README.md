@@ -59,7 +59,7 @@ Next: see [docs/PROGRESS.md](docs/PROGRESS.md).
 
 ## Credits
 
-The template generator ships a few pixel fonts, unchanged, to draw its guide characters: Alkhemikal, Digital Disco, Digital Disco Thin, Grape Soda and Kiwi Soda by [jeti](https://fontenddev.com/) ([CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)), and Bytesized by Baltdev ([SIL OFL 1.1](web/fonts/licenses/OFL-Bytesized.txt)), and Minecraft Standard and Minecraft Standard Bold by Polda18 ([CC0](https://creativecommons.org/publicdomain/zero/1.0/)). Details and sources: [web/fonts/LICENSES.md](web/fonts/LICENSES.md). Any other pixel font can be used from a file on your computer.
+The template generator ships a few pixel fonts, unchanged, to draw its guide characters: Alkhemikal, Digital Disco, Digital Disco Thin, Grape Soda and Kiwi Soda by [jeti](https://fontenddev.com/) ([CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)), and Bytesized by Baltdev ([SIL OFL 1.1](web/fonts/licenses/OFL-Bytesized.txt)), GB Studio Mono and GB Studio Variable by Chris Maltby, from GB Studio ([MIT](web/fonts/licenses/MIT-GB-Studio.txt)), and Minecraft Standard and Minecraft Standard Bold by Polda18 ([CC0](https://creativecommons.org/publicdomain/zero/1.0/)). Details and sources: [web/fonts/LICENSES.md](web/fonts/LICENSES.md). Any other pixel font can be used from a file on your computer.
 
 ## License
 
