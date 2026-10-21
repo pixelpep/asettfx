@@ -62,6 +62,14 @@
       for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) put(x0 + x, y0 + y, base);
       if (!assigned) continue;
 
+      // The baseline ticks come first, so that a pixel of the ghost character is never hidden by one (in a small cell
+      // the ticks are a large share of the pixels).
+      if (guide.baseline !== false) {
+        const y = h - baseline - 1;
+        put(x0, y0 + y, COLORS.baseline);
+        put(x0 + w - 1, y0 + y, COLORS.baseline);
+      }
+
       let advance = w;
       if (guide.hint !== 'none') {
         if (isBlankCodepoint(cp)) {
@@ -75,12 +83,6 @@
             for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (mask[y * w + x]) put(x0 + x, y0 + y, COLORS.ghost);
           }
         }
-      }
-
-      if (guide.baseline !== false) {
-        const y = h - baseline - 1;
-        put(x0, y0 + y, COLORS.baseline);
-        put(x0 + w - 1, y0 + y, COLORS.baseline);
       }
 
       for (let x = advance; x < w; x++) for (let y = 0; y < h; y++) put(x0 + x, y0 + y, MARKER);

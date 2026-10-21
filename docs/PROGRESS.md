@@ -32,7 +32,8 @@ The menu appeared at the right place. Feedback and what was done: many file perm
 
 - Web glyph editor: click a character, draw it, copy and paste glyphs, live text preview, TTF export. Would be saved as a `.asettfx` archive (glyph PNG plus the metadata JSON). Implies a JavaScript TTF writer next to the Lua one, kept in agreement by shared test fixtures.
 - Live text preview in the existing web tool from an imported glyph PNG, without a full editor.
-- Kerning, and a bundled pixel font for the template's ghost characters.
+- Kerning.
+- More bundled pixel fonts, if their license is confirmed (DaFont's own FAQ says the license shown there is only an indication, and that a missing license does not mean a font is free). Candidates: Alagard (author's note: "Give credit if used. That's it."), Early GameBoy (CC BY-SA 3.0 in the file, a different author on DaFont). Fonts with no statement, or with a personal-use restriction, are left to *Pixel font from a file...*.
 
 ## Open questions
 

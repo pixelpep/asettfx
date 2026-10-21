@@ -1,9 +1,25 @@
 # Local reference resources (not redistributed)
 /ase2ttf-0.2.0/
 /gbstudio_style-fonts/
+/fontressources/
 
-# OS / editor
-.DS_Store
-
+# Build output and the files used to try the extension by hand
 dist/
+
+# OS, sync and editor leftovers
+.DS_Store
+Thumbs.db
+desktop.ini
+.tmp.drivedownload/
+.tmp.driveupload/
 .vscode/
+.idea/
+*.swp
+*~
+
+# Tools and logs
+node_modules/
+__pycache__/
+*.pyc
+*.log
+.env

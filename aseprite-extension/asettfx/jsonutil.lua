@@ -6,7 +6,11 @@ local ARRAY = {}
 
 function M.normalize(v)
   local t = type(v)
-  if t == "number" then return math.tointeger(v) or v end
+  if t == "number" then
+    -- Aseprite's math.tointeger truncates 1.5 to 1 instead of failing, so only whole numbers are converted
+    if v == math.floor(v) then return math.tointeger(v) or v end
+    return v
+  end
   if t ~= "userdata" then return v end
   local text = tostring(v)
   local first = text:sub(1, 1)

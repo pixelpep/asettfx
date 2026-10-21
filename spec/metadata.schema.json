@@ -16,10 +16,10 @@
       "maxLength": 64
     },
     "name": {
-      "description": "Suggested font family name, ASCII.",
+      "description": "Suggested font family name: any characters except control characters, at most 64 characters. Stored with \\u escapes, so the chunk stays ASCII.",
       "type": "string",
       "maxLength": 64,
-      "pattern": "^[\\x20-\\x7E]*$"
+      "pattern": "^[^\\u0000-\\u001F\\u007F]*$"
     },
     "cell": {
       "type": "object",
@@ -108,7 +108,19 @@
           "description": "Variable mode only. The template image contains magenta width columns derived from the hint font.",
           "type": "boolean"
         },
-        "hintFont": { "type": "string", "maxLength": 64 }
+        "hintFont": { "type": "string", "maxLength": 64 },
+        "marginBottom": {
+          "description": "Pixels by which the ghost characters stand above the baseline; negative lowers them. 0 when absent. The baseline and the font metrics do not change.",
+          "type": "integer",
+          "minimum": -255,
+          "maximum": 255
+        },
+        "padding": {
+          "description": "Pixels between the left edge of a cell and the left edge of its ghost character. 0 when absent.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        }
       }
     }
   }

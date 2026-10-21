@@ -1,44 +1,43 @@
-// Fonts offered for the ghost characters. Family strings are stored in the metadata (guide.hintFont, 64 characters max).
+// Fonts offered for the ghost characters. The text recorded in the metadata (guide.hintFont) is 64 characters at most.
 (function (root, factory) {
-  const api = factory();
+  const bundled = (typeof require === 'function' && typeof module === 'object')
+    ? require('./bundled-fonts.js') : root.ASETTFX.bundledFonts;
+  const api = factory(bundled);
   if (typeof module === 'object' && module.exports) module.exports = api;
   else { root.ASETTFX = root.ASETTFX || {}; root.ASETTFX.fonts = api; }
-})(typeof self !== 'undefined' ? self : this, function () {
+})(typeof self !== 'undefined' ? self : this, function (bundled) {
   'use strict';
 
-  const MONO = "Menlo, Consolas, 'DejaVu Sans Mono', monospace";
-  const SANS = 'Helvetica, Arial, sans-serif';
-  const SANS_BOLD = 'Arial, Helvetica, sans-serif';
-  const VERDANA = 'Verdana, Geneva, sans-serif';
-  const GEORGIA = "Georgia, 'Times New Roman', serif";
+  const ARIAL = 'Arial, Helvetica, sans-serif';
   const TIMES = "'Times New Roman', Times, serif";
-  const COURIER = "'Courier New', Courier, monospace";
+  const FILE = 'file';
+  const BUNDLED = 'bundled:';
 
   const FONTS = [
-    { id: 'auto', label: 'Automatic (monospace font, or Verdana for variable space)' },
-    { id: 'mono', label: 'Monospace (Menlo, Consolas)', family: MONO, weight: 'normal' },
-    { id: 'verdana', label: 'Verdana', family: VERDANA, weight: 'normal' },
-    { id: 'sans', label: 'Sans-serif (Helvetica, Arial)', family: SANS, weight: 'normal' },
-    { id: 'sans-bold', label: 'Sans-serif bold (Arial)', family: SANS_BOLD, weight: 'bold' },
-    { id: 'georgia', label: 'Serif (Georgia)', family: GEORGIA, weight: 'normal' },
-    { id: 'times', label: 'Serif (Times New Roman)', family: TIMES, weight: 'normal' },
-    { id: 'courier', label: 'Typewriter (Courier New)', family: COURIER, weight: 'bold' },
-    { id: 'custom', label: 'Custom font name...' }
-  ];
+    { id: 'arial', label: 'Arial', family: ARIAL },
+    { id: 'times', label: 'Times New Roman', family: TIMES },
+  ].concat(bundled.fonts.map(b => ({ id: BUNDLED + b.id, label: b.label + ' (pixel font)', bundled: b })))
+    .concat([{ id: FILE, label: 'Pixel font from a file...' }]);
 
-  // choice: {id, custom: {family, bold}}, mode: 'mono' | 'var'.
-  // Returns {family, weight, align}. Variable-space glyphs are left-aligned so their natural width shows where the magenta starts.
-  function resolve(choice, mode) {
-    const align = mode === 'var' ? 'left' : 'center';
-    let id = choice.id;
-    if (id === 'auto') id = mode === 'var' ? 'verdana' : 'mono';
-    if (id === 'custom') {
-      const family = ((choice.custom && choice.custom.family) || '').trim().slice(0, 64) || MONO;
-      return { family, weight: choice.custom && choice.custom.bold ? 'bold' : 'normal', align };
+  const cut = text => Array.from(text).slice(0, 64).join('');
+
+  // choice: {id, loaded}. loaded is a pixel font read from a file or from the bundled ones:
+  // {family, label, pixelFont, em}. Returns {family, weight, align, exactSize, hintFont}.
+  // The ghost is always left-aligned (the padding is a separate setting): the glyphs of a pixel font sit at the left
+  // of the cell, and in variable-space mode their natural width shows where the magenta starts.
+  // exactSize is the size in pixels at which one pixel of a pixel font is one pixel (0 for other fonts, which are
+  // fitted to the cell). hintFont is the text recorded in the metadata.
+  function resolve(choice) {
+    const entry = FONTS.find(x => x.id === choice.id);
+    if (entry && choice.loaded && (entry.id === FILE || entry.bundled)) {
+      const f = choice.loaded;
+      const hintFont = entry.bundled ? cut(entry.bundled.label + ' (' + entry.bundled.author + ', ' + entry.bundled.license + ')')
+        : cut('File: ' + f.label);
+      return { family: f.family, weight: 'normal', align: 'left', exactSize: f.pixelFont ? f.em : 0, hintFont };
     }
-    const f = FONTS.find(x => x.id === id) || FONTS[1];
-    return { family: f.family, weight: f.weight, align };
+    const found = entry && entry.family ? entry : FONTS[0];
+    return { family: found.family, weight: 'normal', align: 'left', exactSize: 0, hintFont: found.family };
   }
 
-  return { FONTS, resolve };
+  return { FONTS, BUNDLED, FILE, resolve };
 });

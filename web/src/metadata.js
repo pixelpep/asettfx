@@ -28,8 +28,8 @@
     for (const k of ['v', 'cell', 'grid', 'mode', 'map']) if (!(k in meta)) errors.push('Missing ' + k);
     if ('v' in meta && meta.v !== 1) errors.push('Unsupported version ' + meta.v);
     if ('tool' in meta && !(typeof meta.tool === 'string' && meta.tool.length <= 64)) errors.push('tool must be a string of at most 64 characters');
-    if ('name' in meta && !(typeof meta.name === 'string' && meta.name.length <= 64 && /^[\x20-\x7E]*$/.test(meta.name))) {
-      errors.push('name must be printable ASCII of at most 64 characters');
+    if ('name' in meta && !(typeof meta.name === 'string' && Array.from(meta.name).length <= 64 && !/[\u0000-\u001f\u007f]/.test(meta.name))) {
+      errors.push('name must be at most 64 characters, without control characters');
     }
 
     for (const [key, a, b, max] of [['cell', 'w', 'h', 256], ['grid', 'cols', 'rows', 256]]) {
@@ -65,7 +65,9 @@
       const g = meta.guide;
       if (!isObject(g)) errors.push('guide must be an object');
       else {
-        checkKeys(g, ['checker', 'baseline', 'hint', 'hintFont', 'prefill'], 'guide', errors);
+        checkKeys(g, ['checker', 'baseline', 'hint', 'hintFont', 'prefill', 'padding', 'marginBottom'], 'guide', errors);
+        if ('marginBottom' in g && !isInt(g.marginBottom, -255, 255)) errors.push('guide.marginBottom must be an integer from -255 to 255');
+        if ('padding' in g && !isInt(g.padding, 0, 255)) errors.push('guide.padding must be an integer from 0 to 255');
         for (const f of ['checker', 'baseline', 'prefill']) if (f in g && typeof g[f] !== 'boolean') errors.push('guide.' + f + ' must be a boolean');
         if ('hint' in g && !['ghost', 'none'].includes(g.hint)) errors.push('guide.hint must be ghost or none');
         if ('hintFont' in g && !(typeof g.hintFont === 'string' && g.hintFont.length <= 64)) errors.push('guide.hintFont must be a string of at most 64 characters');

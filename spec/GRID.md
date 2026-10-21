@@ -88,12 +88,14 @@ The template PNG is only a guide, meant to be hidden before export. Suggested co
 | Element | Color |
 |---|---|
 | cell A / cell B (checkerboard) | `#F4F4F4` / `#E8E8E8` |
-| ghost character | `#B4B4B4`, rendered with a system font (`guide.hintFont`) at 8x, then thresholded to 1-bit pixels so there is no antialiasing |
-| baseline tick | `#9CC3E6`, one pixel at the left and right edge of the cell, on the last row above the baseline (row `cell.h - baseline - 1`) |
+| ghost character | `#B4B4B4`, rendered with the hint font (`guide.hintFont`) at 8x, then thresholded to 1-bit pixels so there is no antialiasing; Arial and Times New Roman are fitted to the cell, a pixel font (from a file or bundled) is drawn at its own size (6.3) |
+| baseline tick | `#9CC3E6`, one pixel at the left and right edge of the cell, on the last row above the baseline (row `cell.h - baseline - 1`); drawn under the ghost character, so a ghost pixel is never hidden by a tick |
 | unassigned cell | `#D2D2D2`, flat, no ghost |
 | blank-cell marker (space, control codes) | `#B4B4B4` dotted bar near the bottom of the cell |
 
-In `var` mode the ghost is left-aligned, one pixel from the left edge, so that its natural width shows where the magenta starts. In `mono` mode it is centered.
+The ghost is always left-aligned: the left edge of its ink is `guide.padding` pixels from the left edge of the cell (0 by default), whatever the side bearing of the hint font. Pixel fonts keep their glyphs at the left of the cell, and in `var` mode the natural width of the ghost shows where the magenta starts.
+
+The ghost stands on the baseline row, raised by `guide.marginBottom` pixels (0 by default; negative lowers it). This moves the drawing guide only: the baseline ticks, `metrics.baseline` and the font metrics stay where they are.
 
 Grid lines are not drawn in pixels. The extension sets Aseprite's grid to `cell.w x cell.h`.
 
@@ -111,3 +113,18 @@ These widths are a starting point taken from a system font. The user adjusts the
 ### 6.2 Using the pre-filled magenta
 
 The user hides the template layer before exporting, which also hides its magenta. To keep the pre-filled widths, the user copies the magenta onto a visible layer (for example with *Select → Color Range* on the template, then copy and paste into the drawing layer) and adjusts it. This is deliberately left to the user: nothing in the extension moves or edits layers.
+
+### 6.3 Pixel fonts
+
+A pixel font, loaded from a file or one of the bundled fonts, is drawn with its own pixels, so each pixel of the font is exactly one pixel of the template. The generator finds the font's pixel size by drawing probe characters at 512 px and fitting the lengths of the ink runs and of the gaps between them to a grid; it keeps the coarsest grid that fits for at least 40 % of the characters (the others may be missing from the font). The font size at which one font pixel is one screen pixel, `em`, follows from it (whole pixels when within 0.4 %). A font with no such grid is not a pixel font, and is fitted to the cell like Arial.
+
+The font is then drawn at exactly `em` pixels, with the baseline on a pixel boundary and the left edge of its ink at the padding, so the result has no antialiasing to threshold: every character equals the outline sampled at the centre of each pixel (checked on 10 fonts, 920 characters, identical).
+
+The cell the font needs is suggested, never forced, in two sizes:
+
+- **The letters** (the plain ASCII characters of the font): the letters are made to stand on the baseline. Some fonts draw all their letters below their own baseline (Bytesized: from one row below it to three above); the suggestion raises the characters by that many rows, `guide.marginBottom`, found as the median hang of `H E I L T x z`. The cell then has the ink rows above the baseline, plus `baseline` rows below it, where `baseline` is the ink that remains below it, and **at least one row**, room for a descender. Width = the widest advance (ignoring a character more than 2.5 times wider than the median). Bytesized: 4 x 5, baseline 1, bottom margin 1.
+- **The letters and the accents** of the chosen character set, when that needs more: accents and cedillas can reach much further than letters (Bytesized needs 4 x 8, baseline 2, for Latin-1 or Latin Extended-A). A second button applies it.
+
+A character the font cannot draw is drawn by another font (or as a box), so it is told apart by drawing it with and without the font, and against the font's own missing-character box, and is left out of the measure; the number of characters left out is shown. A character that the font draws by combining a letter and an accent it has (Bytesized has no precomposed Ĉ, but draws it) counts as drawn. Both sizes are checked against the outlines of the bundled fonts.
+
+The font file stays in the browser: nothing is uploaded or stored, and the metadata only records its name (`guide.hintFont`, `File: <file name>`).

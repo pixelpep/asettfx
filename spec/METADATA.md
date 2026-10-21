@@ -5,7 +5,7 @@ Fields are defined in [metadata.schema.json](metadata.schema.json), geometry and
 ## PNG chunk
 
 - One `tEXt` chunk, keyword `asettfx`, a NUL byte, then the JSON text.
-- The text is strictly ASCII (a subset of Latin-1, as `tEXt` requires). Code points appear in `map` as hex, never as characters. No compression, so it can be read without zlib.
+- The text is strictly ASCII (a subset of Latin-1, as `tEXt` requires). Code points appear in `map` as hex, never as characters, and any other non-ASCII text, such as an accented font `name`, is written with `\u` escapes. No compression, so it can be read without zlib.
 - The chunk is inserted after `IHDR` and before the first `IDAT`, with its CRC-32 (computed over the chunk type and data, as for every PNG chunk).
 - Keep it under 2 KB. Readers reject a chunk larger than 64 KB.
 - Writers emit compact JSON. Readers accept any JSON whitespace.

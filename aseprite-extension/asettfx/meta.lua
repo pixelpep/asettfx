@@ -37,8 +37,11 @@ function M.validate(meta, size)
   if meta.tool ~= nil and not (type(meta.tool) == "string" and #meta.tool <= 64) then
     add("tool must be a string of at most 64 characters")
   end
-  if meta.name ~= nil and not (type(meta.name) == "string" and #meta.name <= 64 and not meta.name:find("[^ -~]")) then
-    add("name must be printable ASCII of at most 64 characters")
+  if meta.name ~= nil then
+    local length = type(meta.name) == "string" and utf8.len(meta.name)  -- nil when the text is not valid UTF-8
+    if not (length and length <= 64 and not meta.name:find("[%z\1-\31\127]")) then
+      add("name must be at most 64 characters, without control characters")
+    end
   end
 
   for _, def in ipairs({ { "cell", "w", "h" }, { "grid", "cols", "rows" } }) do
@@ -85,7 +88,9 @@ function M.validate(meta, size)
     if not jsonutil.is_object(g) then
       add("guide must be an object")
     else
-      check_keys(g, { "checker", "baseline", "hint", "hintFont", "prefill" }, "guide", errors)
+      check_keys(g, { "checker", "baseline", "hint", "hintFont", "prefill", "padding", "marginBottom" }, "guide", errors)
+      if g.marginBottom ~= nil and not is_int(g.marginBottom, -255, 255) then add("guide.marginBottom must be an integer from -255 to 255") end
+      if g.padding ~= nil and not is_int(g.padding, 0, 255) then add("guide.padding must be an integer from 0 to 255") end
       for _, f in ipairs({ "checker", "baseline", "prefill" }) do
         if g[f] ~= nil and type(g[f]) ~= "boolean" then add("guide." .. f .. " must be a boolean") end
       end

@@ -114,3 +114,13 @@ test('every guide color is far above the ink threshold (luminance 128)', () => {
     assert.ok(lum > 160, name + ' luminance ' + lum.toFixed(1));
   }
 });
+
+test('a ghost pixel on a baseline tick stays visible (the tick is drawn under the ghost)', () => {
+  const onTick = (cp, w, h) => { const m = new Uint8Array(w * h); m[5 * w + 0] = 1; m[5 * w + 7] = 1; return m; };  // row 5 is cell.h - baseline - 1 for baseline 2
+  const img = tpl.render(cfg({ baseline: 2 }), onTick);
+  assert.deepEqual(px(img, 0, 5), rgb(C.ghost));
+  assert.deepEqual(px(img, 7, 5), rgb(C.ghost));
+  assert.deepEqual(px(img, 1, 5), rgb(C.checkerA));
+  const none = tpl.render(cfg({ baseline: 2 }), () => null);
+  assert.deepEqual(px(none, 0, 5), rgb(C.baseline), 'the tick shows where there is no ink');
+});

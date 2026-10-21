@@ -42,5 +42,11 @@
     return { ok: true, png: bytes, meta, metaText, width: img.width, height: img.height, rgba: img.rgba, warnings };
   }
 
-  return { TOOL, MAX_DIMENSION, rowsFor, generate };
+  // The name of the downloaded file: the font name in lowercase with hyphens, then the cell size and "template".
+  function fileName(name, cellW, cellH) {
+    const slug = String(name || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'font';
+    return slug + '-' + cellW + 'x' + cellH + '-template.png';
+  }
+
+  return { TOOL, MAX_DIMENSION, rowsFor, fileName, generate };
 });

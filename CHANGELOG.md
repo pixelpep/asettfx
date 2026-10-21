@@ -5,6 +5,38 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+
+- Eight pixel fonts shipped with the template generator, chosen from the font list: Bytesized (Baltdev, SIL OFL 1.1), Alkhemikal, Digital Disco, Digital Disco Thin, Grape Soda, Kiwi Soda (jeti, CC BY 4.0) and Minecraft Standard, Minecraft Standard Bold (Polda18, CC0). They are included unchanged in `web/fonts/original/`, credited in `web/fonts/LICENSES.md`, `NOTICE` and the README, and loaded only when chosen. Only fonts with a license that allows redistribution are bundled; others can be used with *Pixel font from a file...*. `npm run gen:fonts` rebuilds the font data; a test keeps it in sync.
+
+- *Pixel font from a file...* in the template generator: choose a `.ttf` or `.otf` on your computer. The generator detects whether it is a pixel font and at which size one font pixel is one pixel, draws the ghost characters at that size (identical to the font's outlines, pixel for pixel; checked on 10 fonts and 920 characters), and offers a button that sets the cell size and baseline the font needs. The font file stays in the browser.
+
+### Changed
+
+- The zoom buttons - and + are now first on the left of the line above the image.
+- What is known about a pixel font (its size, the cells it needs, how many characters have no shape in it, its credit and license) is no longer written under the font list: a square *i* button to the right of the list opens it in a window. The two buttons that size the cell stay under the list, with the size in their label. A file that is not a font now keeps its error message on screen.
+
+- *Use this font's cell size* now stands the letters of a pixel font on the baseline and keeps at least one row below it: for Bytesized, whose letters all hang one row below the font's own baseline, it gives 4 x 5 with a baseline of 1 and a bottom margin of 1 (it also sets the bottom margin, and Kiwi Soda gets the same treatment). When the characters of the chosen set need more room (accents and cedillas: 4 x 8 for Bytesized in Latin-1 or Latin Extended-A), a second button, *Make room for the accents too*, applies that size, and the description of the font gives both. Characters the font does not have are left out of the measure and their number is shown. Checked against the outlines of the eight bundled fonts for four character sets.
+
+- A *Bottom margin of the characters* setting in *Guide* raises (or, negative, lowers) the ghost characters above the baseline, without moving the baseline itself (which also sets the descent of the font). It is recorded as `guide.marginBottom`. The *Use this font's cell size* button resets it to 0.
+- The *Grid lines in preview* option is gone: the preview shows exactly the pixels of the PNG.
+
+- The *Extra spacing* field is gone from the template generator: it only wrote a number into the metadata, so the template looked the same whatever it held. Extra spacing still exists where it acts, in the *Settings...* form of the Aseprite export, and adds that many pixels to the width of every character.
+
+- Template generator layout: the settings (*Guide*, *Cells*, *Spacing*) are cards side by side (as many per row as fit) and each can be collapsed. The character set list is at the top of *Guide* (its custom entry opens under it), the number of columns is in *Cells* and the left padding in *Spacing*. Under the cards, one line right above the image has *Checkerboard*, *Baseline ticks* and the square zoom buttons - and + on the left, and on the right the font name, the saved file name followed by the image size, and *Download PNG*. Below it the image has the whole width; the metadata stored in the PNG are folded by default, and opened they sit to the right of the image, which then takes two thirds of the width (they stack on a narrow window). The preview starts at zoom 4, with - and + buttons for the zoom (steps 1, 2, 3, 4, 5, 6, 8, 10, 12, 16, 20, 24, 32).
+- Spacing is variable by default, with the magenta pre-filled; a single *Force monospace* check box replaces the mode list. The *Width from* list is gone: the generator only offers magenta widths, as the Aseprite dialogs do. The options of *Show the character in each cell* (font, padding, pre-fill) fold away when it is off.
+
+- The hint font list is now Arial, Times New Roman and the pixel font file (it had Menlo, Verdana, Helvetica, Georgia, Courier and a free font name). Arial is the default.
+
+- The baseline ticks of the template are drawn under the ghost character, so a pixel of the character is never hidden by a tick (in a 4 x 4 cell the ticks are a large share of the pixels).
+- The ghost characters of the template are always at the left of their cell, in monospace as well (they were centered), instead of centered or one pixel in. A new *Left padding (px)* setting (0 by default, recorded as `guide.padding` in the metadata) sets the distance between the left edge of the cell and the left edge of the drawn character; the placement ignores the side bearing of the hint font, so the ink really starts at that padding.
+- The template generator shows, right after the font name field, the file name the template will be saved under, for example `→ my-pixel-font-8x8-template.png`. Accents are removed from it (`Café` becomes `cafe`).
+
+### Fixed
+
+- The Lua reader turned `1.5` into `1` (Aseprite's `math.tointeger` truncates), so a fractional cell width or baseline in the settings was accepted. Fractional numbers are now kept and rejected; the shared conformance cases cover it.
+- A font name with accents or other non-ASCII characters was refused by the generator (the download button was disabled with a cryptic message) and by the metadata validators. It is accepted now, up to 64 characters, stored with `\u` escapes so the PNG chunk stays ASCII, and read back correctly by the Aseprite extension.
+
 ## [0.1.0] - 2026-10-16
 
 First version.

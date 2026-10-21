@@ -871,8 +871,8 @@
    }
   },
   {
-   "name": "non-ASCII name",
-   "valid": false,
+   "name": "accented name is valid",
+   "valid": true,
    "meta": {
     "v": 1,
     "tool": "asettfx-web/0.1",
@@ -1072,6 +1072,679 @@
    "size": {
     "width": 128,
     "height": 56
+   }
+  },
+  {
+   "name": "name of 64 accented characters",
+   "valid": true,
+   "meta": {
+    "v": 1,
+    "tool": "asettfx-web/0.1",
+    "name": "\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9",
+    "cell": {
+     "w": 8,
+     "h": 8
+    },
+    "grid": {
+     "cols": 16,
+     "rows": 6
+    },
+    "mode": "mono",
+    "ink": "dark",
+    "marker": "#FF00FF",
+    "map": [
+     "0020-007E"
+    ],
+    "metrics": {
+     "baseline": 1,
+     "spacing": 0
+    },
+    "guide": {
+     "checker": true,
+     "baseline": true,
+     "hint": "ghost",
+     "hintFont": "Menlo, Consolas, monospace"
+    }
+   }
+  },
+  {
+   "name": "name of 64 emoji (64 characters, not 64 bytes)",
+   "valid": true,
+   "meta": {
+    "v": 1,
+    "tool": "asettfx-web/0.1",
+    "name": "\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00",
+    "cell": {
+     "w": 8,
+     "h": 8
+    },
+    "grid": {
+     "cols": 16,
+     "rows": 6
+    },
+    "mode": "mono",
+    "ink": "dark",
+    "marker": "#FF00FF",
+    "map": [
+     "0020-007E"
+    ],
+    "metrics": {
+     "baseline": 1,
+     "spacing": 0
+    },
+    "guide": {
+     "checker": true,
+     "baseline": true,
+     "hint": "ghost",
+     "hintFont": "Menlo, Consolas, monospace"
+    }
+   }
+  },
+  {
+   "name": "name of 65 accented characters",
+   "valid": false,
+   "meta": {
+    "v": 1,
+    "tool": "asettfx-web/0.1",
+    "name": "\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9",
+    "cell": {
+     "w": 8,
+     "h": 8
+    },
+    "grid": {
+     "cols": 16,
+     "rows": 6
+    },
+    "mode": "mono",
+    "ink": "dark",
+    "marker": "#FF00FF",
+    "map": [
+     "0020-007E"
+    ],
+    "metrics": {
+     "baseline": 1,
+     "spacing": 0
+    },
+    "guide": {
+     "checker": true,
+     "baseline": true,
+     "hint": "ghost",
+     "hintFont": "Menlo, Consolas, monospace"
+    }
+   }
+  },
+  {
+   "name": "control character in the name",
+   "valid": false,
+   "meta": {
+    "v": 1,
+    "tool": "asettfx-web/0.1",
+    "name": "a\u0007b",
+    "cell": {
+     "w": 8,
+     "h": 8
+    },
+    "grid": {
+     "cols": 16,
+     "rows": 6
+    },
+    "mode": "mono",
+    "ink": "dark",
+    "marker": "#FF00FF",
+    "map": [
+     "0020-007E"
+    ],
+    "metrics": {
+     "baseline": 1,
+     "spacing": 0
+    },
+    "guide": {
+     "checker": true,
+     "baseline": true,
+     "hint": "ghost",
+     "hintFont": "Menlo, Consolas, monospace"
+    }
+   }
+  },
+  {
+   "name": "line break in the name",
+   "valid": false,
+   "meta": {
+    "v": 1,
+    "tool": "asettfx-web/0.1",
+    "name": "a\nb",
+    "cell": {
+     "w": 8,
+     "h": 8
+    },
+    "grid": {
+     "cols": 16,
+     "rows": 6
+    },
+    "mode": "mono",
+    "ink": "dark",
+    "marker": "#FF00FF",
+    "map": [
+     "0020-007E"
+    ],
+    "metrics": {
+     "baseline": 1,
+     "spacing": 0
+    },
+    "guide": {
+     "checker": true,
+     "baseline": true,
+     "hint": "ghost",
+     "hintFont": "Menlo, Consolas, monospace"
+    }
+   }
+  },
+  {
+   "name": "guide padding 0",
+   "valid": true,
+   "meta": {
+    "v": 1,
+    "tool": "asettfx-web/0.1",
+    "name": "Pixel Mono",
+    "cell": {
+     "w": 8,
+     "h": 8
+    },
+    "grid": {
+     "cols": 16,
+     "rows": 6
+    },
+    "mode": "mono",
+    "ink": "dark",
+    "marker": "#FF00FF",
+    "map": [
+     "0020-007E"
+    ],
+    "metrics": {
+     "baseline": 1,
+     "spacing": 0
+    },
+    "guide": {
+     "checker": true,
+     "baseline": true,
+     "hint": "ghost",
+     "hintFont": "Menlo, Consolas, monospace",
+     "padding": 0
+    }
+   }
+  },
+  {
+   "name": "guide padding 2",
+   "valid": true,
+   "meta": {
+    "v": 1,
+    "tool": "asettfx-web/0.1",
+    "name": "Pixel Mono",
+    "cell": {
+     "w": 8,
+     "h": 8
+    },
+    "grid": {
+     "cols": 16,
+     "rows": 6
+    },
+    "mode": "mono",
+    "ink": "dark",
+    "marker": "#FF00FF",
+    "map": [
+     "0020-007E"
+    ],
+    "metrics": {
+     "baseline": 1,
+     "spacing": 0
+    },
+    "guide": {
+     "checker": true,
+     "baseline": true,
+     "hint": "ghost",
+     "hintFont": "Menlo, Consolas, monospace",
+     "padding": 2
+    }
+   }
+  },
+  {
+   "name": "negative guide padding",
+   "valid": false,
+   "meta": {
+    "v": 1,
+    "tool": "asettfx-web/0.1",
+    "name": "Pixel Mono",
+    "cell": {
+     "w": 8,
+     "h": 8
+    },
+    "grid": {
+     "cols": 16,
+     "rows": 6
+    },
+    "mode": "mono",
+    "ink": "dark",
+    "marker": "#FF00FF",
+    "map": [
+     "0020-007E"
+    ],
+    "metrics": {
+     "baseline": 1,
+     "spacing": 0
+    },
+    "guide": {
+     "checker": true,
+     "baseline": true,
+     "hint": "ghost",
+     "hintFont": "Menlo, Consolas, monospace",
+     "padding": -1
+    }
+   }
+  },
+  {
+   "name": "fractional guide padding",
+   "valid": false,
+   "meta": {
+    "v": 1,
+    "tool": "asettfx-web/0.1",
+    "name": "Pixel Mono",
+    "cell": {
+     "w": 8,
+     "h": 8
+    },
+    "grid": {
+     "cols": 16,
+     "rows": 6
+    },
+    "mode": "mono",
+    "ink": "dark",
+    "marker": "#FF00FF",
+    "map": [
+     "0020-007E"
+    ],
+    "metrics": {
+     "baseline": 1,
+     "spacing": 0
+    },
+    "guide": {
+     "checker": true,
+     "baseline": true,
+     "hint": "ghost",
+     "hintFont": "Menlo, Consolas, monospace",
+     "padding": 1.5
+    }
+   }
+  },
+  {
+   "name": "guide padding above 255",
+   "valid": false,
+   "meta": {
+    "v": 1,
+    "tool": "asettfx-web/0.1",
+    "name": "Pixel Mono",
+    "cell": {
+     "w": 8,
+     "h": 8
+    },
+    "grid": {
+     "cols": 16,
+     "rows": 6
+    },
+    "mode": "mono",
+    "ink": "dark",
+    "marker": "#FF00FF",
+    "map": [
+     "0020-007E"
+    ],
+    "metrics": {
+     "baseline": 1,
+     "spacing": 0
+    },
+    "guide": {
+     "checker": true,
+     "baseline": true,
+     "hint": "ghost",
+     "hintFont": "Menlo, Consolas, monospace",
+     "padding": 256
+    }
+   }
+  },
+  {
+   "name": "text guide padding",
+   "valid": false,
+   "meta": {
+    "v": 1,
+    "tool": "asettfx-web/0.1",
+    "name": "Pixel Mono",
+    "cell": {
+     "w": 8,
+     "h": 8
+    },
+    "grid": {
+     "cols": 16,
+     "rows": 6
+    },
+    "mode": "mono",
+    "ink": "dark",
+    "marker": "#FF00FF",
+    "map": [
+     "0020-007E"
+    ],
+    "metrics": {
+     "baseline": 1,
+     "spacing": 0
+    },
+    "guide": {
+     "checker": true,
+     "baseline": true,
+     "hint": "ghost",
+     "hintFont": "Menlo, Consolas, monospace",
+     "padding": "2"
+    }
+   }
+  },
+  {
+   "name": "fractional cell width (8.5 must not be read as 8)",
+   "valid": false,
+   "meta": {
+    "v": 1,
+    "tool": "asettfx-web/0.1",
+    "name": "Pixel Mono",
+    "cell": {
+     "w": 8.5,
+     "h": 8
+    },
+    "grid": {
+     "cols": 16,
+     "rows": 6
+    },
+    "mode": "mono",
+    "ink": "dark",
+    "marker": "#FF00FF",
+    "map": [
+     "0020-007E"
+    ],
+    "metrics": {
+     "baseline": 1,
+     "spacing": 0
+    },
+    "guide": {
+     "checker": true,
+     "baseline": true,
+     "hint": "ghost",
+     "hintFont": "Menlo, Consolas, monospace"
+    }
+   }
+  },
+  {
+   "name": "fractional baseline",
+   "valid": false,
+   "meta": {
+    "v": 1,
+    "tool": "asettfx-web/0.1",
+    "name": "Pixel Mono",
+    "cell": {
+     "w": 8,
+     "h": 8
+    },
+    "grid": {
+     "cols": 16,
+     "rows": 6
+    },
+    "mode": "mono",
+    "ink": "dark",
+    "marker": "#FF00FF",
+    "map": [
+     "0020-007E"
+    ],
+    "metrics": {
+     "baseline": 1.5,
+     "spacing": 0
+    },
+    "guide": {
+     "checker": true,
+     "baseline": true,
+     "hint": "ghost",
+     "hintFont": "Menlo, Consolas, monospace"
+    }
+   }
+  },
+  {
+   "name": "guide bottom margin 0",
+   "valid": true,
+   "meta": {
+    "v": 1,
+    "tool": "asettfx-web/0.1",
+    "name": "Pixel Mono",
+    "cell": {
+     "w": 8,
+     "h": 8
+    },
+    "grid": {
+     "cols": 16,
+     "rows": 6
+    },
+    "mode": "mono",
+    "ink": "dark",
+    "marker": "#FF00FF",
+    "map": [
+     "0020-007E"
+    ],
+    "metrics": {
+     "baseline": 1,
+     "spacing": 0
+    },
+    "guide": {
+     "checker": true,
+     "baseline": true,
+     "hint": "ghost",
+     "hintFont": "Menlo, Consolas, monospace",
+     "marginBottom": 0
+    }
+   }
+  },
+  {
+   "name": "guide bottom margin 2",
+   "valid": true,
+   "meta": {
+    "v": 1,
+    "tool": "asettfx-web/0.1",
+    "name": "Pixel Mono",
+    "cell": {
+     "w": 8,
+     "h": 8
+    },
+    "grid": {
+     "cols": 16,
+     "rows": 6
+    },
+    "mode": "mono",
+    "ink": "dark",
+    "marker": "#FF00FF",
+    "map": [
+     "0020-007E"
+    ],
+    "metrics": {
+     "baseline": 1,
+     "spacing": 0
+    },
+    "guide": {
+     "checker": true,
+     "baseline": true,
+     "hint": "ghost",
+     "hintFont": "Menlo, Consolas, monospace",
+     "marginBottom": 2
+    }
+   }
+  },
+  {
+   "name": "guide bottom margin -2 (lowers)",
+   "valid": true,
+   "meta": {
+    "v": 1,
+    "tool": "asettfx-web/0.1",
+    "name": "Pixel Mono",
+    "cell": {
+     "w": 8,
+     "h": 8
+    },
+    "grid": {
+     "cols": 16,
+     "rows": 6
+    },
+    "mode": "mono",
+    "ink": "dark",
+    "marker": "#FF00FF",
+    "map": [
+     "0020-007E"
+    ],
+    "metrics": {
+     "baseline": 1,
+     "spacing": 0
+    },
+    "guide": {
+     "checker": true,
+     "baseline": true,
+     "hint": "ghost",
+     "hintFont": "Menlo, Consolas, monospace",
+     "marginBottom": -2
+    }
+   }
+  },
+  {
+   "name": "fractional guide bottom margin",
+   "valid": false,
+   "meta": {
+    "v": 1,
+    "tool": "asettfx-web/0.1",
+    "name": "Pixel Mono",
+    "cell": {
+     "w": 8,
+     "h": 8
+    },
+    "grid": {
+     "cols": 16,
+     "rows": 6
+    },
+    "mode": "mono",
+    "ink": "dark",
+    "marker": "#FF00FF",
+    "map": [
+     "0020-007E"
+    ],
+    "metrics": {
+     "baseline": 1,
+     "spacing": 0
+    },
+    "guide": {
+     "checker": true,
+     "baseline": true,
+     "hint": "ghost",
+     "hintFont": "Menlo, Consolas, monospace",
+     "marginBottom": 1.5
+    }
+   }
+  },
+  {
+   "name": "guide bottom margin below -255",
+   "valid": false,
+   "meta": {
+    "v": 1,
+    "tool": "asettfx-web/0.1",
+    "name": "Pixel Mono",
+    "cell": {
+     "w": 8,
+     "h": 8
+    },
+    "grid": {
+     "cols": 16,
+     "rows": 6
+    },
+    "mode": "mono",
+    "ink": "dark",
+    "marker": "#FF00FF",
+    "map": [
+     "0020-007E"
+    ],
+    "metrics": {
+     "baseline": 1,
+     "spacing": 0
+    },
+    "guide": {
+     "checker": true,
+     "baseline": true,
+     "hint": "ghost",
+     "hintFont": "Menlo, Consolas, monospace",
+     "marginBottom": -256
+    }
+   }
+  },
+  {
+   "name": "guide bottom margin above 255",
+   "valid": false,
+   "meta": {
+    "v": 1,
+    "tool": "asettfx-web/0.1",
+    "name": "Pixel Mono",
+    "cell": {
+     "w": 8,
+     "h": 8
+    },
+    "grid": {
+     "cols": 16,
+     "rows": 6
+    },
+    "mode": "mono",
+    "ink": "dark",
+    "marker": "#FF00FF",
+    "map": [
+     "0020-007E"
+    ],
+    "metrics": {
+     "baseline": 1,
+     "spacing": 0
+    },
+    "guide": {
+     "checker": true,
+     "baseline": true,
+     "hint": "ghost",
+     "hintFont": "Menlo, Consolas, monospace",
+     "marginBottom": 256
+    }
+   }
+  },
+  {
+   "name": "text guide bottom margin",
+   "valid": false,
+   "meta": {
+    "v": 1,
+    "tool": "asettfx-web/0.1",
+    "name": "Pixel Mono",
+    "cell": {
+     "w": 8,
+     "h": 8
+    },
+    "grid": {
+     "cols": 16,
+     "rows": 6
+    },
+    "mode": "mono",
+    "ink": "dark",
+    "marker": "#FF00FF",
+    "map": [
+     "0020-007E"
+    ],
+    "metrics": {
+     "baseline": 1,
+     "spacing": 0
+    },
+    "guide": {
+     "checker": true,
+     "baseline": true,
+     "hint": "ghost",
+     "hintFont": "Menlo, Consolas, monospace",
+     "marginBottom": "2"
+    }
    }
   }
  ]

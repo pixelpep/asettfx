@@ -7,86 +7,99 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<header>
+<header class="top">
   <h1>ASETTFX template generator</h1>
   <p>Make a PNG grid template for a bitmap font. Open it in Aseprite and draw each glyph on a layer above it.</p>
 </header>
 
 <main>
-  <form id="settings" autocomplete="off">
-    <fieldset>
-      <legend>Characters</legend>
-      <label>Character set
-        <select id="charset"></select>
-      </label>
-      <label id="custom-row" hidden><span id="custom-label"></span>
-        <textarea id="custom" rows="3" spellcheck="false"></textarea>
-      </label>
-      <label>Columns <input id="cols" type="number" min="1" max="256" value="16"></label>
-      <p id="count" class="note"></p>
-    </fieldset>
-
-    <fieldset>
-      <legend>Cells</legend>
-      <div class="row">
-        <label>Width (px) <input id="cellW" type="number" min="1" max="256" step="1" value="8"></label>
-        <label>Height (px) <input id="cellH" type="number" min="1" max="256" step="1" value="8"></label>
-      </div>
-      <label>Baseline: rows below the letters <input id="baseline" type="number" min="0" max="255" value="1"></label>
-    </fieldset>
-
-    <fieldset>
-      <legend>Spacing</legend>
-      <label>Mode
-        <select id="mode">
-          <option value="mono">Monospace</option>
-          <option value="var">Variable space (magenta marks the unused width)</option>
-        </select>
-      </label>
-      <div id="var-options" hidden>
-        <label>Width from
-          <select id="widthSource">
-            <option value="magenta">Magenta columns</option>
-            <option value="auto">Drawn pixels (magenta ignored)</option>
-          </select>
+  <form id="settings" class="cards" autocomplete="off">
+    <details class="card" open>
+      <summary>Guide</summary>
+      <div class="body">
+        <label>Character set <select id="charset"></select></label>
+        <label id="custom-row" hidden><span id="custom-label"></span>
+          <textarea id="custom" rows="3" spellcheck="false"></textarea>
         </label>
-        <label class="check"><input id="prefill" type="checkbox" checked> Pre-fill the magenta from the hint font</label>
-        <label>Extra spacing (px) <input id="spacing" type="number" min="0" max="64" value="0"></label>
+        <label class="check"><input id="hint" type="checkbox" checked> Show the character in each cell</label>
+        <div id="hint-options" class="body indent">
+          <label>Hint font
+            <span class="with-info">
+              <select id="hintFontChoice"></select>
+              <button id="fontInfoBtn" type="button" class="square secondary" aria-label="About this font" title="About this font" hidden>i</button>
+            </span>
+          </label>
+          <div id="hint-font" class="body" hidden>
+            <input id="fontFile" type="file" accept=".ttf,.otf,.woff,.woff2" hidden>
+            <p id="fontStatus" class="note"></p>
+            <button id="applyFont" type="button" class="secondary" hidden>Use this font's cell size</button>
+            <button id="applyFontAll" type="button" class="secondary" hidden>Make room for the accents too</button>
+          </div>
+          <label title="Raises the characters above the baseline; a negative value lowers them. The baseline itself does not move.">Bottom margin of the characters (px) <input id="hintLift" type="number" min="-64" max="64" value="0"></label>
+        </div>
       </div>
-    </fieldset>
+    </details>
 
-    <fieldset>
-      <legend>Guide</legend>
-      <label class="check"><input id="hint" type="checkbox" checked> Show the character in each cell</label>
-      <label class="check"><input id="checker" type="checkbox" checked> Checkerboard</label>
-      <label class="check"><input id="baselineTick" type="checkbox" checked> Baseline ticks</label>
-      <label>Hint font
-        <select id="hintFontChoice"></select>
-      </label>
-      <div id="hint-custom" class="row" hidden>
-        <label>Font name <input id="hintFont" type="text" value="Menlo" maxlength="64"></label>
-        <label class="check"><input id="hintBold" type="checkbox"> Bold</label>
+    <details class="card" open>
+      <summary>Cells</summary>
+      <div class="body">
+        <div class="row">
+          <label>Width (px) <input id="cellW" type="number" min="1" max="256" step="1" value="8"></label>
+          <label>Height (px) <input id="cellH" type="number" min="1" max="256" step="1" value="8"></label>
+        </div>
+        <label>Columns <input id="cols" type="number" min="1" max="256" value="16"></label>
+        <label>Baseline: rows below the letters <input id="baseline" type="number" min="0" max="255" value="1"></label>
+        <p id="count" class="note"></p>
       </div>
-    </fieldset>
+    </details>
 
+    <details class="card" open>
+      <summary>Spacing</summary>
+      <div class="body">
+        <label class="check"><input id="forceMono" type="checkbox"> Force monospace</label>
+        <p id="spacing-note" class="note"></p>
+        <div id="var-options" class="body">
+          <label class="check"><input id="prefill" type="checkbox" checked> Pre-fill the magenta from the hint font</label>
+        </div>
+        <label>Left padding of the characters (px) <input id="hintPadding" type="number" min="0" max="64" value="0"></label>
+      </div>
+    </details>
   </form>
 
   <section id="output">
     <div class="toolbar">
-      <label class="name">Font name <input id="name" type="text" value="My Pixel Font" maxlength="64"></label>
-      <button id="download" type="button">Download PNG</button>
-      <label class="check"><input id="gridLines" type="checkbox" checked> Grid lines in preview</label>
-      <label>Zoom <input id="zoom" type="number" min="1" max="32" value="4"></label>
-      <span id="size" class="note"></span>
+      <div class="left">
+        <span class="zoom">
+          <button id="zoomOut" type="button" class="square secondary" aria-label="Zoom out">&minus;</button>
+          <button id="zoomIn" type="button" class="square secondary" aria-label="Zoom in">+</button>
+        </span>
+        <label class="check"><input id="checker" type="checkbox" checked> Checkerboard</label>
+        <label class="check"><input id="baselineTick" type="checkbox" checked> Baseline ticks</label>
+      </div>
+      <div class="right">
+        <label class="name">Font name <input id="name" type="text" value="My Pixel Font" maxlength="64"></label>
+        <span id="filename" class="saved-as" title="Name of the downloaded file"></span>
+        <span id="size" class="note"></span>
+        <button id="download" type="button">Download PNG</button>
+      </div>
     </div>
     <ul id="messages"></ul>
-    <div class="preview"><canvas id="preview"></canvas></div>
-    <details>
-      <summary>Metadata stored in the PNG</summary>
-      <pre id="meta"></pre>
-    </details>
+    <div class="split">
+      <div class="preview"><canvas id="preview"></canvas></div>
+      <details class="meta" id="metaBox">
+        <summary>Metadata stored in the PNG</summary>
+        <pre id="meta"></pre>
+      </details>
+    </div>
   </section>
 </main>
+
+<dialog id="fontDialog">
+  <h2 id="fontDialogTitle"></h2>
+  <p id="fontInfo"></p>
+  <p id="fontCredit" class="note"></p>
+  <form method="dialog"><button id="fontDialogClose">Close</button></form>
+</dialog>
 
 <script src="src/png.js"></script>
 <script src="src/charmap.js"></script>
@@ -94,7 +107,9 @@
 <script src="src/metadata.js"></script>
 <script src="src/template.js"></script>
 <script src="src/generate.js"></script>
+<script src="src/bundled-fonts.js"></script>
 <script src="src/fonts.js"></script>
+<script src="src/pixelfont.js"></script>
 <script src="src/hint-canvas.js"></script>
 <script src="src/app.js"></script>
 </body>

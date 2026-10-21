@@ -1,0 +1,76 @@
+[
+  {
+    "id": "bytesized",
+    "label": "Bytesized",
+    "file": "Bytesized-Regular.ttf",
+    "author": "Baltdev",
+    "license": "SIL OFL 1.1",
+    "licenseUrl": "https://openfontlicense.org/",
+    "source": "https://www.dafont.com/bytesized.font",
+    "copyright": "Copyright 2024 The Bytesized Project Authors (https://github.com/balt-dev/bytesized-gf)",
+    "licenseText": "licenses/OFL-Bytesized.txt"
+  },
+  {
+    "id": "alkhemikal",
+    "label": "Alkhemikal",
+    "file": "Alkhemikal.ttf",
+    "author": "jeti",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+    "source": "https://www.dafont.com/alkhemikal.font"
+  },
+  {
+    "id": "digital-disco",
+    "label": "Digital Disco",
+    "file": "DigitalDisco.ttf",
+    "author": "jeti",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+    "source": "https://www.dafont.com/digital-disco.font"
+  },
+  {
+    "id": "digital-disco-thin",
+    "label": "Digital Disco Thin",
+    "file": "DigitalDisco-Thin.ttf",
+    "author": "jeti",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+    "source": "https://www.dafont.com/digital-disco.font"
+  },
+  {
+    "id": "grape-soda",
+    "label": "Grape Soda",
+    "file": "GrapeSoda.ttf",
+    "author": "jeti",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+    "source": "https://www.dafont.com/grapesoda-2.font"
+  },
+  {
+    "id": "kiwi-soda",
+    "label": "Kiwi Soda",
+    "file": "KiwiSoda.ttf",
+    "author": "jeti",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+    "source": "https://www.dafont.com/kiwisoda.font"
+  },
+  {
+    "id": "minecraft-standard",
+    "label": "Minecraft Standard",
+    "file": "MinecraftStandard.otf",
+    "author": "Polda18",
+    "license": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "source": "license stated in the font file"
+  },
+  {
+    "id": "minecraft-standard-bold",
+    "label": "Minecraft Standard Bold",
+    "file": "MinecraftStandardBold.otf",
+    "author": "Polda18",
+    "license": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "source": "license stated in the font file"
+  }
+]

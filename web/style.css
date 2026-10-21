@@ -5,34 +5,68 @@
   :root { --bg: #161616; --fg: #ececec; --muted: #9a9a9a; --line: #333; --panel: #1f1f1f; --accent: #7ba3ff; --error: #ff8a80; --warn: #ffc266; }
 }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 body { margin: 0; padding: 0 16px 32px; background: var(--bg); color: var(--fg); font: 15px/1.45 system-ui, sans-serif; }
-header { max-width: 1200px; margin: 0 auto; padding: 20px 0 8px; }
-h1 { font-size: 20px; margin: 0 0 4px; }
-header p { margin: 0; color: var(--muted); }
-main { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 320px 1fr; gap: 20px; align-items: start; }
-@media (max-width: 760px) { main { grid-template-columns: 1fr; } }
-form { display: grid; gap: 12px; }
-fieldset { margin: 0; padding: 10px 12px 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); display: grid; gap: 8px; }
-legend { padding: 0 6px; font-weight: 600; }
+
+header.top, main { max-width: 1500px; margin: 0 auto; }
+header.top { padding: 16px 0 6px; }
+h1 { font-size: 20px; margin: 0 0 2px; }
+header.top p { margin: 0; color: var(--muted); }
+
+/* One line above the image: the preview options on the left, the name, size and download on the right */
+.toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 24px; margin-bottom: 8px; }
+.toolbar .left, .toolbar .right { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
+.toolbar .right { margin-left: auto; justify-content: flex-end; }
+.toolbar label.name { display: flex; align-items: center; gap: 8px; color: var(--muted); white-space: nowrap; }
+.toolbar label.name input { width: 190px; }
+.toolbar label.check, .toolbar .saved-as, .toolbar #size { white-space: nowrap; }
+.toolbar .zoom { display: flex; gap: 6px; }
+button.square { width: 34px; height: 34px; padding: 0; font-size: 20px; line-height: 1; border-radius: 4px; }
+
+/* The settings sit side by side, as many per row as fit */
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; align-items: start; margin-bottom: 16px; }
+details.card { border: 1px solid var(--line); border-radius: 6px; background: var(--panel); padding: 0 12px; }
+details.card > summary { padding: 9px 0; font-weight: 600; cursor: pointer; }
+details.card[open] > summary { border-bottom: 1px solid var(--line); margin-bottom: 10px; }
+details.card > .body { padding-bottom: 12px; }
+.body { display: grid; gap: 8px; }
+.body.indent { padding-left: 14px; border-left: 2px solid var(--line); }
+
 label { display: grid; gap: 3px; font-size: 13px; color: var(--muted); }
 label.check { display: flex; align-items: center; gap: 6px; color: var(--fg); font-size: 14px; }
 input[type=number], input[type=text], select, textarea { width: 100%; padding: 6px 8px; font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 4px; }
 textarea { font-family: ui-monospace, Menlo, Consolas, monospace; }
 .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; align-items: end; }
 .note { margin: 0; font-size: 13px; color: var(--muted); }
-.toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; margin-bottom: 8px; }
-.toolbar label { display: flex; align-items: center; gap: 6px; }
-.toolbar input[type=number] { width: 64px; }
-.toolbar label.name { color: var(--muted); }
-.toolbar label.name input { width: 220px; }
+.saved-as { font-size: 13px; color: var(--muted); white-space: nowrap; }
+input[type=file] { width: 100%; font: inherit; font-size: 13px; color: var(--muted); }
+
 button { padding: 8px 14px; font: inherit; font-weight: 600; color: #fff; background: var(--accent); border: 0; border-radius: 4px; cursor: pointer; }
 @media (prefers-color-scheme: dark) { button { color: #111; } }
 button:disabled { opacity: .4; cursor: default; }
+button.secondary { padding: 5px 10px; font-weight: 500; background: transparent; color: var(--accent); border: 1px solid var(--accent); }
+
+/* Preview, under the settings, on the full width */
 #messages { list-style: none; margin: 0 0 8px; padding: 0; font-size: 14px; }
 #messages .error { color: var(--error); }
 #messages .warn { color: var(--warn); }
 .preview { overflow: auto; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); padding: 8px; }
-canvas { display: block; image-rendering: pixelated; }
-details { margin-top: 10px; }
-pre { overflow: auto; padding: 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; font-size: 12px; }
-[hidden] { display: none !important; }
+canvas { display: block; image-rendering: pixelated; margin: 0 auto; }
+/* The metadata are folded by default and the image has the whole width; opened, they take the last third */
+.split { display: grid; grid-template-columns: 1fr; gap: 12px; align-items: start; }
+.split.meta-open { grid-template-columns: 2fr 1fr; }
+@media (max-width: 800px) { .split.meta-open { grid-template-columns: 1fr; } }
+.meta { min-width: 0; }
+.meta > summary { cursor: pointer; font-size: 13px; font-weight: 600; color: var(--muted); padding: 2px 0 6px; }
+pre { margin: 0; overflow: auto; max-height: 70vh; padding: 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; font-size: 12px; }
+
+/* The "i" next to the font list opens what is known about the font */
+.with-info { display: flex; gap: 6px; align-items: stretch; }
+.with-info select { flex: 1; min-width: 0; }
+.with-info button.square { flex: 0 0 34px; height: auto; min-height: 34px; font-weight: 700; font-style: italic; font-family: Georgia, serif; }
+dialog { width: min(520px, calc(100vw - 32px)); padding: 18px 20px; color: var(--fg); background: var(--panel); border: 1px solid var(--line); border-radius: 8px; }
+dialog::backdrop { background: rgba(0, 0, 0, .55); }
+dialog h2 { margin: 0 0 8px; font-size: 16px; }
+dialog p { margin: 0 0 10px; line-height: 1.5; }
+dialog form { margin: 14px 0 0; text-align: right; }
+dialog a { color: var(--accent); }

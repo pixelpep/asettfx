@@ -22,7 +22,7 @@ Export a font from the command line, with the same checks the dialog will show: 
 ## Workflow
 
 1. Open the web tool and choose a character set, spacing mode (monospace or variable) and cell size.
-2. Download the PNG template: a grey ghost of each character to draw, blue baseline ticks, and in variable-space mode, optionally magenta width columns pre-filled from the hint font. Settings are stored in a PNG `tEXt` chunk.
+2. Download the PNG template: a grey ghost of each character to draw (in Arial, Times New Roman, one of the bundled pixel fonts, or any pixel font file from your computer, drawn at its own pixel size), blue baseline ticks, and in variable-space mode, optionally magenta width columns pre-filled from the hint font. Settings are stored in a PNG `tEXt` chunk.
 3. Open the PNG in Aseprite and draw each glyph in black on a layer above it. The template is only a guide.
 4. To make a variable-width font, paint pure magenta `#FF00FF` over the unused columns on the right of a glyph. To keep the pre-filled magenta, copy it from the template onto your drawing layer. The export dialog detects magenta and selects variable spacing; with no magenta the font is monospace. You can still choose monospace when magenta is present, and it is then ignored.
 5. Hide the template layer, then run **File → Scripts → ASETTFX → Export as TTF...**. Every visible layer is flattened over white (a white or a transparent background are equivalent), and black pixels become the glyphs.
@@ -56,6 +56,10 @@ tests/                round-trip and export tests
 5. ~~Aseprite UI, commands, packaging as `.aseprite-extension`~~
 
 Next: see [docs/PROGRESS.md](docs/PROGRESS.md).
+
+## Credits
+
+The template generator ships a few pixel fonts, unchanged, to draw its guide characters: Alkhemikal, Digital Disco, Digital Disco Thin, Grape Soda and Kiwi Soda by [jeti](https://fontenddev.com/) ([CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)), and Bytesized by Baltdev ([SIL OFL 1.1](web/fonts/licenses/OFL-Bytesized.txt)), and Minecraft Standard and Minecraft Standard Bold by Polda18 ([CC0](https://creativecommons.org/publicdomain/zero/1.0/)). Details and sources: [web/fonts/LICENSES.md](web/fonts/LICENSES.md). Any other pixel font can be used from a file on your computer.
 
 ## License
 

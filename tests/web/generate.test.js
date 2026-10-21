@@ -80,3 +80,12 @@ test('prefill is applied only for variable mode with magenta widths and a ghost 
     assert.equal('prefill' in (r.meta.guide || {}), false, JSON.stringify(extra));
   }
 });
+
+test('fileName: the font name in lowercase with hyphens, then the cell size and template', () => {
+  assert.equal(gen.fileName('My Pixel Font', 8, 8), 'my-pixel-font-8x8-template.png');
+  assert.equal(gen.fileName('  Caf\u00e9 -- Mono!! ', 16, 24), 'cafe-mono-16x24-template.png');
+  assert.equal(gen.fileName('\u00c9criture \u4e2d', 8, 8), 'ecriture-8x8-template.png');
+  assert.equal(gen.fileName('', 8, 8), 'font-8x8-template.png');
+  assert.equal(gen.fileName('***', 8, 8), 'font-8x8-template.png');
+  assert.equal(gen.fileName(undefined, 8, 8), 'font-8x8-template.png');
+});

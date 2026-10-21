@@ -8,6 +8,7 @@
   "scripts": {
     "gen:charsets": "node tools/gen-charsets.mjs",
     "gen:blank": "node tools/gen-blank.mjs",
+    "gen:fonts": "node tools/gen-bundled-fonts.mjs",
     "gen:fixtures": "node tools/make-fixtures.mjs",
     "test": "node --test tests/web/*.test.js",
     "test:aseprite": "sh tools/run-aseprite-tests.sh",

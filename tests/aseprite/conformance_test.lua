@@ -26,6 +26,13 @@ return function(T)
     end
   end)
 
+  T.test("fractional numbers are kept fractional, not truncated by Aseprite's math.tointeger", function()
+    local v = jsonutil.parse('{"a":1.5,"b":2.0,"c":8}')
+    T.eq(v.a, 1.5); T.eq(math.type(v.a), "float")
+    T.eq(v.b, 2); T.eq(math.type(v.b), "integer")
+    T.eq(math.type(v.c), "integer")
+  end)
+
   T.test("non-object metadata is rejected", function()
     T.eq(#meta.validate(jsonutil.parse("[1,2]")), 1)
     T.eq(#meta.validate(nil), 1)
