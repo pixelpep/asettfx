@@ -5,6 +5,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Changed
+
+- The project is renamed from ASETTFX to **Digiface**: the template generator is **Digiface Matrix** and the extension is **Digiface for Aseprite** (menu *File > Scripts > Digiface*). The rename covers the internal names too, since nobody used them yet: the PNG chunk keyword and the sprite property are `digiface`, the sidecar file is `<name>.digiface.json`, the Lua modules are in `digiface/`, the extension file is `digiface-<version>.aseprite-extension`. Templates and sprites made with the old name are not read. The fonts written by the exporter and the bundled GB Studio fonts carry "Digiface" in their unique identifier.
+
 ### Added
 
 - Two more bundled pixel fonts: GB Studio Mono and GB Studio Variable, the default fonts of GB Studio (Chris Maltby, MIT License), made from the PNG files of the GB Studio repository by this project's exporter (`sh tools/make-gbs-fonts.sh`, reproducible); the sources and the license text are in `web/fonts/source/` and `web/fonts/licenses/`.
@@ -48,12 +52,12 @@ First version.
 
 ### Added
 
-- Template generator (`web/`): open `web/index.html`. Character presets or custom sets, cell size, baseline, monospace or variable-space mode, checkerboard, ghost characters, baseline ticks, preview with grid lines, PNG download with the `asettfx` metadata chunk. The hint font is chosen from a list (automatic: Menlo for monospace, Verdana left-aligned for variable space; sans-serif, serif and typewriter choices; custom name allowed). In variable mode the template can pre-fill the magenta width columns from the hint font.
-- Aseprite extension (`aseprite-extension/`): menu *File > Scripts > ASETTFX* with *Export as TTF...* (checks listed, family name, copyright, version, file chooser, *Settings...* to edit the grid) and *Set grid from template settings*. When the PNG has no settings, a form asks for the grid.
-- Reading: PNG metadata reader with CRC check, settings found in the PNG, the sprite properties or a sidecar file `<name>.asettfx.json`, flattening of the visible layers over white (hidden layers and groups are not read), cell and width analysis, and the export checks of `spec/CHECKS.md` (errors block the export, warnings and notes are listed).
+- Template generator (`web/`): open `web/index.html`. Character presets or custom sets, cell size, baseline, monospace or variable-space mode, checkerboard, ghost characters, baseline ticks, preview with grid lines, PNG download with the `digiface` metadata chunk. The hint font is chosen from a list (automatic: Menlo for monospace, Verdana left-aligned for variable space; sans-serif, serif and typewriter choices; custom name allowed). In variable mode the template can pre-fill the magenta width columns from the hint font.
+- Aseprite extension (`aseprite-extension/`): menu *File > Scripts > Digiface* with *Export as TTF...* (checks listed, family name, copyright, version, file chooser, *Settings...* to edit the grid) and *Set grid from template settings*. When the PNG has no settings, a form asks for the grid.
+- Reading: PNG metadata reader with CRC check, settings found in the PNG, the sprite properties or a sidecar file `<name>.digiface.json`, flattening of the visible layers over white (hidden layers and groups are not read), cell and width analysis, and the export checks of `spec/CHECKS.md` (errors block the export, warnings and notes are listed).
 - TrueType export in pure Lua (`outline.lua`, `ttf.lua`, `export.lua`, rules in `spec/TTF.md`): crisp pixel outlines at 64 units per pixel, with the `OS/2`, `cmap` (formats 4 and 12), `glyf`, `head`, `hhea`, `hmtx`, `loca`, `maxp`, `name` and `post` tables.
 - `spec/`: metadata JSON Schema v1, grid and pixel rules (`GRID.md`), embedding and resolution rules (`METADATA.md`), export checks (`CHECKS.md`), font output (`TTF.md`), charset presets, examples, and conformance cases shared by the JavaScript and Lua code.
-- Command-line tools: `tools/inspect.sh` (what the exporter reads from a file), `tools/export.sh`, `tools/make-sample.sh` (an A to Z example font), `tools/validate_ttf.py` (independent check with fontTools), `tools/pack.sh` (`dist/asettfx-0.1.0.aseprite-extension`), `tools/install-dev.sh`, `tools/check-package.sh`.
+- Command-line tools: `tools/inspect.sh` (what the exporter reads from a file), `tools/export.sh`, `tools/make-sample.sh` (an A to Z example font), `tools/validate_ttf.py` (independent check with fontTools), `tools/pack.sh` (`dist/digiface-0.1.0.aseprite-extension`), `tools/install-dev.sh`, `tools/check-package.sh`.
 - Tests: `npm test` (47 tests) and `npm run test:aseprite` (106 tests run inside Aseprite's batch mode; the dialogs are tested with a stand-in for `Dialog`, since batch mode has no UI).
 - Project documentation: `README.md`, `docs/PROGRESS.md`; Apache-2.0 `LICENSE` and `NOTICE` (copyright pixelPep inc., based on the code of [ase2ttf](https://github.com/nuskey8/ase2ttf)).
 
@@ -70,5 +74,5 @@ First version.
 - No kerning, no hinting. Characters that were not drawn are left out of the font.
 - Tried in Aseprite 1.3.16 on macOS only. Other versions and systems have not been tested.
 
-[Unreleased]: https://github.com/pixelpep/asettfx/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/pixelpep/asettfx/releases/tag/v0.1.0
+[Unreleased]: https://github.com/pixelpep/digiface/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/pixelpep/digiface/releases/tag/v0.1.0

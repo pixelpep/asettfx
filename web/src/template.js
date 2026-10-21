@@ -1,10 +1,10 @@
 // Draws the guide template: checkerboard, ghost characters, baseline ticks. See spec/GRID.md section 6.
 (function (root, factory) {
   const dep = name => (typeof require === 'function' && typeof module === 'object')
-    ? require('./' + name + '.js') : root.ASETTFX[name];
+    ? require('./' + name + '.js') : root.Digiface[name];
   const api = factory(dep('charmap'));
   if (typeof module === 'object' && module.exports) module.exports = api;
-  else { root.ASETTFX = root.ASETTFX || {}; root.ASETTFX.template = api; }
+  else { root.Digiface = root.Digiface || {}; root.Digiface.template = api; }
 })(typeof self !== 'undefined' ? self : this, function (charmap) {
   'use strict';
 

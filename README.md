@@ -1,17 +1,17 @@
-# ASETTFX
+# Digiface
 
-Turn pixel-art glyphs drawn in [Aseprite](https://www.aseprite.org/) into a valid bitmap-style TrueType font (`.ttf`), for game engines and design tools such as Figma.
+Pixel fonts from Aseprite to TTF. Turn pixel-art glyphs drawn in [Aseprite](https://www.aseprite.org/) into a valid bitmap-style TrueType font (`.ttf`), for game engines and design tools such as Figma.
 
-> **Status: version 0.1.0.** The spec, the web template generator and the Aseprite extension (reading, checks, TTF writer, menu and dialogs) are written and tried in Aseprite 1.3.16 on macOS. Download the extension from the [Releases](https://github.com/pixelpep/asettfx/releases) page. See [Roadmap](#roadmap).
+> **Status: version 0.1.0.** The spec, the web template generator and the Aseprite extension (reading, checks, TTF writer, menu and dialogs) are written and tried in Aseprite 1.3.16 on macOS. Download the extension from the [Releases](https://github.com/pixelpep/digiface/releases) page. See [Roadmap](#roadmap).
 
-ASETTFX has two parts:
+Digiface has two parts:
 
-1. **Template generator** (`web/`): a small HTML/JS/Canvas tool that produces a PNG template for a bitmap font grid, with the settings embedded in the PNG.
-2. **Aseprite extension** (`aseprite-extension/`): a Lua extension that reads the template settings, lets you draw the glyphs, and exports the `.ttf`.
+1. **Digiface Matrix** (`web/`), the template generator: a small HTML/JS/Canvas tool that produces a PNG template for a bitmap font grid, with the settings embedded in the PNG.
+2. **Digiface for Aseprite** (`aseprite-extension/`), the extension: a Lua extension that reads the template settings, lets you draw the glyphs, and exports the `.ttf`.
 
 ## Install the extension
 
-Download `asettfx-<version>.aseprite-extension` from the [Releases](https://github.com/pixelpep/asettfx/releases) page and double-click it. To build it yourself: `sh tools/pack.sh` builds `dist/asettfx-<version>.aseprite-extension`. While developing, `sh tools/install-dev.sh` copies the files into Aseprite's extensions folder instead (restart Aseprite after). See [aseprite-extension/README.md](aseprite-extension/README.md).
+Download `digiface-<version>.aseprite-extension` from the [Releases](https://github.com/pixelpep/digiface/releases) page and double-click it. To build it yourself: `sh tools/pack.sh` builds `dist/digiface-<version>.aseprite-extension`. While developing, `sh tools/install-dev.sh` copies the files into Aseprite's extensions folder instead (restart Aseprite after). See [aseprite-extension/README.md](aseprite-extension/README.md).
 
 ## Try the template generator
 
@@ -25,7 +25,7 @@ Export a font from the command line, with the same checks the dialog will show: 
 2. Download the PNG template: a grey ghost of each character to draw (in Arial, Times New Roman, one of the bundled pixel fonts, or any pixel font file from your computer, drawn at its own pixel size), blue baseline ticks, and in variable-space mode, optionally magenta width columns pre-filled from the hint font. Settings are stored in a PNG `tEXt` chunk.
 3. Open the PNG in Aseprite and draw each glyph in black on a layer above it. The template is only a guide.
 4. To make a variable-width font, paint pure magenta `#FF00FF` over the unused columns on the right of a glyph. To keep the pre-filled magenta, copy it from the template onto your drawing layer. The export dialog detects magenta and selects variable spacing; with no magenta the font is monospace. You can still choose monospace when magenta is present, and it is then ignored.
-5. Hide the template layer, then run **File → Scripts → ASETTFX → Export as TTF...**. Every visible layer is flattened over white (a white or a transparent background are equivalent), and black pixels become the glyphs.
+5. Hide the template layer, then run **File → Scripts → Digiface → Export as TTF...**. Every visible layer is flattened over white (a white or a transparent background are equivalent), and black pixels become the glyphs.
 
 If the settings are missing or corrupted, a dialog asks for the grid parameters. Before exporting, the dialog lists any problems it found: wrong image size, empty characters, pixels that are not pure black, white or magenta, partial magenta columns and more. Warnings do not block the export; errors do. See [spec/CHECKS.md](spec/CHECKS.md).
 

@@ -1,7 +1,7 @@
-local jsonutil = require("asettfx.jsonutil")
-local session = require("asettfx.session")
-local settings = require("asettfx.settings")
-local flatten = require("asettfx.flatten")
+local jsonutil = require("digiface.jsonutil")
+local session = require("digiface.session")
+local settings = require("digiface.settings")
+local flatten = require("digiface.flatten")
 
 return function(T)
   local fixtures = T.root .. "/tests/fixtures/"
@@ -225,14 +225,14 @@ return function(T)
     T.list_eq(found.meta.map, { "0041-0042" })
 
     local dir = app.fs.tempPath
-    local base = app.fs.joinPath(dir, "asettfx-test-sidecar")
-    local f = assert(io.open(base .. ".asettfx.json", "wb"))
+    local base = app.fs.joinPath(dir, "digiface-test-sidecar")
+    local f = assert(io.open(base .. ".digiface.json", "wb"))
     f:write(json.encode(META))
     f:close()
     local other = make_sprite()
     other.filename = base .. ".aseprite"
     local viaSidecar = settings.resolve(other)
-    os.remove(base .. ".asettfx.json")
+    os.remove(base .. ".digiface.json")
     T.eq(viaSidecar.status, "ok")
     T.eq(viaSidecar.source, "sidecar")
   end)

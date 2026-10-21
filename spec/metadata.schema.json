@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/pixelpep/asettfx/spec/metadata.schema.json",
-  "title": "ASETTFX template metadata (v1)",
-  "description": "JSON stored in the PNG tEXt chunk with keyword 'asettfx'. ASCII only. Readers ignore unknown top-level keys.",
+  "$id": "https://github.com/pixelpep/digiface/spec/metadata.schema.json",
+  "title": "Digiface template metadata (v1)",
+  "description": "JSON stored in the PNG tEXt chunk with keyword 'digiface'. ASCII only. Readers ignore unknown top-level keys.",
   "type": "object",
   "required": ["v", "cell", "grid", "mode", "map"],
   "properties": {

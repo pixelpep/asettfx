@@ -4,8 +4,8 @@
 set -e
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 CONFIG="${ASEPRITE_CONFIG:-$HOME/Library/Application Support/Aseprite}"
-DEST="$CONFIG/extensions/asettfx"
-mkdir -p "$DEST/asettfx"
-cp "$ROOT/aseprite-extension/package.json" "$ROOT/aseprite-extension/asettfx.lua" "$DEST/"
-cp "$ROOT"/aseprite-extension/asettfx/*.lua "$DEST/asettfx/"
+DEST="$CONFIG/extensions/digiface"
+mkdir -p "$DEST/digiface"
+cp "$ROOT/aseprite-extension/package.json" "$ROOT/aseprite-extension/digiface.lua" "$DEST/"
+cp "$ROOT"/aseprite-extension/digiface/*.lua "$DEST/digiface/"
 echo "Installed in $DEST. Restart Aseprite."

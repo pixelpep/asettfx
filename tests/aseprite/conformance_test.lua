@@ -1,7 +1,7 @@
-local jsonutil = require("asettfx.jsonutil")
-local meta = require("asettfx.meta")
-local charmap = require("asettfx.charmap")
-local blank = require("asettfx.blank")
+local jsonutil = require("digiface.jsonutil")
+local meta = require("digiface.meta")
+local charmap = require("digiface.charmap")
+local blank = require("digiface.blank")
 
 return function(T)
   local function load_json(rel)

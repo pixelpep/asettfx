@@ -61,7 +61,7 @@ test('each data file holds exactly the original font, which is a TrueType or Ope
   for (const f of catalog) {
     const sandbox = { self: {} };
     vm.runInNewContext(read('web', 'fonts', 'data', f.id + '.js').toString('utf8'), sandbox);
-    const bytes = Buffer.from(sandbox.self.ASETTFX.fontData[f.id], 'base64');
+    const bytes = Buffer.from(sandbox.self.Digiface.fontData[f.id], 'base64');
     assert.ok(bytes.equals(read('web', 'fonts', 'original', f.file)), f.id);
     const magic = bytes.subarray(0, 4).toString('latin1');
     assert.ok(magic === '\u0000\u0001\u0000\u0000' || magic === 'OTTO' || magic === 'true', f.id + ' header');

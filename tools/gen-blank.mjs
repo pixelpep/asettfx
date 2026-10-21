@@ -1,4 +1,4 @@
-// Generates aseprite-extension/asettfx/blank.lua: the code point ranges of space, control and format characters
+// Generates aseprite-extension/digiface/blank.lua: the code point ranges of space, control and format characters
 // (Unicode Zs, Cc, Cf), the same set as web/src/template.js, so the web tool and the extension agree.
 import { writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -40,6 +40,6 @@ return M
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-  writeFileSync(join(root, 'aseprite-extension', 'asettfx', 'blank.lua'), render());
-  console.log('aseprite-extension/asettfx/blank.lua: ' + ranges().length + ' ranges');
+  writeFileSync(join(root, 'aseprite-extension', 'digiface', 'blank.lua'), render());
+  console.log('aseprite-extension/digiface/blank.lua: ' + ranges().length + ' ranges');
 }

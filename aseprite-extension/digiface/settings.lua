@@ -1,12 +1,12 @@
 -- Finds the template settings of a sprite, in the order of spec/METADATA.md: the sprite properties (no file access),
 -- the PNG on disk, a sidecar file. The manual dialog is the caller's last resort.
-local jsonutil = require("asettfx.jsonutil")
-local meta = require("asettfx.meta")
-local png_meta = require("asettfx.png_meta")
+local jsonutil = require("digiface.jsonutil")
+local meta = require("digiface.meta")
+local png_meta = require("digiface.png_meta")
 
 local M = {}
 
-local PROPERTY = "asettfx"
+local PROPERTY = "digiface"
 
 local function from_text(text)
   local value, err = jsonutil.parse(text)
@@ -24,7 +24,7 @@ end
 
 local function sidecar_path(filename)
   if not filename or filename == "" then return nil end
-  return app.fs.filePathAndTitle(filename) .. ".asettfx.json"
+  return app.fs.filePathAndTitle(filename) .. ".digiface.json"
 end
 
 local function from_sidecar(filename)

@@ -2,7 +2,7 @@
 -- Usage: sh tools/inspect.sh <file.png|file.aseprite> [chars]   (chars: characters whose pixels to print)
 local root = app.params.root
 package.path = root .. "/aseprite-extension/?.lua;" .. package.path
-local session = require("asettfx.session")
+local session = require("digiface.session")
 
 local path = app.params.file
 assert(path, "usage: sh tools/inspect.sh <file> [chars]")

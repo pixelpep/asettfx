@@ -1,5 +1,5 @@
 // Generates the charset presets for the web tool (web/src/charsets.js, which must work from file:// without fetch)
-// and for the Aseprite extension (aseprite-extension/asettfx/charsets.lua) from spec/charsets/*.json.
+// and for the Aseprite extension (aseprite-extension/digiface/charsets.lua) from spec/charsets/*.json.
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -17,7 +17,7 @@ export function renderJs(presets) {
 (function (root, factory) {
   const api = factory();
   if (typeof module === 'object' && module.exports) module.exports = api;
-  else { root.ASETTFX = root.ASETTFX || {}; root.ASETTFX.charsets = api; }
+  else { root.Digiface = root.Digiface || {}; root.Digiface.charsets = api; }
 })(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
   return { presets: ${JSON.stringify(presets, null, 2).replace(/\n/g, '\n  ')} };
@@ -39,6 +39,6 @@ ${rows}
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const presets = loadPresets();
   writeFileSync(join(root, 'web', 'src', 'charsets.js'), renderJs(presets));
-  writeFileSync(join(root, 'aseprite-extension', 'asettfx', 'charsets.lua'), renderLua(presets));
-  console.log(presets.length + ' presets written to web/src/charsets.js and aseprite-extension/asettfx/charsets.lua');
+  writeFileSync(join(root, 'aseprite-extension', 'digiface', 'charsets.lua'), renderLua(presets));
+  console.log(presets.length + ' presets written to web/src/charsets.js and aseprite-extension/digiface/charsets.lua');
 }

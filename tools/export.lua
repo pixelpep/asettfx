@@ -1,7 +1,7 @@
 -- Exports a PNG or .aseprite file to a TTF from the command line, with the same checks as the future dialog.
 -- Usage: sh tools/export.sh <file.png|file.aseprite> <out.ttf> [family]
 package.path = app.params.root .. "/aseprite-extension/?.lua;" .. package.path
-local export = require("asettfx.export")
+local export = require("digiface.export")
 
 local sprite = assert(app.open(app.params.file), "cannot open " .. tostring(app.params.file))
 local result = export.run(sprite, 1, { family = app.params.family ~= "" and app.params.family or nil })

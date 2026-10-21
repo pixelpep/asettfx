@@ -4,7 +4,7 @@
 (function (root, factory) {
   const api = factory();
   if (typeof module === 'object' && module.exports) module.exports = api;
-  else { root.ASETTFX = root.ASETTFX || {}; root.ASETTFX.pixelfont = api; }
+  else { root.Digiface = root.Digiface || {}; root.Digiface.pixelfont = api; }
 })(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
 

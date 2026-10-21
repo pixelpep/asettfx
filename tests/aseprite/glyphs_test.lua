@@ -1,5 +1,5 @@
-local meta = require("asettfx.meta")
-local glyphs = require("asettfx.glyphs")
+local meta = require("digiface.meta")
+local glyphs = require("digiface.glyphs")
 
 return function(T)
   -- ASCII art pixel source. '#' black, '.' or ' ' white, 'M' magenta, 'g' grey, 'o' light grey.

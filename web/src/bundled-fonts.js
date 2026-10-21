@@ -3,7 +3,7 @@
 (function (root, factory) {
   const api = factory();
   if (typeof module === 'object' && module.exports) module.exports = api;
-  else { root.ASETTFX = root.ASETTFX || {}; root.ASETTFX.bundledFonts = api; }
+  else { root.Digiface = root.Digiface || {}; root.Digiface.bundledFonts = api; }
 })(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
   return { fonts: [

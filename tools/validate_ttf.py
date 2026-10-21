@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Checks a font written by ASETTFX with fontTools (pip install fonttools), an implementation independent of the Lua writer.
+"""Checks a font written by Digiface with fontTools (pip install fonttools), an implementation independent of the Lua writer.
 
 Usage: python3 tools/validate_ttf.py font.ttf [cell_height]
 Exit code 0 when every check passes. Pass the cell height to also check the 64 units per pixel grid.

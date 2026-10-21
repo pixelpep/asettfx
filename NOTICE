@@ -1,9 +1,9 @@
-ASETTFX
+Digiface
 Copyright 2026 pixelPep inc.
 
 This product is licensed under the Apache License, Version 2.0 (see LICENSE).
 
-ASETTFX is based on the code of ase2ttf (https://github.com/nuskey8/ase2ttf),
+Digiface is based on the code of ase2ttf (https://github.com/nuskey8/ase2ttf),
 Copyright nuskey, licensed under the Apache License, Version 2.0.
 The pixel-outline extraction and TrueType table layout in the Aseprite extension
 are ported to Lua from ase2ttf_core (edge.rs, lib.rs) and have been modified.

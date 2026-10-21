@@ -1,10 +1,10 @@
 -- The menu commands. env makes them testable: env.sprite, env.frame, env.ui, env.alert, env.prefs.
-local session = require("asettfx.session")
-local settings = require("asettfx.settings")
-local export = require("asettfx.export")
-local form = require("asettfx.form")
-local report = require("asettfx.report")
-local ui = require("asettfx.ui")
+local session = require("digiface.session")
+local settings = require("digiface.settings")
+local export = require("digiface.export")
+local form = require("digiface.form")
+local report = require("digiface.report")
+local ui = require("digiface.ui")
 
 local M = {}
 
@@ -112,7 +112,7 @@ local function export_flow(c)
     elseif answer.action == "export" then
       local path = ensure_ttf(answer.path)
       if not path then
-        c.alert{ title = "ASETTFX", text = "Choose where to save the font.", buttons = "OK" }
+        c.alert{ title = "Digiface", text = "Choose where to save the font.", buttons = "OK" }
       else
         local built = export.build(inspected, {
           family = answer.family ~= "" and answer.family or nil,
@@ -121,17 +121,17 @@ local function export_flow(c)
         })
         if not built.ok then
           inspected.records = built.records
-          c.alert{ title = "ASETTFX", text = "The font was not exported. See the checks.", buttons = "OK" }
+          c.alert{ title = "Digiface", text = "The font was not exported. See the checks.", buttons = "OK" }
         else
           local ok, err = c.write(path, built.font)
           if not ok then
-            c.alert{ title = "ASETTFX", text = { "The file could not be written:", tostring(err) }, buttons = "OK" }
+            c.alert{ title = "Digiface", text = { "The file could not be written:", tostring(err) }, buttons = "OK" }
           else
             settings.remember(c.sprite, inspected.meta)
             c.prefs.family, c.prefs.copyright, c.prefs.version = answer.family, answer.copyright, answer.version
             c.prefs.aliases = answer.aliases
             c.prefs.directory = app.fs.filePath(path)
-            c.alert{ title = "ASETTFX", buttons = "OK", text = {
+            c.alert{ title = "Digiface", buttons = "OK", text = {
               "Font written: " .. path,
               string.format("%d glyphs, %d bytes, %s.", built.info.glyphs, built.info.bytes, report.summary(inspected.records)),
             } }
@@ -160,12 +160,12 @@ local function guarded(flow)
   return function(env)
     local c = context(env)
     if not c.sprite then
-      c.alert{ title = "ASETTFX", text = "Open a sprite first.", buttons = "OK" }
+      c.alert{ title = "Digiface", text = "Open a sprite first.", buttons = "OK" }
       return
     end
     local ok, result = pcall(flow, c)
     if not ok then
-      c.alert{ title = "ASETTFX", text = { "Something went wrong:", tostring(result) }, buttons = "OK" }
+      c.alert{ title = "Digiface", text = { "Something went wrong:", tostring(result) }, buttons = "OK" }
       return nil, result
     end
     return result

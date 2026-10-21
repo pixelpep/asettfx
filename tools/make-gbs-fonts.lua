@@ -4,8 +4,8 @@
 -- (appData/templates/gbs2/assets/fonts/), MIT License, Copyright (c) 2019-2026 Chris Maltby.
 local root = app.params.root
 package.path = root .. "/aseprite-extension/?.lua;" .. package.path
-local jsonutil = require("asettfx.jsonutil")
-local export = require("asettfx.export")
+local jsonutil = require("digiface.jsonutil")
+local export = require("digiface.export")
 
 local function read(path)
   local f = assert(io.open(path, "rb"))

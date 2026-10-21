@@ -1,7 +1,7 @@
--- Reads the ASETTFX metadata chunk of a PNG file, see spec/METADATA.md.
-local crc32 = require("asettfx.crc32")
-local jsonutil = require("asettfx.jsonutil")
-local meta = require("asettfx.meta")
+-- Reads the Digiface metadata chunk of a PNG file, see spec/METADATA.md.
+local crc32 = require("digiface.crc32")
+local jsonutil = require("digiface.jsonutil")
+local meta = require("digiface.meta")
 
 local M = {}
 

@@ -1,5 +1,5 @@
-local checks = require("asettfx.checks")
-local meta = require("asettfx.meta")
+local checks = require("digiface.checks")
+local meta = require("digiface.meta")
 
 return function(T)
   local function settings(over)

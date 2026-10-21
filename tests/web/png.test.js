@@ -42,18 +42,18 @@ test('stored fallback handles data over 65535 bytes', async () => {
 });
 
 test('tEXt chunk sits between IHDR and IDAT and reads back', async () => {
-  const bytes = await png.encode(2, 2, new Uint8Array(16), { text: [{ keyword: 'asettfx', text: '{"v":1}' }] });
+  const bytes = await png.encode(2, 2, new Uint8Array(16), { text: [{ keyword: 'digiface', text: '{"v":1}' }] });
   assert.deepEqual(png.readChunks(bytes).map(c => c.type), ['IHDR', 'tEXt', 'IDAT', 'IEND']);
-  assert.deepEqual(png.readText(bytes, 'asettfx'), { status: 'ok', text: '{"v":1}' });
+  assert.deepEqual(png.readText(bytes, 'digiface'), { status: 'ok', text: '{"v":1}' });
   assert.equal(png.readText(bytes, 'other').status, 'absent');
 });
 
 test('corrupted tEXt is reported as crc-error', async () => {
-  const bytes = await png.encode(2, 2, new Uint8Array(16), { text: [{ keyword: 'asettfx', text: '{"v":1}' }] });
+  const bytes = await png.encode(2, 2, new Uint8Array(16), { text: [{ keyword: 'digiface', text: '{"v":1}' }] });
   const tampered = Uint8Array.from(bytes);
   const at = Buffer.from(tampered).indexOf('{"v"');
   tampered[at + 5] ^= 1;
-  assert.equal(png.readText(tampered, 'asettfx').status, 'crc-error');
+  assert.equal(png.readText(tampered, 'digiface').status, 'crc-error');
 });
 
 test('invalid inputs are rejected', async () => {

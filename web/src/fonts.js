@@ -1,10 +1,10 @@
 // Fonts offered for the ghost characters. The text recorded in the metadata (guide.hintFont) is 64 characters at most.
 (function (root, factory) {
   const bundled = (typeof require === 'function' && typeof module === 'object')
-    ? require('./bundled-fonts.js') : root.ASETTFX.bundledFonts;
+    ? require('./bundled-fonts.js') : root.Digiface.bundledFonts;
   const api = factory(bundled);
   if (typeof module === 'object' && module.exports) module.exports = api;
-  else { root.ASETTFX = root.ASETTFX || {}; root.ASETTFX.fonts = api; }
+  else { root.Digiface = root.Digiface || {}; root.Digiface.fonts = api; }
 })(typeof self !== 'undefined' ? self : this, function (bundled) {
   'use strict';
 

@@ -1,5 +1,5 @@
 -- Code point map tokens, see spec/GRID.md section 2. Mirrors web/src/charmap.js.
-local jsonutil = require("asettfx.jsonutil")
+local jsonutil = require("digiface.jsonutil")
 
 local M = {}
 

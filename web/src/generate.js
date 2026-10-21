@@ -1,14 +1,14 @@
 // From user settings to a template PNG with embedded metadata.
 (function (root, factory) {
   const dep = name => (typeof require === 'function' && typeof module === 'object')
-    ? require('./' + name + '.js') : root.ASETTFX[name];
+    ? require('./' + name + '.js') : root.Digiface[name];
   const api = factory(dep('charmap'), dep('metadata'), dep('template'), dep('png'));
   if (typeof module === 'object' && module.exports) module.exports = api;
-  else { root.ASETTFX = root.ASETTFX || {}; root.ASETTFX.generate = api; }
+  else { root.Digiface = root.Digiface || {}; root.Digiface.generate = api; }
 })(typeof self !== 'undefined' ? self : this, function (charmap, metadata, template, png) {
   'use strict';
 
-  const TOOL = 'asettfx-web/0.1';
+  const TOOL = 'digiface-matrix/0.1';
   const MAX_DIMENSION = 4096;
 
   // Rows needed to hold the map at the given column count.

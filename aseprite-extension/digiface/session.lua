@@ -1,9 +1,9 @@
 -- Everything the export dialog needs, without any UI: settings, checks and the glyph analysis of a sprite.
-local meta = require("asettfx.meta")
-local settings = require("asettfx.settings")
-local flatten = require("asettfx.flatten")
-local glyphs = require("asettfx.glyphs")
-local checks = require("asettfx.checks")
+local meta = require("digiface.meta")
+local settings = require("digiface.settings")
+local flatten = require("digiface.flatten")
+local glyphs = require("digiface.glyphs")
+local checks = require("digiface.checks")
 
 local M = {}
 

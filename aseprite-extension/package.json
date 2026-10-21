@@ -1,15 +1,15 @@
 {
-  "name": "asettfx",
-  "displayName": "ASETTFX",
+  "name": "digiface",
+  "displayName": "Digiface for Aseprite",
   "description": "Export pixel-art glyphs drawn on a template grid to a TrueType font",
   "version": "0.1.0",
-  "author": { "name": "pixelPep inc.", "url": "https://github.com/pixelpep/asettfx" },
+  "author": { "name": "pixelPep inc.", "url": "https://github.com/pixelpep/digiface" },
   "publisher": "pixelpep",
   "license": "Apache-2.0",
   "categories": [ "Scripts" ],
   "contributes": {
     "scripts": [
-      { "path": "./asettfx.lua" }
+      { "path": "./digiface.lua" }
     ]
   }
 }

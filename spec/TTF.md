@@ -49,7 +49,7 @@ Tables are 4-byte aligned, checksums are computed, and `head.checkSumAdjustment`
 
 ## Names
 
-- Family: the name given in the export dialog, else `name` from the metadata, else `ASETTFX Font`.
+- Family: the name given in the export dialog, else `name` from the metadata, else `Digiface Font`.
 - PostScript name: family without spaces, then `-` and the subfamily, restricted to letters, digits and hyphens, at most 63 characters.
 - Version: `Version 1.000` unless given.
 - Timestamps are set to the export time; tests pass a fixed time to get reproducible bytes.

@@ -1,8 +1,8 @@
 -- The "template settings" form: defaults, conversion to and from metadata. No UI here, so it can be tested.
-local charsets = require("asettfx.charsets")
-local charmap = require("asettfx.charmap")
-local jsonutil = require("asettfx.jsonutil")
-local meta = require("asettfx.meta")
+local charsets = require("digiface.charsets")
+local charmap = require("digiface.charmap")
+local jsonutil = require("digiface.jsonutil")
+local meta = require("digiface.meta")
 
 local M = {}
 

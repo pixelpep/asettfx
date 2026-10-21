@@ -1,9 +1,9 @@
 -- Builds a small sample font sprite (A to Z and a space, variable width) and exports it.
 -- Usage: sh tools/make-sample.sh <output directory>   writes sample.aseprite and sample.ttf
 package.path = app.params.root .. "/aseprite-extension/?.lua;" .. package.path
-local jsonutil = require("asettfx.jsonutil")
-local settings = require("asettfx.settings")
-local export = require("asettfx.export")
+local jsonutil = require("digiface.jsonutil")
+local settings = require("digiface.settings")
+local export = require("digiface.export")
 
 -- 5 x 7 capitals drawn for this project. '#' is ink.
 local LETTERS = {
@@ -39,7 +39,7 @@ local out_dir = assert(app.params.out, "usage: sh tools/make-sample.sh <output d
 local CELL, COLS, ROWS = 8, 9, 3
 
 local meta = jsonutil.parse(string.format(
-  '{"v":1,"name":"ASETTFX Sample","cell":{"w":%d,"h":%d},"grid":{"cols":%d,"rows":%d},"mode":"var","widthSource":"magenta",' ..
+  '{"v":1,"name":"Digiface Sample","cell":{"w":%d,"h":%d},"grid":{"cols":%d,"rows":%d},"mode":"var","widthSource":"magenta",' ..
   '"map":["0020","0041-005A"],"metrics":{"baseline":1,"xHeight":7,"capHeight":7}}', CELL, CELL, COLS, ROWS))
 
 local sprite = Sprite(COLS * CELL, ROWS * CELL, ColorMode.RGB)
@@ -70,7 +70,7 @@ end
 sprite:newCel(sprite.layers[1], 1, img, Point(0, 0))
 settings.remember(sprite, meta)
 
-local result = export.run(sprite, 1, { family = "ASETTFX Sample" })
+local result = export.run(sprite, 1, { family = "Digiface Sample" })
 for _, r in ipairs(result.records) do print(string.format("%-8s %-17s %s", r.level, r.id, r.message)) end
 assert(result.ok, "sample font was not exported")
 sprite:saveAs(out_dir .. "/sample.aseprite")

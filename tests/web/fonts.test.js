@@ -24,16 +24,16 @@ test('Arial and Times are fitted to the cell, always left-aligned', () => {
 });
 
 test('a pixel font read from a file is drawn at its own size', () => {
-  const loaded = { family: '"asettfx-font-1"', label: 'Early GameBoy', pixelFont: true, em: 8 };
+  const loaded = { family: '"digiface-font-1"', label: 'Early GameBoy', pixelFont: true, em: 8 };
   const r = fonts.resolve({ id: 'file', loaded });
-  assert.equal(r.family, '"asettfx-font-1"');
+  assert.equal(r.family, '"digiface-font-1"');
   assert.equal(r.exactSize, 8);
   assert.equal(r.align, 'left');
   assert.equal(r.hintFont, 'File: Early GameBoy');
 });
 
 test('a bundled font records its author and license in the metadata', () => {
-  const loaded = { family: '"asettfx-font-2"', label: 'Digital Disco', pixelFont: true, em: 16 };
+  const loaded = { family: '"digiface-font-2"', label: 'Digital Disco', pixelFont: true, em: 16 };
   const r = fonts.resolve({ id: 'bundled:digital-disco', loaded });
   assert.equal(r.exactSize, 16);
   assert.equal(r.hintFont, 'Digital Disco (jeti, CC BY 4.0)');

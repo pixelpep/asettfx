@@ -1,4 +1,4 @@
-local outline = require("asettfx.outline")
+local outline = require("digiface.outline")
 
 return function(T)
   local function trace(rows) return outline.trace(rows) end

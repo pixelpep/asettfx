@@ -1,7 +1,7 @@
 // UI wiring for the template generator.
 (function () {
   'use strict';
-  const { charmap, charsets, generate, hintCanvas, fonts, pixelfont } = window.ASETTFX;
+  const { charmap, charsets, generate, hintCanvas, fonts, pixelfont } = window.Digiface;
   const $ = id => document.getElementById(id);
 
   const CUSTOM_HEX = 'custom-hex';
@@ -109,7 +109,7 @@
 
   // Loads the font bytes into the page and finds out whether it is a pixel font.
   async function makeFont(bytes, label, slot) {
-    const family = 'asettfx-font-' + (++faceCounter);
+    const family = 'digiface-font-' + (++faceCounter);
     const face = new FontFace(family, bytes);
     await face.load();
     document.fonts.add(face);
@@ -130,9 +130,9 @@
   async function ensureBundled(id) {
     if (bundledCache[id]) return;
     const entry = fonts.FONTS.find(f => f.id === id).bundled;
-    const store = window.ASETTFX.fontData || {};
+    const store = window.Digiface.fontData || {};
     if (!store[entry.id]) await loadScript('fonts/data/' + entry.id + '.js');
-    const binary = atob(window.ASETTFX.fontData[entry.id]);
+    const binary = atob(window.Digiface.fontData[entry.id]);
     const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
     bundledCache[id] = await makeFont(bytes, entry.label);
   }
@@ -352,6 +352,6 @@
   $('applyFontAll').addEventListener('click', () => applyFit('all'));
   $('name').addEventListener('input', showFileName);  // immediately, without waiting for the preview
 
-  window.ASETTFX.app = { refresh, state: () => last };
+  window.Digiface.app = { refresh, state: () => last };
   refresh();
 })();

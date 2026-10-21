@@ -1,7 +1,7 @@
 -- Cuts the flattened image into cells and reads ink, width markers and advances, see spec/GRID.md sections 1 to 4.
 -- A pixel source is {width, height, rgb = function(x, y) return r, g, b end}, already flattened over white.
-local charmap = require("asettfx.charmap")
-local blank = require("asettfx.blank")
+local charmap = require("digiface.charmap")
+local blank = require("digiface.blank")
 
 local M = {}
 

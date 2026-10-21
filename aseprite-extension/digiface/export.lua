@@ -1,6 +1,6 @@
 -- Inspects a sprite and, when the checks allow it, builds the font. No UI: the dialog and the command-line tools call this.
-local session = require("asettfx.session")
-local ttf = require("asettfx.ttf")
+local session = require("digiface.session")
+local ttf = require("digiface.ttf")
 
 local M = {}
 

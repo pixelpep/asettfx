@@ -12,9 +12,9 @@ test('web/src/charsets.js is in sync with spec/charsets (run npm run gen:charset
   assert.deepEqual(charsets.presets, files.map(f => JSON.parse(fs.readFileSync(path.join(dir, f), 'utf8'))));
 });
 
-test('aseprite-extension/asettfx/charsets.lua is in sync (run npm run gen:charsets)', async () => {
+test('aseprite-extension/digiface/charsets.lua is in sync (run npm run gen:charsets)', async () => {
   const gen = await import('../../tools/gen-charsets.mjs');
-  const lua = fs.readFileSync(path.join(__dirname, '..', '..', 'aseprite-extension', 'asettfx', 'charsets.lua'), 'utf8');
+  const lua = fs.readFileSync(path.join(__dirname, '..', '..', 'aseprite-extension', 'digiface', 'charsets.lua'), 'utf8');
   assert.equal(lua, gen.renderLua(gen.loadPresets()));
   assert.equal(charsets.presets.length, gen.loadPresets().length);
 });

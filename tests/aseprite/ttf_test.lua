@@ -1,5 +1,5 @@
-local ttf = require("asettfx.ttf")
-local meta = require("asettfx.meta")
+local ttf = require("digiface.ttf")
+local meta = require("digiface.meta")
 local reader = require("ttf_reader")
 
 return function(T)

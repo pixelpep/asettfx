@@ -1,9 +1,9 @@
 -- The two dialogs. D is the Dialog constructor (injected so the flows can be tested without Aseprite's UI).
-local form = require("asettfx.form")
+local form = require("digiface.form")
 
 local M = {}
 
-local TITLE = "ASETTFX"
+local TITLE = "Digiface"
 
 -- Shows the template settings form. Returns the form values, or nil when cancelled.
 -- initial: form table (see form.lua); message: optional line shown on top (for example a validation error).

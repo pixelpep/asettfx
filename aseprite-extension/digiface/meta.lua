@@ -1,11 +1,11 @@
 -- Validation of the template metadata, see spec/metadata.schema.json. Mirrors web/src/metadata.js;
 -- spec/conformance/metadata-cases.json is run against both.
-local jsonutil = require("asettfx.jsonutil")
-local charmap = require("asettfx.charmap")
+local jsonutil = require("digiface.jsonutil")
+local charmap = require("digiface.charmap")
 
 local M = {}
 
-M.KEYWORD = "asettfx"
+M.KEYWORD = "digiface"
 
 local function is_int(v, min, max)
   return math.type(v) == "integer" and v >= min and v <= max

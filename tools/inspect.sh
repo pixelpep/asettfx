@@ -1,5 +1,5 @@
 #!/bin/sh
-# Shows what the ASETTFX exporter reads from a PNG or .aseprite file. Set ASEPRITE if it is not at the macOS default path.
+# Shows what the Digiface exporter reads from a PNG or .aseprite file. Set ASEPRITE if it is not at the macOS default path.
 set -e
 [ -n "$1" ] || { echo "usage: sh tools/inspect.sh <file.png|file.aseprite> [chars]"; exit 1; }
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"

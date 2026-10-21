@@ -2,7 +2,7 @@
 (function (root, factory) {
   const api = factory();
   if (typeof module === 'object' && module.exports) module.exports = api;
-  else { root.ASETTFX = root.ASETTFX || {}; root.ASETTFX.hintCanvas = api; }
+  else { root.Digiface = root.Digiface || {}; root.Digiface.hintCanvas = api; }
 })(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
 

@@ -1,5 +1,5 @@
 -- Writes a TrueType font from the glyph analysis, see spec/TTF.md. Pure Lua: string.pack and nothing else.
-local outline = require("asettfx.outline")
+local outline = require("digiface.outline")
 
 local M = {}
 
@@ -409,13 +409,13 @@ function M.build(analysis, settings, options)
   local hmtx = {}
   for i, g in ipairs(glyphs) do hmtx[i] = u16(g.advance) .. i16(g.lsb) end
 
-  local family = options.family or settings.name or "ASETTFX Font"
+  local family = options.family or settings.name or "Digiface Font"
   local subfamily = options.subfamily or "Regular"
   local version = options.version or "Version 1.000"
   local ps = (family:gsub("[^%w]", "")) .. "-" .. (subfamily:gsub("[^%w]", ""))
   if ps:sub(1, 1) == "-" then ps = "Font" .. ps end
   local names = {
-    [1] = family, [2] = subfamily, [3] = family .. ";" .. version .. ";ASETTFX",
+    [1] = family, [2] = subfamily, [3] = family .. ";" .. version .. ";Digiface",
     [4] = subfamily == "Regular" and family or (family .. " " .. subfamily), [5] = version, [6] = ps:sub(1, 63),
   }
   if options.copyright and options.copyright ~= "" then names[0] = options.copyright end

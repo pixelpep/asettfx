@@ -1,11 +1,11 @@
 -- Runs the unpacked extension (app.params.dir) without any file of the repository.
 local dir = assert(app.params.dir, "pass --script-param dir=<unpacked extension>")
-for _, name in ipairs({ "package.json", "asettfx.lua", "LICENSE", "NOTICE", "README.md", "asettfx/ttf.lua", "asettfx/commands.lua" }) do
+for _, name in ipairs({ "package.json", "digiface.lua", "LICENSE", "NOTICE", "README.md", "digiface/ttf.lua", "digiface/commands.lua" }) do
   assert(io.open(dir .. "/" .. name, "rb"), "missing in the package: " .. name):close()
 end
 package.path = dir .. "/?.lua"  -- nothing else: the package must not need the repository
 
-assert(loadfile(dir .. "/asettfx.lua"))()
+assert(loadfile(dir .. "/digiface.lua"))()
 local commands = {}
 local plugin = { path = dir, preferences = {} }
 function plugin:newMenuGroup() end
@@ -14,9 +14,9 @@ init(plugin)
 assert(#commands == 2, "two commands expected")
 
 -- a font from a small sprite, through the same modules the menu command uses
-local jsonutil = require("asettfx.jsonutil")
-local settings = require("asettfx.settings")
-local export = require("asettfx.export")
+local jsonutil = require("digiface.jsonutil")
+local settings = require("digiface.settings")
+local export = require("digiface.export")
 
 local sprite = Sprite(8, 8, ColorMode.RGB)
 local img = Image(8, 8, ColorMode.RGB)

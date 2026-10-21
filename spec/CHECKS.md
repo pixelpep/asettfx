@@ -20,7 +20,7 @@ Check ids are stable and are used by the tests.
 
 | Id | Level | Condition | Message |
 |---|---|---|---|
-| `meta-absent` | info | no `asettfx` chunk, sprite properties or sidecar found | Template settings not found. Using the values entered in this dialog. |
+| `meta-absent` | info | no `digiface` chunk, sprite properties or sidecar found | Template settings not found. Using the values entered in this dialog. |
 | `meta-invalid` | warning | CRC mismatch, bad JSON, schema failure or bad map | Template settings are damaged (reason). Using the values entered in this dialog. |
 | `settings-invalid` | error | the settings in the dialog fail validation (`metadata.validate`): cell size, grid, `baseline >= cell.h`, bad map | The reason, as returned by the validator. |
 

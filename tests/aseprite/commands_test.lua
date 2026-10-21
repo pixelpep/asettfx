@@ -1,8 +1,8 @@
-local commands = require("asettfx.commands")
-local form = require("asettfx.form")
-local settings = require("asettfx.settings")
-local jsonutil = require("asettfx.jsonutil")
-local ui = require("asettfx.ui")
+local commands = require("digiface.commands")
+local form = require("digiface.form")
+local settings = require("digiface.settings")
+local jsonutil = require("digiface.jsonutil")
+local ui = require("digiface.ui")
 local fake = require("fake_dialog")
 local reader = require("ttf_reader")
 
@@ -51,7 +51,7 @@ return function(T)
     return env, shown, alerts
   end
 
-  local function out_path(name) return app.fs.joinPath(app.fs.tempPath, "asettfx-test-" .. name .. ".ttf") end
+  local function out_path(name) return app.fs.joinPath(app.fs.tempPath, "digiface-test-" .. name .. ".ttf") end
 
   local function read_file(path)
     local f = io.open(path, "rb")
@@ -131,7 +131,7 @@ return function(T)
     local base = out_path("ext")
     os.remove(base)
     local env, shown = env_for(sprite, function(dlg)
-      dlg.data.path = app.fs.joinPath(app.fs.tempPath, "asettfx-test-ext")
+      dlg.data.path = app.fs.joinPath(app.fs.tempPath, "digiface-test-ext")
       dlg.click("export")
     end)
     T.eq(commands.export(env), base)
@@ -285,7 +285,7 @@ return function(T)
 
   T.test("the entry script registers the menu group and both commands", function()
     local root = T.root .. "/aseprite-extension"
-    local chunk = assert(loadfile(root .. "/asettfx.lua"))
+    local chunk = assert(loadfile(root .. "/digiface.lua"))
     chunk()
     local calls = { groups = {}, commands = {} }
     local plugin = { path = root, preferences = {} }
@@ -293,10 +293,10 @@ return function(T)
     function plugin:newCommand(o) calls.commands[#calls.commands + 1] = o end
     local before = package.path
     init(plugin)
-    T.eq(#calls.groups, 1); T.eq(calls.groups[1].id, "asettfx_menu"); T.eq(calls.groups[1].group, "file_scripts")
+    T.eq(#calls.groups, 1); T.eq(calls.groups[1].id, "digiface_menu"); T.eq(calls.groups[1].group, "file_scripts")
     T.eq(#calls.commands, 2)
     for _, c in ipairs(calls.commands) do
-      T.eq(c.group, "asettfx_menu")
+      T.eq(c.group, "digiface_menu")
       T.eq(type(c.onclick), "function")
       T.eq(c.onenabled(), app.sprite ~= nil)
     end
@@ -307,7 +307,7 @@ return function(T)
   T.test("the manifest points to files that exist and carries the license", function()
     local root = T.root .. "/aseprite-extension"
     local manifest = jsonutil.parse(T.read(root .. "/package.json"))
-    T.eq(manifest.name, "asettfx")
+    T.eq(manifest.name, "digiface")
     T.eq(manifest.license, "Apache-2.0")
     T.truthy(manifest.version:match("^%d+%.%d+%.%d+$"))
     for _, script in ipairs(manifest.contributes.scripts) do

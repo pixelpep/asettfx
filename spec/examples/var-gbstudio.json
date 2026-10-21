@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "tool": "asettfx-web/0.1",
+  "tool": "digiface-matrix/0.1",
   "name": "Pixel Variable",
   "cell": {
     "w": 8,
