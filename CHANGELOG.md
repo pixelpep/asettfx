@@ -13,6 +13,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Changed
 
+- *Bottom margin of the characters* and *Baseline: rows below the letters* are now in *Spacing*, next to the left padding; the line that explained monospace is gone.
+
 - The zoom buttons - and + are now first on the left of the line above the image.
 - What is known about a pixel font (its size, the cells it needs, how many characters have no shape in it, its credit and license) is no longer written under the font list: a square *i* button to the right of the list opens it in a window. The two buttons that size the cell stay under the list, with the size in their label. A file that is not a font now keeps its error message on screen.
 

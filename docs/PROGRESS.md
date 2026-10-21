@@ -1,10 +1,10 @@
 # Progress
 
-Last updated: 2026-10-18
+Last updated: 2026-10-20
 
 ## Status
 
-Version 0.1.0 is published (https://github.com/pixelpep/asettfx/releases/tag/v0.1.0): the spec, the web template generator, the Lua pipeline, and the Aseprite menu commands and dialogs with packaging. It is tested automatically (47 node tests, 116 Lua tests run inside Aseprite; the dialogs use a stand-in for `Dialog` there) and was tried by hand in Aseprite 1.3.16 on macOS. Release notes: `docs/releases/0.1.0.md`.
+Version 0.1.0 is published (https://github.com/pixelpep/asettfx/releases/tag/v0.1.0): the spec, the web template generator, the Lua pipeline, and the Aseprite menu commands and dialogs with packaging. Since then the template generator gained pixel fonts (bundled and from a file, drawn pixel for pixel, with a suggested cell size), a bottom margin and a left padding for the guide characters, and a new page layout; these changes are for the next version. It is tested automatically (47 node tests, 116 Lua tests run inside Aseprite; the dialogs use a stand-in for `Dialog` there) and was tried by hand in Aseprite 1.3.16 on macOS. Release notes: `docs/releases/0.1.0.md`.
 
 ## First trial in Aseprite (2026-10-16)
 
@@ -12,8 +12,12 @@ The menu appeared at the right place. Feedback and what was done: many file perm
 
 ## Next
 
-1. [ ] A bigger real font (Latin-1 or the GB Studio 16 x 14 layout, 16 px cells): legibility of accents in 8 px cells, speed on a large image.
-2. [ ] Try the extension on Windows or Linux and on other Aseprite versions.
+1. [ ] Commit and push the template generator work (pixel fonts, layout, fixes).
+2. [ ] A bigger real font end to end (Latin-1 or the GB Studio 16 x 14 layout): draw, export, install the TTF, use it in Figma. Check the pre-filled magenta workflow on it and the speed on a large image.
+3. [ ] Next version (0.2.0: the template generator changes are the main part, the extension only got a fix for fractional numbers): bump the version in `package.json` and `aseprite-extension/package.json`, date the changelog, write `docs/releases/0.2.0.md`, `sh tools/pack.sh`, GitHub release.
+4. [ ] A way to open the template generator without cloning the repository: GitHub Pages on `web/` (needs the setting turned on in the repository), or a zip of `web/` attached to the release.
+5. [ ] User documentation: a short guide with screenshots of the generator and of the export dialog, and the usual questions (variable width and magenta, why a cell needs 8 rows for accents, installing the font).
+6. [ ] Try the extension on Windows or Linux and on other Aseprite versions.
 
 ## Done
 

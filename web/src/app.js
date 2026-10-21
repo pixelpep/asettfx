@@ -250,12 +250,12 @@
     if (chosen) charsetSelect.title = chosen.text;  // the closed list may cut a long label
     const isVar = !$('forceMono').checked;
     $('var-options').hidden = !isVar;
-    $('spacing-note').textContent = isVar
-      ? 'Variable spacing: magenta columns mark the unused width of each character.'
-      : 'Monospace: every character is as wide as its cell.';
+    $('spacing-note').textContent = isVar ? 'Variable spacing: magenta columns mark the unused width of each character.' : '';
+    $('spacing-note').hidden = !isVar;
     $('hint-options').hidden = !$('hint').checked;
     $('prefill').disabled = !$('hint').checked;
-    $('hintPadding').disabled = !$('hint').checked;  // it places the ghost characters
+    $('hintPadding').disabled = !$('hint').checked;  // these two place the ghost characters
+    $('hintLift').disabled = !$('hint').checked;
     showFontPanel();
     const custom = charsetSelect.value === CUSTOM_HEX || charsetSelect.value === CUSTOM_TEXT;
     $('custom-row').hidden = !custom;

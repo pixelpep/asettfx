@@ -35,7 +35,6 @@
             <button id="applyFont" type="button" class="secondary" hidden>Use this font's cell size</button>
             <button id="applyFontAll" type="button" class="secondary" hidden>Make room for the accents too</button>
           </div>
-          <label title="Raises the characters above the baseline; a negative value lowers them. The baseline itself does not move.">Bottom margin of the characters (px) <input id="hintLift" type="number" min="-64" max="64" value="0"></label>
         </div>
       </div>
     </details>
@@ -48,7 +47,6 @@
           <label>Height (px) <input id="cellH" type="number" min="1" max="256" step="1" value="8"></label>
         </div>
         <label>Columns <input id="cols" type="number" min="1" max="256" value="16"></label>
-        <label>Baseline: rows below the letters <input id="baseline" type="number" min="0" max="255" value="1"></label>
         <p id="count" class="note"></p>
       </div>
     </details>
@@ -62,6 +60,8 @@
           <label class="check"><input id="prefill" type="checkbox" checked> Pre-fill the magenta from the hint font</label>
         </div>
         <label>Left padding of the characters (px) <input id="hintPadding" type="number" min="0" max="64" value="0"></label>
+        <label title="Raises the characters above the baseline; a negative value lowers them. The baseline itself does not move.">Bottom margin of the characters (px) <input id="hintLift" type="number" min="-64" max="64" value="0"></label>
+        <label>Baseline: rows below the letters <input id="baseline" type="number" min="0" max="255" value="1"></label>
       </div>
     </details>
   </form>
