@@ -23,3 +23,6 @@ __pycache__/
 *.pyc
 *.log
 .env
+
+# Local files, not published
+private/
