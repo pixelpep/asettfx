@@ -104,6 +104,8 @@
 
   // options.text: [{keyword, text}] written as tEXt chunks between IHDR and IDAT.
   // options.stored: force the uncompressed fallback.
+  // options.palette: [[r, g, b], ...] (256 at most): the image is written with that palette (color type 3) instead of RGBA;
+  // every pixel must be one of the colors, and the transparency is dropped.
   async function encode(width, height, rgba, options) {
     options = options || {};
     if (!Number.isInteger(width) || !Number.isInteger(height) || width < 1 || height < 1) {
@@ -111,10 +113,23 @@
     }
     if (rgba.length !== width * height * 4) throw new Error('RGBA buffer does not match image size');
 
-    const stride = width * 4;
+    const palette = options.palette || null;
+    let stride = width * 4;
+    let rows = rgba;
+    if (palette) {
+      if (palette.length < 1 || palette.length > 256) throw new Error('A palette holds 1 to 256 colors');
+      const index = new Map(palette.map((c, i) => [(c[0] << 16) | (c[1] << 8) | c[2], i]).reverse());
+      stride = width;
+      rows = new Uint8Array(width * height);
+      for (let p = 0; p < width * height; p++) {
+        const i = index.get((rgba[p * 4] << 16) | (rgba[p * 4 + 1] << 8) | rgba[p * 4 + 2]);
+        if (i === undefined) throw new Error('A pixel is not in the palette');
+        rows[p] = i;
+      }
+    }
     const raw = new Uint8Array(height * (1 + stride));
     for (let y = 0; y < height; y++) {
-      raw.set(rgba.subarray(y * stride, (y + 1) * stride), y * (1 + stride) + 1);
+      raw.set(rows.subarray(y * stride, (y + 1) * stride), y * (1 + stride) + 1);
     }
     const idat = options.stored ? deflateStored(raw) : await deflate(raw);
 
@@ -123,9 +138,10 @@
     dv.setUint32(0, width);
     dv.setUint32(4, height);
     ihdr[8] = 8;  // bit depth
-    ihdr[9] = 6;  // RGBA
+    ihdr[9] = palette ? 3 : 6;  // indexed, or RGBA
 
     const parts = [SIGNATURE, makeChunk('IHDR', ihdr)];
+    if (palette) parts.push(makeChunk('PLTE', Uint8Array.from(palette.flat())));
     for (const t of options.text || []) parts.push(makeTextChunk(t.keyword, t.text));
     parts.push(makeChunk('IDAT', idat), makeChunk('IEND', new Uint8Array(0)));
     return concat(parts);

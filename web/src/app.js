@@ -210,6 +210,7 @@
     }
     for (const id of GB_LOCKED) $(id).disabled = on;
     $('gbNote').hidden = !on;
+    $('downloadJson').hidden = !on;
     refresh();
   }
 
@@ -338,6 +339,17 @@
     const url = URL.createObjectURL(new Blob([last.png], { type: 'image/png' }));
     const a = document.createElement('a');
     a.href = url; a.download = generate.fileName(last.meta.name, last.meta.cell.w, last.meta.cell.h);
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  });
+
+  // The mapping file of GB Studio for the layout in use, named like the template without its size and "template".
+  $('downloadJson').addEventListener('click', () => {
+    if (!last) return;
+    const text = JSON.stringify({ mapping: generate.gbMapping(last.meta.map) }, null, 2) + '\n';
+    const url = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
+    const a = document.createElement('a');
+    a.href = url; a.download = generate.fileName(last.meta.name, last.meta.cell.w, last.meta.cell.h).replace(/-\d+x\d+-template\.png$/, '.json');
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   });

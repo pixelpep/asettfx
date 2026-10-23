@@ -100,6 +100,26 @@ return function(T)
     T.eq(a.counts.marker_pixels, 2)
   end)
 
+  T.test("the palette of a GB Studio template is pure, and its guide greens are guide colors", function()
+    local PAL = { ["P"] = { 224, 248, 207 }, ["K"] = { 7, 24, 33 }, ["g"] = { 192, 224, 176 }, ["M"] = { 255, 0, 255 } }
+    local function gb_source(rows)
+      return { width = #rows[1], height = #rows, rgb = function(x, y)
+        local c = PAL[rows[y + 1]:sub(x + 1, x + 1)]
+        return c[1], c[2], c[3]
+      end }
+    end
+    local rows = { "KPPPMM", "KgPPMM", "KPPPMM" }
+    local gb = glyphs.analyze(gb_source(rows), settings({ target = "gbstudio" }))
+    T.eq(gb.counts.impure, 1)  -- only the guide pixel, as for the guide colors of the other template
+    T.eq(gb.counts.guide, 1)
+    T.eq(gb.counts.ink, 3)
+    T.eq(gb.glyphs[1].advance, 4)
+    -- without the target the same colors are impure, as before
+    local plain = glyphs.analyze(gb_source(rows), settings())
+    T.eq(plain.counts.impure, 12)
+    T.eq(plain.counts.guide, 0)
+  end)
+
   T.test("cells outside the image are reported, not read", function()
     local a = glyphs.analyze(source({ "##..MM", "#...MM", "##..MM" }),
       settings({ grid = { cols = 1, rows = 2 }, map = { "0041", "0042" } }))

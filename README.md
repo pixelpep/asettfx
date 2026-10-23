@@ -29,6 +29,16 @@ Export a font from the command line, with the same checks the dialog will show: 
 
 If the settings are missing or corrupted, a dialog asks for the grid parameters. Before exporting, the dialog lists any problems it found: wrong image size, empty characters, pixels that are not pure black, white or magenta, partial magenta columns and more. Warnings do not block the export; errors do. See [spec/CHECKS.md](spec/CHECKS.md).
 
+## GB Studio fonts
+
+Tick **GB Studio** in the template generator, next to *Baseline ticks*. The layout (GB Studio's own, Windows-1252 order), the 8 x 8 cells and the 16 columns are then fixed, and the template is an **indexed PNG** with the palette of GB Studio's font sheets: the palest color (`#E0F8CF`) first, for the background, the darkest (`#071821`) second, for the characters, then the magenta for the widths and the light greens of the guide. Opened in Aseprite it stays an indexed image, so the glyphs can only be drawn with these colors. Draw them, hide the template layer, and save the image as a PNG (*File > Export As...*).
+
+GB Studio classes pixels by their green channel, and ignores their transparency: the darkest shade is the character, the palest opaque shade the background, and magenta (like pure white) is transparent, which trims the columns of each cell and gives the width of each character. Because the palette starts with the background color, the pixels that are transparent in Aseprite (a hidden template layer) are written with that color, not as black.
+
+Put the PNG and a `.json` file with the same name in the `assets/fonts` folder of your GB Studio project. The *GB Studio .json* button of the generator writes the `.json`: GB Studio turns a typed character into its code point, cut to one byte, so characters such as the euro sign, the curly quotes, the ellipsis and the French oe would show the wrong cell without it. The `.json` is only needed for these characters. The export to a TrueType font works on the same drawing, without any warning about the colors.
+
+How GB Studio reads a font image is described, from its source code, in [spec/GRID.md](spec/GRID.md).
+
 ## Grid rules
 
 - The image is exactly `cols × cellW` by `rows × cellH` pixels, with no gutter between cells.

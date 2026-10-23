@@ -38,7 +38,11 @@
     if (metaText.length > metadata.SOFT_LIMIT) warnings.push('Metadata is ' + metaText.length + ' bytes, over the recommended ' + metadata.SOFT_LIMIT);
 
     const img = template.render(config, maskProvider);
-    const bytes = await png.encode(img.width, img.height, img.rgba, { text: [{ keyword: metadata.KEYWORD, text: metaText }] });
+    // A GB Studio template is an indexed PNG (palest color first, darkest second): in Aseprite it can only be drawn with
+    // these colors, and a hidden template layer leaves the background color, not black, where it was transparent.
+    const options = { text: [{ keyword: metadata.KEYWORD, text: metaText }] };
+    if (config.target === 'gbstudio') options.palette = template.GB_PALETTE;
+    const bytes = await png.encode(img.width, img.height, img.rgba, options);
     return { ok: true, png: bytes, meta, metaText, width: img.width, height: img.height, rgba: img.rgba, warnings };
   }
 
@@ -48,5 +52,17 @@
     return slug + '-' + cellW + 'x' + cellH + '-template.png';
   }
 
-  return { TOOL, MAX_DIMENSION, rowsFor, fileName, generate };
+  // The .json that goes next to a font image in GB Studio. GB Studio turns a typed character into its code point, cut to one
+  // byte, and shows the cell of that code (the first cell is code 32). Characters that are not in the cell of their own code
+  // (the euro sign, the curly quotes, oe... of the Windows-1252 block 0x80-0x9F) need "mapping": {character: code}.
+  function gbMapping(map) {
+    const mapping = {};
+    charmap.expandMap(map).cells.forEach((cp, i) => {
+      const code = 32 + i;
+      if (cp !== null && cp !== code) mapping[String.fromCodePoint(cp)] = code;
+    });
+    return mapping;
+  }
+
+  return { TOOL, MAX_DIMENSION, rowsFor, fileName, generate, gbMapping };
 });

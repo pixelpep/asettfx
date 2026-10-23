@@ -104,3 +104,49 @@ test('a GB Studio template records its target and is refused when the grid does 
   const none = await gen.generate(settings({ map: ['0020-007E'] }), () => null);
   assert.equal('target' in none.meta, false);
 });
+
+test('the GB Studio mapping lists the characters that are not in the cell of their own code', () => {
+  const mapping = gen.gbMapping(charsets.presets.find(p => p.id === 'gbstudio').map);
+  // Windows-1252 block 0x80-0x9F: 27 characters are defined; the euro sign sits in cell 128
+  assert.equal(Object.keys(mapping).length, 27);
+  assert.equal(mapping['€'], 128);
+  assert.equal(mapping['’'], 146);
+  assert.equal(mapping['œ'], 156);
+  assert.equal(mapping['Ÿ'], 159);
+  // plain ASCII and the Latin-1 letters are in their own cell: no entry
+  assert.equal(mapping['A'], undefined);
+  assert.equal(mapping['é'], undefined);
+  // every code is a cell of the 0x80-0x9F block, checked against the Windows-1252 table
+  const cp1252 = '€\u0081‚ƒ„…†‡ˆ‰Š‹Œ\u008DŽ\u008F\u0090‘’“”•–—˜™š›œ\u009DžŸ';
+  for (const [ch, code] of Object.entries(mapping)) assert.equal(cp1252[code - 128], ch);
+  // a layout in reading order from the space needs nothing
+  assert.deepEqual(gen.gbMapping(['0020-007E']), {});
+});
+
+// A port of resolveMapping and encodeString of GB Studio (src/shared/lib/helpers/fonts.ts, MIT License), without the escapes of
+// the typed text, to check what the mapping file does: the code that GB Studio writes for a character, then the cell it shows.
+function gbEncode(text, mapping) {
+  const codes = [];
+  for (let i = 0; i < text.length;) {
+    let key = '';
+    for (const k of Object.keys(mapping || {})) if (text.startsWith(k, i) && k.length > key.length) key = k;
+    if (key) { codes.push(mapping[key]); i += key.length; continue; }
+    const code = text.codePointAt(i);
+    codes.push(code & 0xff);
+    i += code > 0xffff ? 2 : 1;
+  }
+  return codes;
+}
+
+test('with the mapping file GB Studio shows the cell of the euro sign, the curly quote and oe; without it, other cells', () => {
+  const layout = charsets.presets.find(p => p.id === 'gbstudio').map;
+  const cells = require('../../web/src/charmap.js').expandMap(layout).cells;
+  const cellOf = code => cells[code - 32];
+  const mapping = gen.gbMapping(layout);
+  for (const ch of ['€', '’', 'œ', '“', '…', 'Ÿ']) {
+    assert.equal(cellOf(gbEncode(ch, mapping)[0]), ch.codePointAt(0), ch + ' lands on its own cell with the mapping');
+    assert.notEqual(cellOf(gbEncode(ch, {})[0]), ch.codePointAt(0), ch + ' lands elsewhere without it');
+  }
+  // letters of Latin-1 and ASCII do not need the mapping
+  for (const ch of 'Cur éàç«') assert.equal(cellOf(gbEncode(ch, {})[0]), ch.codePointAt(0));
+});

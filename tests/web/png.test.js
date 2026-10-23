@@ -62,3 +62,23 @@ test('invalid inputs are rejected', async () => {
   assert.throws(() => png.makeTextChunk('k', '€'));
   assert.throws(() => png.readChunks(ascii('not a png at all')));
 });
+
+test('a PNG written with a palette is an indexed image that decodes to the same pixels', async () => {
+  const zlib = require('node:zlib');
+  const palette = [[0xE0, 0xF8, 0xCF], [0x07, 0x18, 0x21], [0xFF, 0x00, 0xFF]];
+  const rgba = new Uint8Array([
+    0xE0, 0xF8, 0xCF, 255, 0x07, 0x18, 0x21, 255, 0xFF, 0x00, 0xFF, 255,
+    0xFF, 0x00, 0xFF, 255, 0xE0, 0xF8, 0xCF, 255, 0x07, 0x18, 0x21, 255]);
+  const bytes = await png.encode(3, 2, rgba, { palette, text: [{ keyword: 'digiface', text: '{}' }] });
+  const chunks = png.readChunks(bytes);
+  assert.ok(chunks.every(c => c.crcOk));
+  const ihdr = chunks.find(c => c.type === 'IHDR').data;
+  assert.equal(ihdr[8], 8); assert.equal(ihdr[9], 3);
+  const plte = chunks.find(c => c.type === 'PLTE').data;
+  assert.deepEqual(Array.from(plte), palette.flat());
+  const raw = zlib.inflateSync(Buffer.concat(chunks.filter(c => c.type === 'IDAT').map(c => Buffer.from(c.data))));
+  assert.deepEqual(Array.from(raw), [0, 0, 1, 2, 0, 2, 0, 1]);
+  assert.equal(png.readText(bytes, 'digiface').status, 'ok');
+  // a color outside the palette is refused
+  await assert.rejects(() => png.encode(1, 1, new Uint8Array([1, 2, 3, 255]), { palette }), /not in the palette/);
+});

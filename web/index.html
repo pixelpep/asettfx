@@ -85,6 +85,7 @@
         <label class="name">Font name <input id="name" type="text" value="My Pixel Font" maxlength="64"></label>
         <span id="filename" class="saved-as" title="Name of the downloaded file"></span>
         <span id="size" class="note"></span>
+        <button id="downloadJson" type="button" class="secondary" hidden title="The file GB Studio reads next to the font image, so that characters such as the euro sign, the curly quotes and oe show the right cell. Give it the same name as the image once the font is drawn.">GB Studio .json</button>
         <button id="download" type="button" class="download">Download PNG</button>
       </div>
     </div>
@@ -105,7 +106,7 @@
 <dialog id="helpDialog">
   <h2>How to use Digiface</h2>
   <p>Draw your pixel-art letters in Aseprite and turn them into a real font. Digiface is made for GB Studio projects (it has the GB Studio character layout and its two default fonts) and for any design work that needs a crisp pixel typeface: the font installs like any other and stays sharp at sizes that are multiples of the cell height.</p>
-  <p>For a GB Studio font, tick <b>GB Studio</b> next to <b>Baseline ticks</b>: the layout, the 8 x 8 cells and the 16 columns are fixed, and the template uses the colors of GB Studio's palette.</p>
+  <p>For a GB Studio font, tick <b>GB Studio</b> next to <b>Baseline ticks</b>: the layout, the 8 x 8 cells and the 16 columns are fixed, and the template is an indexed PNG in the colors of GB Studio's palette. In Aseprite, draw the characters with the darkest color (the second of the palette), keep the palest as the background and use the magenta for the widths. Then export the image as a PNG (File &#9656; Export As&hellip;) and put it, with the <b>GB Studio .json</b> of the same name, in the <code>assets/fonts</code> folder of your project.</p>
   <ol>
     <li>Choose a character set, the cell size and the spacing here. A guide font shows the character to draw in each cell.</li>
     <li>Download the PNG template.</li>

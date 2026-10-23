@@ -10,6 +10,11 @@ local GUIDE = {
   [0xF4F4F4] = true, [0xE8E8E8] = true, [0xD2D2D2] = true, [0xB4B4B4] = true, [0x9CC3E6] = true,
 }
 
+-- Colors of the template of a GB Studio font (target "gbstudio", spec/GRID.md "GB Studio templates"): GB Studio's four shades,
+-- which are pure for it, and the light greens of its guide.
+local GB_PURE = { [0xE0F8CF] = true, [0x071821] = true, [0x306850] = true, [0x86C06C] = true }
+local GB_GUIDE = { [0xC0E0B0] = true, [0xB4D8A4] = true, [0xA0D0B8] = true }
+
 local function pack(r, g, b) return (r << 16) | (g << 8) | b end
 
 -- "ink", "marker" or "background".
@@ -21,9 +26,9 @@ local function classify(r, g, b, ink_is_dark)
   return is_ink and "ink" or "background"
 end
 
-local function is_pure(r, g, b)
+local function is_pure(r, g, b, gb)
   local c = pack(r, g, b)
-  return c == 0x000000 or c == 0xFFFFFF or c == 0xFF00FF
+  return c == 0x000000 or c == 0xFFFFFF or c == 0xFF00FF or (gb and GB_PURE[c] == true)
 end
 
 -- settings: meta.with_defaults(meta). Returns {glyphs, counts, outside, geometry}.
@@ -33,6 +38,7 @@ function M.analyze(src, settings)
   local w, h, cols = settings.cell_w, settings.cell_h, settings.cols
   local var_magenta = settings.mode == "var" and settings.width_source == "magenta"
   local ink_is_dark = settings.ink == "dark"
+  local gb = settings.target == "gbstudio"
   local cells = charmap.expand(settings.map)
 
   local result = {
@@ -65,8 +71,9 @@ function M.analyze(src, settings)
           cls[y] = {}
           for x = 0, w - 1 do
             local r, g, b = src.rgb(x0 + x, y0 + y)
-            if not is_pure(r, g, b) then counts.impure = counts.impure + 1 end
-            if GUIDE[pack(r, g, b)] then counts.guide = counts.guide + 1 end
+            if not is_pure(r, g, b, gb) then counts.impure = counts.impure + 1 end
+            local packed = pack(r, g, b)
+            if GUIDE[packed] or (gb and GB_GUIDE[packed]) then counts.guide = counts.guide + 1 end
             local kind = classify(r, g, b, ink_is_dark)
             cls[y][x] = kind
             if kind == "marker" then

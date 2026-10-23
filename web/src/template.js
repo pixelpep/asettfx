@@ -28,6 +28,12 @@
 
   const MARKER = [0xFF, 0x00, 0xFF];
 
+  // The palette of a GB Studio template, which is written as an indexed PNG like GB Studio's own font sheets: the palest color
+  // first (the background; Aseprite writes the transparent pixels of a layer as index 0), the darkest second (the ink), then
+  // the marker and the three guide colors.
+  const GB_INK = [0x07, 0x18, 0x21];
+  const GB_PALETTE = [GB_COLORS.background, GB_INK, MARKER, GB_COLORS.ghost, GB_COLORS.unassigned, GB_COLORS.baseline];
+
   const BLANK_RE = /^[\p{Cc}\p{Zs}\p{Cf}]$/u;
 
   // Space, control and format characters have no shape to show.
@@ -103,5 +109,5 @@
     return { width, height, rgba };
   }
 
-  return { COLORS, GB_COLORS, MARKER, isBlankCodepoint, widthFromMask, render };
+  return { COLORS, GB_COLORS, GB_INK, GB_PALETTE, MARKER, isBlankCodepoint, widthFromMask, render };
 });
