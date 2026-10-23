@@ -49,6 +49,27 @@
         return { index, col, row, x0: col * w, y0: row * h, cp, assigned: cp !== null, glyph: cp !== null ? glyphs.get(cp) : null, px: x - col * w, py: y - row * h };
       },
 
+      // The position, in the sheet, of the pixel i (row by row) of the glyph of a character: {x, y}.
+      pixelPosition(cp, i) {
+        const cell = indexOf.get(cp);
+        return { x: (cell % cols) * w + (i % w), y: Math.floor(cell / cols) * h + Math.floor(i / w) };
+      },
+
+      // Sets the pixel i of a glyph: 0 for nothing, or the number of a color of the palette. Returns {x, y, value}, the pixel of the
+      // sheet that changed.
+      setPixel(cp, i, value) {
+        glyphs.get(cp).pixels[i] = value;
+        const pos = model.pixelPosition(cp, i);
+        return { x: pos.x, y: pos.y, value };
+      },
+
+      // The RGBA of a pixel value: transparent for 0.
+      rgbaOf(value) {
+        if (!value) return [0, 0, 0, 0];
+        const c = model.palette[value - 1];
+        return [c[0], c[1], c[2], 255];
+      },
+
       // The writing layer as an RGBA image of the whole sheet: transparent where nothing is drawn.
       renderWriting() {
         const rgba = new Uint8Array(model.width * model.height * 4);
@@ -91,5 +112,8 @@
     return (blank ? (BLANK_NAMES[cp] || 'blank') : String.fromCodePoint(cp)) + ' ' + hex(cp);
   }
 
-  return { PLAIN, GB_SHADES, MARKER, create, describe };
+  // Names of the colors of the palette, for the tool tips.
+  const COLOR_NAMES = { plain: ['Black'], gbstudio: ['Darkest', 'Dark', 'Light', 'Palest'] };
+
+  return { PLAIN, GB_SHADES, MARKER, COLOR_NAMES, create, describe };
 });

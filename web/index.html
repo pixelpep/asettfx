@@ -104,7 +104,12 @@
 
 <div id="editor" class="editor" hidden tabindex="-1" role="dialog" aria-label="Editor">
   <header class="ed-top">
-    <strong class="ed-title">Edit</strong>
+    <strong class="ed-title">Digiface Matrix</strong>
+    <span class="ed-mode">Edit</span>
+    <span class="ed-history">
+      <button id="edUndo" type="button" class="secondary" disabled title="Undo (Cmd or Ctrl+Z)">Undo</button>
+      <button id="edRedo" type="button" class="secondary" disabled title="Redo (Cmd or Ctrl+Shift+Z)">Redo</button>
+    </span>
     <span class="ed-zoom">
       <button id="edZoomOut" type="button" class="square secondary" aria-label="Zoom out" title="Zoom out (-)">&minus;</button>
       <span id="edZoomLabel" class="ed-zoom-label">100%</span>
@@ -118,9 +123,15 @@
   </header>
   <nav class="ed-tools" aria-label="Tools">
     <button type="button" class="tool active" data-tool="hand" aria-pressed="true" title="Hand (H, or hold Space)">Hand</button>
-    <button type="button" class="tool" data-tool="brush" disabled title="Brush (B): next milestone">Brush</button>
-    <button type="button" class="tool" data-tool="eraser" disabled title="Eraser (E): next milestone">Eraser</button>
-    <button type="button" class="tool" data-tool="select" disabled title="Selection (M): later milestone">Select</button>
+    <button type="button" class="tool" data-tool="brush" aria-pressed="false" title="Brush (B)">Brush</button>
+    <button type="button" class="tool" data-tool="eraser" aria-pressed="false" title="Eraser (E)">Eraser</button>
+    <button type="button" class="tool" data-tool="select" disabled title="Selection (M): a later milestone">Select</button>
+    <div class="ed-options">
+      <label title="Size of the brush and of the eraser, in pixels ([ and ])">Size <input id="edSize" type="number" min="1" max="16" step="1" value="1"></label>
+      <label class="check" title="A stroke stays in the cell where it started"><input id="edClip" type="checkbox" checked> Stay in cell</label>
+      <span class="ed-label">Color</span>
+      <div id="edColors" class="ed-colors" role="group" aria-label="Colors"></div>
+    </div>
   </nav>
   <div id="edStage" class="ed-stage"><canvas id="edCanvas"></canvas></div>
   <aside class="ed-layers" aria-label="Layers">
@@ -171,6 +182,8 @@
 <script src="src/hint-canvas.js"></script>
 <script src="src/editor/view.js"></script>
 <script src="src/editor/model.js"></script>
+<script src="src/editor/tools.js"></script>
+<script src="src/editor/history.js"></script>
 <script src="src/editor/ui.js"></script>
 <script src="src/app.js"></script>
 </body>

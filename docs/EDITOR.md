@@ -1,6 +1,6 @@
 # Digiface Matrix editor: design and plan
 
-Status: milestone 1 of 6 is written (the window, the layers, the zoom and the hand); the drawing tools are next. Last updated: 2026-10-23.
+Status: milestones 1 and 2 of 6 are written (the window, the layers, the zoom and the hand; the brush, the eraser, the palettes and undo); the width layer is next. Last updated: 2026-10-23.
 
 The idea: draw the glyphs in the browser, on the template, with a few tools, instead of only downloading a template to draw in Aseprite. This file records what was decided, how it is built, and in which order.
 
@@ -85,7 +85,7 @@ The look follows the neon design system of the page. The interface will be adjus
 Each one is tried by the maintainer before the next one starts, on a `editor` branch.
 
 1. Full screen shell, rendering of the layers, zoom and hand. **Done:** the Edit button opens the window (`web/src/editor/`: `view.js` for the zoom and the position, `model.js` for the glyphs and the layers, `ui.js` for the screen), the template is rendered as separate layers (`template.renderLayers`, `generate.layers`), each layer has an eye, the cell grid can be shown, and the status bar names the cell under the pointer.
-2. Brush, eraser, palettes, undo and redo.
+2. Brush, eraser, palettes, undo and redo. **Done:** `editor/tools.js` (brush and eraser strokes, the footprint of a square brush, lines between two pointer positions, the option to stay in the cell where a stroke started, unused cells left alone), `editor/history.js` (undo and redo of whole gestures, 500 at most), the palette by mode (black, or the four shades of GB Studio), the size of the brush (1 to 16, `[` and `]`), B and E to choose the tool, Cmd or Ctrl+Z to undo and Cmd or Ctrl+Shift+Z (or Ctrl+Y) to redo, an outline of the brush under the pointer, and the writing layer turning visible when a stroke starts on it. The header of the window keeps the name of the application.
 3. Width layer and the three modes.
 4. Selection and clipboard.
 5. Warnings, PNG export (and the GB Studio `.json`), automatic saving.

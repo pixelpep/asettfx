@@ -123,10 +123,11 @@ dialog a { color: var(--cyan); }
 
 /* The editor: a full window over the page */
 body.editing { overflow: hidden; }
-.editor { position: fixed; inset: 0; z-index: 2000; display: grid; grid-template-columns: 84px 1fr 200px; grid-template-rows: 44px 1fr 28px;
+.editor { position: fixed; inset: 0; z-index: 2000; display: grid; grid-template-columns: 120px 1fr 200px; grid-template-rows: 44px 1fr 28px;
   grid-template-areas: "top top top" "tools stage layers" "status status status"; background: var(--bg); outline: none; }
 .ed-top { grid-area: top; display: flex; align-items: center; gap: 10px; padding: 0 12px; border-bottom: 1px solid #006600; background: var(--bg-panel); }
 .ed-title { font-size: 12px; letter-spacing: 2px; text-transform: uppercase; text-shadow: 0 0 8px var(--green); }
+.ed-mode { padding: 2px 8px; font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #000; background: var(--green); border-radius: var(--radius); }
 .ed-spacer { flex: 1; }
 .ed-zoom { display: flex; align-items: center; gap: 6px; }
 .ed-zoom-label { min-width: 48px; text-align: center; font-size: 11px; font-weight: 600; letter-spacing: .5px; }
@@ -142,4 +143,13 @@ body.editing { overflow: hidden; }
 .ed-layers h3 { margin: 6px 0 0; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--green-dim); }
 .ed-layers h3:first-child { margin-top: 0; }
 .ed-status { grid-area: status; display: flex; align-items: center; padding: 0 12px; border-top: 1px solid var(--green-dark); background: var(--bg-panel); font-size: 11px; color: var(--green-dim); white-space: nowrap; overflow: hidden; }
-@media (max-width: 700px) { .editor { grid-template-columns: 64px 1fr 130px; } }
+@media (max-width: 700px) { .editor { grid-template-columns: 96px 1fr 130px; } }
+.ed-history { display: flex; gap: 4px; }
+.ed-history button:disabled { opacity: .3; }
+.ed-options { display: grid; gap: 8px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--green-dark); }
+.ed-options input[type=number] { height: 26px; padding: 3px 6px; }
+.ed-label { font-size: 10px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--green-dim); }
+.ed-colors { display: flex; flex-wrap: wrap; gap: 6px; }
+.ed-colors .swatch { width: 28px; height: 28px; padding: 0; border: 2px solid var(--green-dark); border-radius: var(--radius); box-shadow: none; }
+.ed-colors .swatch:hover { border-color: var(--green); box-shadow: none; }
+.ed-colors .swatch.active { border-color: var(--green); box-shadow: var(--glow-green); }

@@ -7,6 +7,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Added
 
+- **Editor, milestone 2** (`docs/EDITOR.md`): the **Brush** (B) and the **Eraser** (E), a square of 1 to 16 pixels (`[` and `]`), with the pixels between two pointer positions filled in, an outline of the brush under the pointer, and the option *Stay in cell* (on by default) so that a stroke does not spill into the next cell; the unused cells cannot be drawn on. The palette by mode: black, or the four shades of GB Studio. **Undo and redo** (the buttons, Cmd or Ctrl+Z, Cmd or Ctrl+Shift+Z) of whole gestures. The header of the editor keeps the name of the application. The model (glyphs, tools, history) is pure code with tests; the screen was driven in Chrome with real events.
 - First part of the **editor** (milestone 1 of `docs/EDITOR.md`): an **Edit** button next to *Download PNG* opens a full window with the template as layers (width, writing, template, background, each with an eye), a cell grid option, a status bar naming the cell under the pointer, and the view: the **Hand** tool (H, or hold the space bar; the middle button and the two-finger scroll also move the view), zoom with the buttons, + and -, Cmd or Ctrl and the wheel, fit (0) and actual size (1). The drawing tools come next. The template is now rendered in layers (`template.renderLayers`, `generate.layers`); the flattened image is unchanged.
 
 ### Added
