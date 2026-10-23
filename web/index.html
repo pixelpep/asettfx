@@ -86,6 +86,7 @@
         <span id="filename" class="saved-as" title="Name of the downloaded file"></span>
         <span id="size" class="note"></span>
         <button id="downloadJson" type="button" class="secondary" hidden title="The file GB Studio reads next to the font image, so that characters such as the euro sign, the curly quotes and oe show the right cell. Give it the same name as the image once the font is drawn.">GB Studio .json</button>
+        <button id="edit" type="button" class="secondary" disabled title="Draw the glyphs in the page">Edit</button>
         <button id="download" type="button" class="download">Download PNG</button>
       </div>
     </div>
@@ -100,6 +101,39 @@
     </div>
   </section>
 </main>
+
+<div id="editor" class="editor" hidden tabindex="-1" role="dialog" aria-label="Editor">
+  <header class="ed-top">
+    <strong class="ed-title">Edit</strong>
+    <span class="ed-zoom">
+      <button id="edZoomOut" type="button" class="square secondary" aria-label="Zoom out" title="Zoom out (-)">&minus;</button>
+      <span id="edZoomLabel" class="ed-zoom-label">100%</span>
+      <button id="edZoomIn" type="button" class="square secondary" aria-label="Zoom in" title="Zoom in (+)">+</button>
+    </span>
+    <button id="edFit" type="button" class="secondary" title="Fit to the window (0)">Fit</button>
+    <button id="edActual" type="button" class="secondary" title="Actual size (1)">1:1</button>
+    <span class="ed-spacer"></span>
+    <button id="edFullscreen" type="button" class="secondary" title="Use the whole screen">Full screen</button>
+    <button id="edClose" type="button" class="secondary" title="Back to the settings (Esc)">Close</button>
+  </header>
+  <nav class="ed-tools" aria-label="Tools">
+    <button type="button" class="tool active" data-tool="hand" aria-pressed="true" title="Hand (H, or hold Space)">Hand</button>
+    <button type="button" class="tool" data-tool="brush" disabled title="Brush (B): next milestone">Brush</button>
+    <button type="button" class="tool" data-tool="eraser" disabled title="Eraser (E): next milestone">Eraser</button>
+    <button type="button" class="tool" data-tool="select" disabled title="Selection (M): later milestone">Select</button>
+  </nav>
+  <div id="edStage" class="ed-stage"><canvas id="edCanvas"></canvas></div>
+  <aside class="ed-layers" aria-label="Layers">
+    <h3>Layers</h3>
+    <label id="edRowWidth" class="check"><input id="edLayerWidth" type="checkbox" checked> Width</label>
+    <label class="check"><input id="edLayerWriting" type="checkbox" checked> Writing</label>
+    <label class="check"><input id="edLayerTemplate" type="checkbox" checked> Template</label>
+    <label class="check"><input id="edLayerBackground" type="checkbox" checked> Background</label>
+    <h3>View</h3>
+    <label class="check"><input id="edGrid" type="checkbox"> Cell grid</label>
+  </aside>
+  <footer class="ed-status"><span id="edStatus"></span></footer>
+</div>
 
 <footer class="foot">Made by <a href="https://pixelpep.com" target="_blank" rel="noopener">pixelPep</a>. Free and open source (Apache 2.0).</footer>
 
@@ -135,6 +169,9 @@
 <script src="src/fonts.js"></script>
 <script src="src/pixelfont.js"></script>
 <script src="src/hint-canvas.js"></script>
+<script src="src/editor/view.js"></script>
+<script src="src/editor/model.js"></script>
+<script src="src/editor/ui.js"></script>
 <script src="src/app.js"></script>
 </body>
 </html>

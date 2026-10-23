@@ -154,3 +154,25 @@ test('the magenta width columns of a GB Studio template are transparent to GB St
   assert.deepEqual(magenta, [255, 0, 255, 255]);
   assert.equal(gbShade(magenta.slice(0, 3)), 'transparent');
 });
+
+test('renderLayers keeps the background, the ghost and the widths apart, and render flattens them', () => {
+  const provider = (cp, w, h) => { const m = new Uint8Array(w * h); m[2 * w + 1] = 1; return m; };
+  const c = cfg({ cols: 4, rows: 1, map: ['0041-0043'], prefillWidths: true });
+  const layers = tpl.renderLayers(c, provider);
+  assert.equal(layers.width, 32);
+  assert.equal(layers.background.length, 32 * 8 * 4);
+  // the background is opaque everywhere and has no ghost pixel
+  for (let o = 0; o < layers.background.length; o += 4) assert.equal(layers.background[o + 3], 255);
+  const ghostAt = (x, y) => layers.ghost[(y * 32 + x) * 4 + 3];
+  assert.equal(ghostAt(1, 2), 255);
+  assert.equal(ghostAt(0, 0), 0);
+  // the right-most ink column of the ghost is the second one (index 1): the advance is 3, with one pixel of space
+  assert.deepEqual(layers.advances.slice(0, 4), [3, 3, 3, 8]);
+  // flattened, the marker is over the rest of the cell
+  const img = tpl.render(c, provider);
+  assert.deepEqual(px(img, 1, 2), [...C.ghost, 255]);
+  assert.deepEqual(px(img, 3, 0), [255, 0, 255, 255]);
+  assert.deepEqual(px(img, 7, 7), [255, 0, 255, 255]);
+  assert.notDeepEqual(px(img, 2, 0), [255, 0, 255, 255]);
+  assert.deepEqual(px(img, 24, 0), Array.from(layers.background.subarray(24 * 4, 24 * 4 + 4)));  // the unassigned fourth cell is the background there
+});

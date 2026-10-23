@@ -1,6 +1,6 @@
 # Digiface Matrix editor: design and plan
 
-Status: planned, nothing is written yet. Last updated: 2026-10-23.
+Status: milestone 1 of 6 is written (the window, the layers, the zoom and the hand); the drawing tools are next. Last updated: 2026-10-23.
 
 The idea: draw the glyphs in the browser, on the template, with a few tools, instead of only downloading a template to draw in Aseprite. This file records what was decided, how it is built, and in which order.
 
@@ -84,7 +84,7 @@ The look follows the neon design system of the page. The interface will be adjus
 
 Each one is tried by the maintainer before the next one starts, on a `editor` branch.
 
-1. Full screen shell, rendering of the layers, zoom and hand.
+1. Full screen shell, rendering of the layers, zoom and hand. **Done:** the Edit button opens the window (`web/src/editor/`: `view.js` for the zoom and the position, `model.js` for the glyphs and the layers, `ui.js` for the screen), the template is rendered as separate layers (`template.renderLayers`, `generate.layers`), each layer has an eye, the cell grid can be shown, and the status bar names the cell under the pointer.
 2. Brush, eraser, palettes, undo and redo.
 3. Width layer and the three modes.
 4. Selection and clipboard.

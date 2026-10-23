@@ -7,6 +7,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Added
 
+- First part of the **editor** (milestone 1 of `docs/EDITOR.md`): an **Edit** button next to *Download PNG* opens a full window with the template as layers (width, writing, template, background, each with an eye), a cell grid option, a status bar naming the cell under the pointer, and the view: the **Hand** tool (H, or hold the space bar; the middle button and the two-finger scroll also move the view), zoom with the buttons, + and -, Cmd or Ctrl and the wheel, fit (0) and actual size (1). The drawing tools come next. The template is now rendered in layers (`template.renderLayers`, `generate.layers`); the flattened image is unchanged.
+
+### Added
+
 - A **GB Studio .json** button (shown in GB Studio mode) writes the file GB Studio reads next to a font image: a `mapping` of the 27 characters of the Windows-1252 block 0x80-0x9F (euro sign, curly quotes, ellipsis, oe...) to their cell, because GB Studio turns a typed character into its code point cut to one byte. A test ports GB Studio's `encodeString` to check that each of them lands on its cell. The README and the help window explain the Aseprite side.
 - The template of a GB Studio font is an **indexed PNG**, like GB Studio's own font sheets: palest color first (the background), darkest second (the characters), then the magenta and the three guide greens. Opened in Aseprite it is an indexed image, so only these colors can be used, and a hidden template layer leaves the background color where it was transparent (a hidden layer of an RGB image would be exported as black, which GB Studio reads as ink). Checked end to end in Aseprite: the exported PNG read with GB Studio's own pixel rule has background, ink and transparent pixels only, with the template visible or hidden. `png.encode` takes a `palette` option for it.
 - The Aseprite extension counts the palette of a GB Studio template as pure colors (no *impure pixels* warning on a drawing made with it) and its guide greens as guide colors.

@@ -313,6 +313,7 @@
       for (const e of result.errors) messages.push(['error', e]);
       last = null;
       $('download').disabled = true;
+      $('edit').disabled = true;
       $('size').textContent = '';
       $('meta').textContent = '';
       showMessages(messages);
@@ -322,6 +323,7 @@
     showMessages(messages);
     last = result;
     $('download').disabled = false;
+    $('edit').disabled = false;
     $('size').textContent = result.width + ' x ' + result.height + ' px, ' + (result.png.length / 1024).toFixed(1) + ' KB';
     $('meta').textContent = JSON.stringify(result.meta, null, 2);
     drawPreview(result);
@@ -352,6 +354,16 @@
     a.href = url; a.download = generate.fileName(last.meta.name, last.meta.cell.w, last.meta.cell.h).replace(/-\d+x\d+-template\.png$/, '.json');
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
+  });
+
+  // The editor takes the template as layers, with the settings in use.
+  $('edit').addEventListener('click', () => {
+    const { map, errors } = currentMap();
+    if (errors.length) return;
+    const font = currentFont();
+    const hint = hintCanvas.create({ fontFamily: font.family, weight: font.weight, align: font.align, padding: padding(), lift: lift(), exactSize: font.exactSize });
+    const result = generate.layers(readSettings(map), hint);
+    if (result.ok) window.Digiface.editor.open(result);
   });
 
   charsetSelect.addEventListener('change', () => {

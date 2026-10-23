@@ -17,8 +17,8 @@
   }
 
   // settings: {name, cellW, cellH, cols, mode, widthSource, map, baseline, spacing, xHeight, capHeight, guide}
-  // Returns {ok: false, errors} or {ok: true, png, meta, metaText, width, height, warnings}.
-  async function generate(settings, maskProvider) {
+  // Returns {ok: false, errors} or {ok: true, config, meta, width, height}.
+  function prepare(settings) {
     const guide = Object.assign({}, settings.guide);
     const prefill = !!guide.prefill && settings.mode === 'var' && (settings.widthSource || 'magenta') === 'magenta' && guide.hint === 'ghost';
     if (prefill) guide.prefill = true; else delete guide.prefill;
@@ -27,13 +27,21 @@
     const errors = metadata.validate(meta);
     if (errors.length) return { ok: false, errors };
 
-    const warnings = [];
     const width = config.cols * config.cellW;
     const height = config.rows * config.cellH;
     if (width > MAX_DIMENSION || height > MAX_DIMENSION) {
       return { ok: false, errors: ['Image would be ' + width + 'x' + height + ', the limit is ' + MAX_DIMENSION + 'x' + MAX_DIMENSION] };
     }
+    return { ok: true, config, meta, width, height };
+  }
 
+  // Returns {ok: false, errors} or {ok: true, png, meta, metaText, width, height, rgba, warnings}.
+  async function generate(settings, maskProvider) {
+    const prepared = prepare(settings);
+    if (!prepared.ok) return prepared;
+    const { config, meta } = prepared;
+
+    const warnings = [];
     const metaText = metadata.serialize(meta);
     if (metaText.length > metadata.SOFT_LIMIT) warnings.push('Metadata is ' + metaText.length + ' bytes, over the recommended ' + metadata.SOFT_LIMIT);
 
@@ -44,6 +52,15 @@
     if (config.target === 'gbstudio') options.palette = template.GB_PALETTE;
     const bytes = await png.encode(img.width, img.height, img.rgba, options);
     return { ok: true, png: bytes, meta, metaText, width: img.width, height: img.height, rgba: img.rgba, warnings };
+  }
+
+  // The template as separate layers, for the editor: {ok: true, meta, config, width, height, background, ghost, advances}
+  // (see template.renderLayers).
+  function layers(settings, maskProvider) {
+    const prepared = prepare(settings);
+    if (!prepared.ok) return prepared;
+    const parts = template.renderLayers(prepared.config, maskProvider);
+    return Object.assign({ ok: true, meta: prepared.meta, config: prepared.config }, parts);
   }
 
   // The name of the downloaded file: the font name in lowercase with hyphens, then the cell size and "template".
@@ -64,5 +81,5 @@
     return mapping;
   }
 
-  return { TOOL, MAX_DIMENSION, rowsFor, fileName, generate, gbMapping };
+  return { TOOL, MAX_DIMENSION, rowsFor, fileName, prepare, generate, layers, gbMapping };
 });
