@@ -2,6 +2,7 @@
 /tests export-ignore
 /tools export-ignore
 /docs/PROGRESS.md export-ignore
+/docs/EDITOR.md export-ignore
 /package.json export-ignore
 /.gitignore export-ignore
 /.gitattributes export-ignore

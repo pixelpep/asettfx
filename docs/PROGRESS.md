@@ -1,6 +1,6 @@
 # Progress
 
-Last updated: 2026-10-21
+Last updated: 2026-10-23
 
 ## Status
 
@@ -18,6 +18,7 @@ The menu appeared at the right place. Feedback and what was done: many file perm
 4. [ ] A way to open the template generator without cloning the repository: the hosted page (item 1), or GitHub Pages on `web/`, or a zip of `web/` attached to the release.
 5. [ ] User documentation: a short guide with screenshots of the generator and of the export dialog, and the usual questions (variable width and magenta, why a cell needs 8 rows for accents, installing the font).
 6. [ ] Try the extension on Windows or Linux and on other Aseprite versions.
+7. [ ] Web editor: draw the glyphs in the page (layers, brush, eraser, selection, width layer, GB Studio palette, PNG export). Designed, not started: see [docs/EDITOR.md](EDITOR.md), milestones 1 to 6 on an `editor` branch.
 
 ## Done
 
@@ -34,7 +35,7 @@ The menu appeared at the right place. Feedback and what was done: many file perm
 
 ## Later (not planned yet)
 
-- Web glyph editor: click a character, draw it, copy and paste glyphs, live text preview, TTF export. Would be saved as a `.digiface` archive (glyph PNG plus the metadata JSON). Implies a JavaScript TTF writer next to the Lua one, kept in agreement by shared test fixtures.
+- Web glyph editor: now planned, see [docs/EDITOR.md](EDITOR.md). What stays here is its TrueType and OpenType export and the project archive, listed in that file under "Later".
 - Live text preview in the existing web tool from an imported glyph PNG, without a full editor.
 - Kerning.
 - More bundled pixel fonts, if their license is confirmed (DaFont's own FAQ says the license shown there is only an indication, and that a missing license does not mean a font is free). Candidates: Alagard (author's note: "Give credit if used. That's it."), Early GameBoy (CC BY-SA 3.0 in the file, a different author on DaFont). Fonts with no statement, or with a personal-use restriction, are left to *Pixel font from a file...*.
