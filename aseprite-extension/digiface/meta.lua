@@ -65,6 +65,17 @@ function M.validate(meta, size)
   end
   if meta.ink ~= nil and not contains({ "dark", "light" }, meta.ink) then add("ink must be dark or light") end
   if meta.marker ~= nil and meta.marker ~= "#FF00FF" then add("marker must be #FF00FF") end
+  if meta.target ~= nil then
+    if meta.target ~= "gbstudio" then
+      add("target must be gbstudio")
+    else
+      local c, g = meta.cell, meta.grid
+      if jsonutil.is_object(c) and jsonutil.is_object(g)
+        and (c.w ~= 8 or c.h ~= 8 or g.cols ~= 16 or (is_int(g.rows, 1, 256) and g.rows > 15)) then
+        add("target gbstudio needs cells of 8 x 8, 16 columns and at most 15 rows")
+      end
+    end
+  end
 
   if meta.metrics ~= nil then
     local m = meta.metrics
@@ -131,6 +142,7 @@ function M.with_defaults(meta)
     mode = meta.mode,
     width_source = meta.widthSource or "magenta",
     ink = meta.ink or "dark",
+    target = meta.target,
     map = meta.map,
     baseline = metrics.baseline or 0,
     spacing = metrics.spacing or 0,

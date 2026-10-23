@@ -89,3 +89,18 @@ test('fileName: the font name in lowercase with hyphens, then the cell size and 
   assert.equal(gen.fileName('***', 8, 8), 'font-8x8-template.png');
   assert.equal(gen.fileName(undefined, 8, 8), 'font-8x8-template.png');
 });
+
+test('a GB Studio template records its target and is refused when the grid does not fit GB Studio', async () => {
+  const ok = await gen.generate(settings({ target: 'gbstudio', cellW: 8, cellH: 8, cols: 16, map: charsets.presets.find(p => p.id === 'gbstudio').map }), () => null);
+  assert.equal(ok.ok, true);
+  assert.equal(ok.meta.target, 'gbstudio');
+  assert.equal(JSON.parse(png.readText(ok.png, md.KEYWORD).text).target, 'gbstudio');
+  assert.equal(ok.height, 14 * 8);
+
+  const bad = await gen.generate(settings({ target: 'gbstudio', cellW: 8, cellH: 16, cols: 16, map: ['0020-007E'] }), () => null);
+  assert.equal(bad.ok, false);
+  assert.match(bad.errors.join(), /target gbstudio needs/);
+
+  const none = await gen.generate(settings({ map: ['0020-007E'] }), () => null);
+  assert.equal('target' in none.meta, false);
+});

@@ -876,7 +876,7 @@
    "meta": {
     "v": 1,
     "tool": "digiface-matrix/0.1",
-    "name": "caf\u00e9",
+    "name": "café",
     "cell": {
      "w": 8,
      "h": 8
@@ -1080,7 +1080,7 @@
    "meta": {
     "v": 1,
     "tool": "digiface-matrix/0.1",
-    "name": "\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9",
+    "name": "éééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé",
     "cell": {
      "w": 8,
      "h": 8
@@ -1113,7 +1113,7 @@
    "meta": {
     "v": 1,
     "tool": "digiface-matrix/0.1",
-    "name": "\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00",
+    "name": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
     "cell": {
      "w": 8,
      "h": 8
@@ -1146,7 +1146,7 @@
    "meta": {
     "v": 1,
     "tool": "digiface-matrix/0.1",
-    "name": "\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9",
+    "name": "ééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé",
     "cell": {
      "w": 8,
      "h": 8
@@ -1745,6 +1745,156 @@
      "hintFont": "Menlo, Consolas, monospace",
      "marginBottom": "2"
     }
+   }
+  },
+  {
+   "name": "gbstudio target is valid",
+   "valid": true,
+   "meta": {
+    "v": 1,
+    "tool": "digiface-matrix/0.1",
+    "name": "GB Font",
+    "cell": {
+     "w": 8,
+     "h": 8
+    },
+    "grid": {
+     "cols": 16,
+     "rows": 14
+    },
+    "mode": "var",
+    "widthSource": "magenta",
+    "ink": "dark",
+    "marker": "#FF00FF",
+    "map": [
+     "0020-007E"
+    ],
+    "target": "gbstudio"
+   }
+  },
+  {
+   "name": "gbstudio target with 15 rows is valid",
+   "valid": true,
+   "meta": {
+    "v": 1,
+    "tool": "digiface-matrix/0.1",
+    "name": "GB Font",
+    "cell": {
+     "w": 8,
+     "h": 8
+    },
+    "grid": {
+     "cols": 16,
+     "rows": 15
+    },
+    "mode": "var",
+    "widthSource": "magenta",
+    "ink": "dark",
+    "marker": "#FF00FF",
+    "map": [
+     "0020-007E"
+    ],
+    "target": "gbstudio"
+   }
+  },
+  {
+   "name": "unknown target",
+   "valid": false,
+   "meta": {
+    "v": 1,
+    "tool": "digiface-matrix/0.1",
+    "name": "GB Font",
+    "cell": {
+     "w": 8,
+     "h": 8
+    },
+    "grid": {
+     "cols": 16,
+     "rows": 14
+    },
+    "mode": "var",
+    "widthSource": "magenta",
+    "ink": "dark",
+    "marker": "#FF00FF",
+    "map": [
+     "0020-007E"
+    ],
+    "target": "other"
+   }
+  },
+  {
+   "name": "gbstudio target needs 8 x 8 cells",
+   "valid": false,
+   "meta": {
+    "v": 1,
+    "tool": "digiface-matrix/0.1",
+    "name": "GB Font",
+    "cell": {
+     "w": 8,
+     "h": 16
+    },
+    "grid": {
+     "cols": 16,
+     "rows": 14
+    },
+    "mode": "var",
+    "widthSource": "magenta",
+    "ink": "dark",
+    "marker": "#FF00FF",
+    "map": [
+     "0020-007E"
+    ],
+    "target": "gbstudio"
+   }
+  },
+  {
+   "name": "gbstudio target needs 16 columns",
+   "valid": false,
+   "meta": {
+    "v": 1,
+    "tool": "digiface-matrix/0.1",
+    "name": "GB Font",
+    "cell": {
+     "w": 8,
+     "h": 8
+    },
+    "grid": {
+     "cols": 8,
+     "rows": 14
+    },
+    "mode": "var",
+    "widthSource": "magenta",
+    "ink": "dark",
+    "marker": "#FF00FF",
+    "map": [
+     "0020-007E"
+    ],
+    "target": "gbstudio"
+   }
+  },
+  {
+   "name": "gbstudio target allows at most 15 rows",
+   "valid": false,
+   "meta": {
+    "v": 1,
+    "tool": "digiface-matrix/0.1",
+    "name": "GB Font",
+    "cell": {
+     "w": 8,
+     "h": 8
+    },
+    "grid": {
+     "cols": 16,
+     "rows": 16
+    },
+    "mode": "var",
+    "widthSource": "magenta",
+    "ink": "dark",
+    "marker": "#FF00FF",
+    "map": [
+     "0020-007E"
+    ],
+    "target": "gbstudio"
    }
   }
  ]

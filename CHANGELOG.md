@@ -5,6 +5,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+
+- A **GB Studio** check box after *Baseline ticks* in the template generator. Ticked, it fixes the GB Studio layout, the 8 x 8 cells and the 16 columns (the controls are disabled and the cell size buttons too), unticks the checkerboard and the baseline ticks, and draws the template in the colors GB Studio reads as background (`#E0F8CF` with light-green guides, magenta for the widths), so that nothing of the guide can be read as ink by GB Studio. Unticking brings back the previous settings. The choice is stored as `target: "gbstudio"` in the metadata (new optional key, validated by both readers and by shared conformance cases: 8 x 8 cells, 16 columns, at most 15 rows). `spec/GRID.md` describes how GB Studio reads a font image.
+
 ### Changed
 
 - The README and the help window now present Digiface for games (GB Studio) and for design work, without naming a design tool, and say that it is not affiliated with Aseprite or GB Studio. The page has a "Made by pixelPep" line at the bottom.

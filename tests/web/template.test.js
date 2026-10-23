@@ -124,3 +124,33 @@ test('a ghost pixel on a baseline tick stays visible (the tick is drawn under th
   const none = tpl.render(cfg({ baseline: 2 }), () => null);
   assert.deepEqual(px(none, 0, 5), rgb(C.baseline), 'the tick shows where there is no ink');
 });
+
+// How GB Studio classes a pixel (src/lib/fonts/fontData.ts): by the green channel, magenta and near-white are transparent.
+const gbShade = ([r, g, b]) => (g > 249 || (r > 249 && b > 249)) ? 'transparent' : g < 65 ? 'dark' : g < 130 ? 'mid' : g < 205 ? 'light' : 'white';
+
+test('a GB Studio template is solid GB Studio background: no checkerboard, and every guide pixel reads as white to GB Studio', () => {
+  const gb = cfg({ target: 'gbstudio', cols: 16, rows: 14, map: ['0020-007E'], prefillWidths: false });
+  const withGhost = (cp, w, h) => { const m = new Uint8Array(w * h); m[3 * w + 2] = 1; m[4 * w + 2] = 1; return m; };
+  const img = tpl.render(gb, withGhost);
+  const shades = new Set();
+  for (let i = 0; i < img.rgba.length; i += 4) shades.add(gbShade([img.rgba[i], img.rgba[i + 1], img.rgba[i + 2]]));
+  assert.deepEqual([...shades], ['white']);
+  // the first cell is plain background, the next one is too (the checkerboard of the normal template would alternate)
+  assert.deepEqual(px(img, 0, 0), [...tpl.GB_COLORS.background, 255]);
+  assert.deepEqual(px(img, 8, 0), [...tpl.GB_COLORS.background, 255]);
+});
+
+test('the guide colors of a GB Studio template stay light for the Aseprite reader too (not ink, not magenta)', () => {
+  for (const key of ['background', 'unassigned', 'ghost', 'baseline']) {
+    const [r, g, b] = tpl.GB_COLORS[key];
+    assert.ok(r * 299 + g * 587 + b * 114 >= 128000, key + ' is not ink');
+    assert.notDeepEqual([r, g, b], tpl.MARKER);
+  }
+});
+
+test('the magenta width columns of a GB Studio template are transparent to GB Studio', () => {
+  const img = tpl.render(cfg({ target: 'gbstudio', cols: 16, rows: 14, map: ['0020-007E'], prefillWidths: true }), (cp, w, h) => { const m = new Uint8Array(w * h); m[3 * w] = 1; return m; });
+  const magenta = px(img, 8 + 7, 0);  // cell 1 is '!': the first cell is a space, which has no width of its own here
+  assert.deepEqual(magenta, [255, 0, 255, 255]);
+  assert.equal(gbShade(magenta.slice(0, 3)), 'transparent');
+});

@@ -53,6 +53,10 @@
       "enum": ["dark", "light"],
       "default": "dark"
     },
+    "target": {
+      "description": "Set to gbstudio when the template is meant for a GB Studio font: 8 x 8 cells, 16 columns, at most 15 rows (GB Studio starts its table at code 32 below 16 rows), the GB Studio layout, and the colors of GB Studio's palette. Readers may offer the GB Studio export.",
+      "const": "gbstudio"
+    },
     "marker": {
       "description": "Width marker color. Fixed to pure magenta in v1.",
       "const": "#FF00FF",
@@ -122,6 +126,13 @@
           "maximum": 255
         }
       }
+    }
+  },
+  "if": { "required": ["target"] },
+  "then": {
+    "properties": {
+      "cell": { "properties": { "w": { "const": 8 }, "h": { "const": 8 } } },
+      "grid": { "properties": { "cols": { "const": 16 }, "rows": { "maximum": 15 } } }
     }
   }
 }

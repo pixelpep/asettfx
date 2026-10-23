@@ -44,6 +44,15 @@
     if ('widthSource' in meta && !['magenta', 'auto'].includes(meta.widthSource)) errors.push('widthSource must be magenta or auto');
     if ('ink' in meta && !['dark', 'light'].includes(meta.ink)) errors.push('ink must be dark or light');
     if ('marker' in meta && meta.marker !== '#FF00FF') errors.push('marker must be #FF00FF');
+    if ('target' in meta) {
+      if (meta.target !== 'gbstudio') errors.push('target must be gbstudio');
+      else {
+        const c = meta.cell, g = meta.grid;
+        if (isObject(c) && isObject(g) && (c.w !== 8 || c.h !== 8 || g.cols !== 16 || (Number.isInteger(g.rows) && g.rows > 15))) {
+          errors.push('target gbstudio needs cells of 8 x 8, 16 columns and at most 15 rows');
+        }
+      }
+    }
 
     if ('metrics' in meta) {
       const m = meta.metrics;
@@ -99,6 +108,7 @@
     meta.grid = { cols: config.cols, rows: config.rows };
     meta.mode = config.mode;
     if (config.mode === 'var') meta.widthSource = config.widthSource || 'magenta';
+    if (config.target) meta.target = config.target;
     meta.ink = 'dark';
     meta.marker = '#FF00FF';
     meta.map = config.map.slice();

@@ -92,6 +92,11 @@
       $('applyFontAll').hidden = all.height === letters.height && all.width === letters.width && all.baseline === letters.baseline;
       $('applyFontAll').textContent = 'Make room for the accents too' + dims(all);
     }
+    // the cell size is fixed in GB Studio mode
+    for (const id of ['applyFont', 'applyFontAll']) {
+      $(id).disabled = $('gbstudio').checked;
+      $(id).title = $('gbstudio').checked ? 'The cell size is fixed in GB Studio mode' : '';
+    }
 
     // the window of the "i" button
     $('fontDialogTitle').textContent = f ? f.label : '';
@@ -184,8 +189,32 @@
     return Number.isFinite(v) ? v : fallback;
   };
 
+  // GB Studio mode: the layout, the 8 x 8 cells and the 16 columns are fixed, the checkerboard is off, and the template uses
+  // the colors GB Studio reads as background. Unchecking brings back what was there before.
+  const GB_LOCKED = ['charset', 'cellW', 'cellH', 'cols', 'checker'];
+  let beforeGb = null;
+  function setGbStudio(on) {
+    if (on) {
+      beforeGb = { charset: charsetSelect.value, cellW: $('cellW').value, cellH: $('cellH').value, cols: $('cols').value,
+        checker: $('checker').checked, ticks: $('baselineTick').checked };
+      charsetSelect.value = 'gbstudio';
+      $('cellW').value = 8; $('cellH').value = 8; $('cols').value = 16;
+      $('checker').checked = false;
+      $('baselineTick').checked = false;
+    } else if (beforeGb) {
+      charsetSelect.value = beforeGb.charset;
+      $('cellW').value = beforeGb.cellW; $('cellH').value = beforeGb.cellH; $('cols').value = beforeGb.cols;
+      $('checker').checked = beforeGb.checker;
+      $('baselineTick').checked = beforeGb.ticks;
+      beforeGb = null;
+    }
+    for (const id of GB_LOCKED) $(id).disabled = on;
+    $('gbNote').hidden = !on;
+    refresh();
+  }
+
   function readSettings(map) {
-    return {
+    return Object.assign($('gbstudio').checked ? { target: 'gbstudio' } : {}, {
       name: $('name').value.trim(),
       cellW: num('cellW', 8), cellH: num('cellH', 8), cols: num('cols', 16),
       mode: $('forceMono').checked ? 'mono' : 'var', widthSource: 'magenta',
@@ -199,7 +228,7 @@
         padding: padding(),
         marginBottom: lift()
       }
-    };
+    });
   }
 
   function showMessages(items) {
@@ -344,6 +373,7 @@
     $('hintPadding').value = 0;
     refresh();
   }
+  $('gbstudio').addEventListener('change', () => setGbStudio($('gbstudio').checked));
   $('fontInfoBtn').addEventListener('click', () => { if (!$('fontInfoBtn').hidden) $('fontDialog').showModal(); });
   $('helpBtn').addEventListener('click', () => $('helpDialog').showModal());
   $('helpDialog').addEventListener('click', e => { if (e.target === $('helpDialog')) $('helpDialog').close(); });

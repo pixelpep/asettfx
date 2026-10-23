@@ -36,4 +36,5 @@ Aseprite does not keep PNG text chunks when it saves a `.aseprite`, so step 1 is
 ## Compatibility
 
 - `v` increases only for breaking changes. A reader that sees a higher `v` treats the metadata as invalid.
+- `target` (optional): `gbstudio` marks a template for a GB Studio font. It requires 8 x 8 cells, 16 columns and at most 15 rows. See GRID.md for the colors.
 - Readers ignore unknown top-level keys. Unknown keys inside `cell`, `grid`, `metrics` and `guide` are not allowed in v1.

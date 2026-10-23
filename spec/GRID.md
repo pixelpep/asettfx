@@ -128,3 +128,12 @@ The cell the font needs is suggested, never forced, in two sizes:
 A character the font cannot draw is drawn by another font (or as a box), so it is told apart by drawing it with and without the font, and against the font's own missing-character box, and is left out of the measure; the number of characters left out is shown. A character that the font draws by combining a letter and an accent it has (Bytesized has no precomposed Ĉ, but draws it) counts as drawn. Both sizes are checked against the outlines of the bundled fonts.
 
 The font file stays in the browser: nothing is uploaded or stored, and the metadata only records its name (`guide.hintFont`, `File: <file name>`).
+
+## GB Studio templates
+
+When the metadata have `"target": "gbstudio"` the grid is the one of GB Studio's own font sheets: 8 x 8 cells, 16 columns, at most 15 rows (below 16 rows GB Studio starts its table at character code 32, so the first cell is the space), characters in the order of the `gbstudio` charset (see `charsets/gbstudio.json`).
+
+GB Studio reads a font image by the green channel of each pixel (`src/lib/fonts/fontData.ts` of GB Studio): below 65 is its darkest shade (the ink, `#071821` in its sheets), 65 to 129 and 130 to 204 are two middle shades (`#306850`, `#86C06C`), 205 to 249 is its lightest opaque shade (the background, `#E0F8CF`). A green above 249, or red and blue both above 249 (pure white, magenta), is transparent: the transparent columns are trimmed on both sides of each cell, which gives the width of a variable-width font. The transparency (alpha) of a pixel is ignored.
+
+So the template of a GB Studio font has a solid `#E0F8CF` background (no checkerboard), the unassigned cells, the ghost characters and the baseline ticks in light greens whose green channel stays between 205 and 249 (GB Studio reads them as background, even if the template layer is left visible), and magenta `#FF00FF` for the width columns, as in the other templates. A white background must not be used: GB Studio would read it as transparent.
+

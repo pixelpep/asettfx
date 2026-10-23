@@ -79,6 +79,7 @@
         </span>
         <label class="check"><input id="checker" type="checkbox" checked> Checkerboard</label>
         <label class="check"><input id="baselineTick" type="checkbox" checked> Baseline ticks</label>
+        <label class="check" title="A font for GB Studio: fixes the layout, the 8 x 8 cells and the 16 columns, and uses the colors of GB Studio's palette."><input id="gbstudio" type="checkbox"> GB Studio</label>
       </div>
       <div class="right">
         <label class="name">Font name <input id="name" type="text" value="My Pixel Font" maxlength="64"></label>
@@ -87,6 +88,7 @@
         <button id="download" type="button" class="download">Download PNG</button>
       </div>
     </div>
+    <p id="gbNote" class="note" hidden>GB Studio mode: the GB Studio layout, the 8 x 8 cells and the 16 columns are fixed, and the template uses the colors GB Studio reads as background. Uncheck GB Studio to change them.</p>
     <ul id="messages"></ul>
     <div class="split">
       <div class="preview"><canvas id="preview"></canvas></div>
@@ -103,6 +105,7 @@
 <dialog id="helpDialog">
   <h2>How to use Digiface</h2>
   <p>Draw your pixel-art letters in Aseprite and turn them into a real font. Digiface is made for GB Studio projects (it has the GB Studio character layout and its two default fonts) and for any design work that needs a crisp pixel typeface: the font installs like any other and stays sharp at sizes that are multiples of the cell height.</p>
+  <p>For a GB Studio font, tick <b>GB Studio</b> next to <b>Baseline ticks</b>: the layout, the 8 x 8 cells and the 16 columns are fixed, and the template uses the colors of GB Studio's palette.</p>
   <ol>
     <li>Choose a character set, the cell size and the spacing here. A guide font shows the character to draw in each cell.</li>
     <li>Download the PNG template.</li>

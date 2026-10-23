@@ -16,6 +16,16 @@
     baseline: [0x9C, 0xC3, 0xE6]
   };
 
+  // GB Studio reads a font image by the green channel: below 65 is its darkest shade (the ink, #071821), 205 to 249 is its
+  // lightest opaque shade (the background, #E0F8CF); above 249, and magenta, are transparent. The guide colors of a GB Studio
+  // template stay in that lightest range, so GB Studio would read them as background even if the template were left visible.
+  const GB_COLORS = {
+    background: [0xE0, 0xF8, 0xCF],
+    unassigned: [0xB4, 0xD8, 0xA4],
+    ghost: [0xC0, 0xE0, 0xB0],
+    baseline: [0xA0, 0xD0, 0xB8]
+  };
+
   const MARKER = [0xFF, 0x00, 0xFF];
 
   const BLANK_RE = /^[\p{Cc}\p{Zs}\p{Cf}]$/u;
@@ -45,6 +55,8 @@
     const height = rows * h;
     const rgba = new Uint8Array(width * height * 4);
     const cells = charmap.expandMap(cfg.map).cells;
+    const gb = cfg.target === 'gbstudio';
+    const palette = gb ? GB_COLORS : COLORS;
 
     const put = (x, y, color) => {
       const o = (y * width + x) * 4;
@@ -56,7 +68,8 @@
       const y0 = Math.floor(i / cols) * h;
       const cp = i < cells.length ? cells[i] : null;
       const assigned = cp !== null;
-      const base = !assigned ? COLORS.unassigned
+      const base = !assigned ? palette.unassigned
+        : gb ? GB_COLORS.background
         : (guide.checker !== false && ((i % cols) + Math.floor(i / cols)) % 2 === 1) ? COLORS.checkerB : COLORS.checkerA;
 
       for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) put(x0 + x, y0 + y, base);
@@ -66,8 +79,8 @@
       // the ticks are a large share of the pixels).
       if (guide.baseline !== false) {
         const y = h - baseline - 1;
-        put(x0, y0 + y, COLORS.baseline);
-        put(x0 + w - 1, y0 + y, COLORS.baseline);
+        put(x0, y0 + y, palette.baseline);
+        put(x0 + w - 1, y0 + y, palette.baseline);
       }
 
       let advance = w;
@@ -75,12 +88,12 @@
         if (isBlankCodepoint(cp)) {
           if (cfg.prefillWidths && maskProvider && maskProvider.blankAdvance) advance = maskProvider.blankAdvance(w, h, baseline);
           const y = Math.max(0, h - 2);
-          for (let x = 1; x < w - 1; x += 2) put(x0 + x, y0 + y, COLORS.ghost);
+          for (let x = 1; x < w - 1; x += 2) put(x0 + x, y0 + y, palette.ghost);
         } else {
           const mask = maskProvider ? maskProvider(cp, w, h, baseline) : null;
           if (mask) {
             if (cfg.prefillWidths) advance = widthFromMask(mask, w, h);
-            for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (mask[y * w + x]) put(x0 + x, y0 + y, COLORS.ghost);
+            for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (mask[y * w + x]) put(x0 + x, y0 + y, palette.ghost);
           }
         }
       }
@@ -90,5 +103,5 @@
     return { width, height, rgba };
   }
 
-  return { COLORS, MARKER, isBlankCodepoint, widthFromMask, render };
+  return { COLORS, GB_COLORS, MARKER, isBlankCodepoint, widthFromMask, render };
 });
