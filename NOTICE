@@ -18,3 +18,6 @@ The template generator ships these pixel fonts unchanged (see web/fonts/LICENSES
   converted from PNG to TrueType by this project.
 - Minecraft Standard and Minecraft Standard Bold by Polda18, Copyright 2023,
   licensed under CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/).
+
+The page of the template generator is set in Source Sans 3 by Adobe (web/fonts/ui/), Copyright 2010-2020 Adobe,
+licensed under the SIL Open Font License 1.1 (full text in web/fonts/licenses/OFL-SourceSans3.txt).

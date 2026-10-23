@@ -26,3 +26,6 @@ __pycache__/
 
 # Local files, not published
 private/
+
+# Reference material, not published
+references/

@@ -1,77 +1,120 @@
-:root {
-  --bg: #fafafa; --fg: #1c1c1c; --muted: #666; --line: #d8d8d8; --panel: #fff; --accent: #2457d6; --error: #b3261e; --warn: #8a5a00;
+/* Neon terminal look (references/DESIGN_SYSTEM.md): pure black, phosphor green, glows instead of shadows, square corners,
+   small uppercase controls. One colour per functional zone: green for the interface, cyan for the metadata and info,
+   blue for the download, yellow for warnings, red-pink for errors. */
+@font-face {
+  font-family: 'Source Sans 3';
+  src: url(fonts/ui/SourceSans3-VF.ttf) format('truetype');
+  font-weight: 200 900;
+  font-display: swap;
 }
-@media (prefers-color-scheme: dark) {
-  :root { --bg: #161616; --fg: #ececec; --muted: #9a9a9a; --line: #333; --panel: #1f1f1f; --accent: #7ba3ff; --error: #ff8a80; --warn: #ffc266; }
+
+:root {
+  color-scheme: dark;
+  --bg: #000000; --bg-panel: #0a0a0a; --bg-green: #001100; --bg-cyan: #001122; --bg-danger: #1a0000;
+  --green: #00ff00; --green-hover: #00cc00; --green-dim: #009900; --green-dark: #003300;
+  --cyan: #04d9ff; --cyan-hover: #03b3d9; --cyan-dim: #0099cc;
+  --yellow: #ffcc00; --red: #ff0066; --red-hover: #ff3388; --blue: #0099ff; --blue-hover: #00ccff;
+  --gray-border: #333333; --gray-muted: #555555;
+  --glow-green: 0 0 10px rgba(0,255,0,.5); --glow-green-sm: 0 0 15px rgba(0,255,0,.3); --glow-green-lg: 0 0 20px rgba(0,255,0,.4);
+  --glow-cyan: 0 0 10px rgba(4,217,255,.5); --glow-red: 0 0 15px rgba(255,0,102,.5); --glow-blue: 0 0 10px rgba(0,153,255,.5);
+  --font: 'Source Sans 3', 'Source Sans Pro', system-ui, sans-serif;
+  --radius: 2px;
 }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
-body { margin: 0; padding: 0 16px 32px; background: var(--bg); color: var(--fg); font: 15px/1.45 system-ui, sans-serif; }
+body { margin: 0; padding: 0 16px 24px; background: var(--bg); color: var(--green); font: 12px/1.5 var(--font); }
+a { color: var(--cyan); }
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: #000; }
+::-webkit-scrollbar-thumb { background: var(--green); border-radius: var(--radius); box-shadow: 0 0 5px rgba(0,255,0,.5); }
+::-webkit-scrollbar-thumb:hover { background: var(--green-hover); }
 
 header.top, main { max-width: 1500px; margin: 0 auto; }
-header.top { padding: 16px 0 6px; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
-h1 { font-size: 20px; margin: 0 0 2px; }
-header.top p { margin: 0; color: var(--muted); }
+header.top { padding: 10px 0 8px; margin-bottom: 12px; border-bottom: 1px solid #006600; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+h1 { margin: 0 0 2px; font-size: 16px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; text-shadow: 0 0 10px var(--green); }
+header.top p { margin: 0; color: var(--green-dim); font-size: 12px; }
 
 /* One line above the image: the preview options on the left, the name, size and download on the right */
 .toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 24px; margin-bottom: 8px; }
 .toolbar .left, .toolbar .right { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
 .toolbar .right { margin-left: auto; justify-content: flex-end; }
-.toolbar label.name { display: flex; align-items: center; gap: 8px; color: var(--muted); white-space: nowrap; }
+.toolbar label.name { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
 .toolbar label.name input { width: 190px; }
 .toolbar label.check, .toolbar .saved-as, .toolbar #size { white-space: nowrap; }
-.toolbar .zoom { display: flex; gap: 6px; }
-button.square { width: 34px; height: 34px; padding: 0; font-size: 20px; line-height: 1; border-radius: 4px; }
+.toolbar .zoom { display: flex; }
 
 /* The settings sit side by side, as many per row as fit */
 .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; align-items: start; margin-bottom: 16px; }
-details.card { border: 1px solid var(--line); border-radius: 6px; background: var(--panel); padding: 0 12px; }
-details.card > summary { padding: 9px 0; font-weight: 600; cursor: pointer; }
-details.card[open] > summary { border-bottom: 1px solid var(--line); margin-bottom: 10px; }
+details.card { background: var(--bg-panel); border: 1px solid var(--green); border-radius: var(--radius); box-shadow: var(--glow-green-sm); padding: 0 12px; }
+details.card > summary { padding: 9px 0; font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; text-shadow: 0 0 8px var(--green); cursor: pointer; }
+details.card[open] > summary { border-bottom: 1px solid var(--green-dark); margin-bottom: 10px; }
 details.card > .body { padding-bottom: 12px; }
 .body { display: grid; gap: 8px; }
-.body.indent { padding-left: 14px; border-left: 2px solid var(--line); }
+.body.indent { padding-left: 14px; border-left: 2px solid var(--green-dark); }
 
-label { display: grid; gap: 3px; font-size: 13px; color: var(--muted); }
-label.check { display: flex; align-items: center; gap: 6px; color: var(--fg); font-size: 14px; }
-input[type=number], input[type=text], select, textarea { width: 100%; padding: 6px 8px; font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 4px; }
-textarea { font-family: ui-monospace, Menlo, Consolas, monospace; }
+label { display: grid; gap: 3px; font-size: 10px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--green-dim); }
+label.check { display: flex; align-items: center; gap: 6px; color: var(--green); font-size: 11px; }
+input[type=checkbox], input[type=radio] { accent-color: var(--green); }
+input[type=number], input[type=text], select, textarea { width: 100%; height: 28px; padding: 5px 8px; font: 11px var(--font); color: var(--green); background: var(--bg); border: 1px solid var(--green-dark); border-radius: var(--radius); transition: all .2s; }
+textarea { height: auto; font-family: ui-monospace, Menlo, Consolas, monospace; }
+input:focus, select:focus, textarea:focus { outline: none; border-color: var(--green); box-shadow: var(--glow-green); }
+option { background: var(--bg); color: var(--green); }
 .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; align-items: end; }
 .row3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; align-items: end; }
-.note { margin: 0; font-size: 13px; color: var(--muted); }
-.saved-as { font-size: 13px; color: var(--muted); white-space: nowrap; }
-input[type=file] { width: 100%; font: inherit; font-size: 13px; color: var(--muted); }
+.note { margin: 0; font-size: 11px; color: var(--green-dim); }
+.saved-as { font-size: 11px; color: var(--green-dim); white-space: nowrap; }
+input[type=file] { width: 100%; font: inherit; font-size: 11px; color: var(--green-dim); }
 
-button { padding: 8px 14px; font: inherit; font-weight: 600; color: #fff; background: var(--accent); border: 0; border-radius: 4px; cursor: pointer; }
-@media (prefers-color-scheme: dark) { button { color: #111; } }
-button:disabled { opacity: .4; cursor: default; }
-button.secondary { padding: 5px 10px; font-weight: 500; background: transparent; color: var(--accent); border: 1px solid var(--accent); }
+/* Buttons: filled (main action) and outline (fills on hover) */
+button { height: 28px; padding: 0 16px; font: 600 11px var(--font); letter-spacing: .5px; text-transform: uppercase; color: #000; background: var(--green); border: 0; border-radius: var(--radius); box-shadow: var(--glow-green); cursor: pointer; transition: all .2s; }
+button:hover { background: var(--green-hover); box-shadow: 0 0 15px rgba(0,255,0,.8); }
+button:disabled { opacity: .35; cursor: not-allowed; box-shadow: none; }
+button.secondary { height: auto; min-height: 28px; padding: 4px 10px; font-size: 10px; color: var(--green); background: var(--bg); border: 1px solid var(--green); box-shadow: none; }
+button.secondary:hover { color: #000; background: var(--green); box-shadow: var(--glow-green); }
+button.square { width: 28px; height: 28px; min-height: 0; padding: 0; font-size: 16px; line-height: 1; text-transform: none; }
+.zoom button.square:first-child { border-right: none; border-radius: var(--radius) 0 0 var(--radius); }
+.zoom button.square:last-child { border-radius: 0 var(--radius) var(--radius) 0; }
+/* Download: blue, like the download buttons of the system */
+button.download { padding: 0 16px; background: var(--blue); box-shadow: var(--glow-blue); }
+button.download:hover { background: var(--blue-hover); box-shadow: 0 0 15px rgba(0,204,255,.8); }
+button.download:disabled { background: #333; box-shadow: none; }
+/* Round help button of the header */
+button.help { width: 36px; height: 36px; padding: 0; font-size: 16px; color: var(--green); background: var(--bg-green); border: 2px solid var(--green); border-radius: 50%; box-shadow: var(--glow-green); }
+button.help:hover { color: #000; background: var(--green); transform: scale(1.1); box-shadow: 0 0 15px rgba(0,255,0,.8); }
 
 /* Preview, under the settings, on the full width */
-#messages { list-style: none; margin: 0 0 8px; padding: 0; font-size: 14px; }
-#messages .error { color: var(--error); }
-#messages .warn { color: var(--warn); }
-.preview { overflow: auto; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); padding: 8px; }
-canvas { display: block; image-rendering: pixelated; margin: 0 auto; }
+#messages { list-style: none; margin: 0 0 8px; padding: 0; font-size: 12px; }
+#messages .error { color: var(--red); text-shadow: 0 0 5px rgba(255,0,102,.5); }
+#messages .warn { color: var(--yellow); }
+.preview { overflow: auto; border: 1px solid var(--green); border-radius: var(--radius); background: var(--bg); box-shadow: var(--glow-green-lg); padding: 8px; }
+canvas { display: block; image-rendering: pixelated; image-rendering: crisp-edges; margin: 0 auto; }
 /* The metadata are folded by default and the image has the whole width; opened, they take the last third */
 .split { display: grid; grid-template-columns: 1fr; gap: 12px; align-items: start; }
 .split.meta-open { grid-template-columns: 2fr 1fr; }
 @media (max-width: 800px) { .split.meta-open { grid-template-columns: 1fr; } }
 .meta { min-width: 0; }
-.meta > summary { cursor: pointer; font-size: 13px; font-weight: 600; color: var(--muted); padding: 2px 0 6px; }
-pre { margin: 0; overflow: auto; max-height: 70vh; padding: 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; font-size: 12px; }
+.meta > summary { cursor: pointer; font-size: 10px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--cyan); padding: 6px 0; }
+pre { margin: 0; overflow: auto; max-height: 70vh; padding: 12px; font: 10px/1.4 ui-monospace, Menlo, Consolas, monospace; color: var(--cyan); background: var(--bg); border: 1px solid var(--cyan); border-radius: var(--radius); box-shadow: 0 0 10px rgba(4,217,255,.3); }
 
-footer.foot { max-width: 1500px; margin: 20px auto 0; padding-top: 12px; border-top: 1px solid var(--line); text-align: center; font-size: 13px; color: var(--muted); }
-footer.foot a { color: var(--accent); }
+footer.foot { max-width: 1500px; margin: 20px auto 0; padding-top: 12px; border-top: 1px solid var(--green-dark); text-align: center; font-size: 11px; color: var(--green-dim); }
+footer.foot a { color: var(--cyan); }
 
 /* The "i" next to the font list opens what is known about the font */
 .with-info { display: flex; gap: 6px; align-items: stretch; }
 .with-info select { flex: 1; min-width: 0; }
-.with-info button.square { flex: 0 0 34px; height: auto; min-height: 34px; font-weight: 700; font-style: italic; font-family: Georgia, serif; }
-dialog { width: min(520px, calc(100vw - 32px)); padding: 18px 20px; color: var(--fg); background: var(--panel); border: 1px solid var(--line); border-radius: 8px; }
-dialog::backdrop { background: rgba(0, 0, 0, .55); }
-dialog h2 { margin: 0 0 8px; font-size: 16px; }
-dialog p { margin: 0 0 10px; line-height: 1.5; }
-dialog ol { margin: 0 0 10px; padding-left: 20px; line-height: 1.5; }
-dialog form { margin: 14px 0 0; text-align: right; }
-dialog a { color: var(--accent); }
+.with-info button.square { flex: 0 0 28px; height: auto; min-height: 28px; font-weight: 700; font-style: italic; font-family: Georgia, serif; }
+
+/* Windows: black, green border, glow; the steps are boxes */
+dialog { width: min(560px, calc(100vw - 32px)); max-height: 85vh; overflow: auto; padding: 4px; color: var(--green); background: var(--bg); border: 2px solid var(--green); border-radius: var(--radius); box-shadow: 0 0 30px rgba(0,255,0,.5); }
+dialog::backdrop { background: rgba(0, 0, 0, .8); }
+dialog h2 { margin: 0 0 10px; padding: 6px 0; text-align: center; font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; border-bottom: 1px solid var(--green-dark); }
+dialog p { margin: 0 12px 10px; font-size: 11px; line-height: 1.5; color: #99ff99; }
+dialog p.note { color: var(--green-dim); }
+dialog ol { margin: 0 12px 10px; padding: 0; list-style-position: inside; display: grid; gap: 6px; }
+dialog li { padding: 8px 12px; font-size: 11px; line-height: 1.5; color: #99ff99; background: var(--bg-green); border: 1px solid var(--green); }
+dialog b { color: var(--green); }
+dialog code { color: var(--cyan); }
+dialog form { margin: 12px 0 8px; text-align: center; }
+dialog button { height: auto; padding: 10px 30px; font-size: 12px; font-weight: 700; }
+dialog a { color: var(--cyan); }

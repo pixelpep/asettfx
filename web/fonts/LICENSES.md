@@ -38,6 +38,12 @@ Facts below were read on 2026-10-18 from the pages cited, and from the font file
 - "Minecraft" is a trademark of its owner; this is an independent font with that name in its title, and nothing here is affiliated with or endorsed by it.
 - Changes: none.
 
+## Source Sans 3 (the font of the page itself)
+
+- **Author:** Adobe (https://github.com/adobe-fonts/source-sans), Copyright 2010-2020 Adobe (http://www.adobe.com/), with Reserved Font Name 'Source'. Source Sans 3 is the current name of Source Sans Pro.
+- **License: SIL Open Font License, Version 1.1.** Full text in [licenses/OFL-SourceSans3.txt](licenses/OFL-SourceSans3.txt), as shipped on Google Fonts (https://github.com/google/fonts/tree/main/ofl/sourcesans3), retrieved on 2026-10-22.
+- **File:** `ui/SourceSans3-VF.ttf`, the variable font (weights 200 to 900), included unchanged: it is not subset or converted, because the license reserves the name 'Source' for unmodified copies. It is the lettering of the interface, not a guide font, and is loaded by `style.css`.
+
 ## Fonts that are not shipped
 
 Fonts without a license statement, with a "free for personal use" restriction, or whose terms forbid redistribution are not included. DaFont's own FAQ says that "the licence mentioned above the download button is just an indication" and that "if no author/licence is indicated ... that doesn't mean it's free". They can still be used by choosing *Pixel font from a file...* in the generator, which keeps the file on the user's computer.
