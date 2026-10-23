@@ -83,5 +83,10 @@
     return mapping;
   }
 
-  return { TOOL, MAX_DIMENSION, rowsFor, fileName, prepare, generate, layers, gbMapping };
+  // The name of the downloaded drawing: the same, without "template".
+  function drawingFileName(name, cellW, cellH) {
+    return fileName(name, cellW, cellH).replace(/-template\.png$/, '.png');
+  }
+
+  return { TOOL, MAX_DIMENSION, rowsFor, fileName, drawingFileName, prepare, generate, layers, gbMapping };
 });

@@ -63,6 +63,28 @@
         return { x: pos.x, y: pos.y, value };
       },
 
+      // Sets the width of a glyph (the columns of its cell that are not marker), from 1 to the width of the cell. Returns
+      // {kind: 'width', cp, width}, the change of the width layer.
+      setWidth(cp, width) {
+        const g = glyphs.get(cp);
+        g.width = Math.max(1, Math.min(w, Math.round(width)));
+        return { kind: 'width', cp, width: g.width };
+      },
+
+      // What may be wrong with the drawing: [{id, cp, index, row, col, count}]. For now: ink under the width marker, which hides
+      // it (the exporter reads the marker, and the pixels under it are lost).
+      warnings() {
+        const list = [];
+        if (!variable) return list;
+        for (const [cp, glyph] of glyphs) {
+          if (glyph.width >= w) continue;
+          let count = 0;
+          for (let i = 0; i < glyph.pixels.length; i++) if (glyph.pixels[i] && (i % w) >= glyph.width) count++;
+          if (count) { const index = indexOf.get(cp); list.push({ id: 'ink-under-marker', cp, index, row: Math.floor(index / cols), col: index % cols, count }); }
+        }
+        return list.sort((a, b) => a.index - b.index);
+      },
+
       // The RGBA of a pixel value: transparent for 0.
       rgbaOf(value) {
         if (!value) return [0, 0, 0, 0];
@@ -106,6 +128,67 @@
     return model;
   }
 
+  // What a change of the layout (the cell size, the grid, the characters, the mode, GB Studio) does to a drawing, before it is made.
+  // old: a model. meta: the new metadata. Returns {hasWork, sameCell, lostGlyphs, lossyColors}: whether anything is drawn, whether
+  // the drawings can follow (they can only when the cell has the same size), how many drawn glyphs would be lost (their
+  // character is not in the new layout, or the cell size changed), and whether going from GB Studio's shades to black loses some
+  // (see convertValue).
+  function impact(old, meta) {
+    const sameCell = old.cellW === meta.cell.w && old.cellH === meta.cell.h;
+    const kept = new Set(charmap.expandMap(meta.map).cells.filter(cp => cp !== null));
+    const toGb = meta.target === 'gbstudio';
+    let hasWork = false, lostGlyphs = 0, lossyColors = false;
+    for (const [cp, glyph] of old.glyphs) {
+      if (!glyph.pixels.some(Boolean)) continue;
+      hasWork = true;
+      if (!sameCell || !kept.has(cp)) lostGlyphs++;
+      else if (old.gb && !toGb && glyph.pixels.some(p => p > 1)) lossyColors = true;
+    }
+    return { hasWork, sameCell, lostGlyphs, lossyColors };
+  }
+
+  // A pixel value when the palette changes. From black to GB Studio's shades the number stays (1 is the darkest). From the
+  // shades to black, what the exporter reads as ink stays ink (the darkest and the dark shade become black) and the light and
+  // the palest shade, which it reads as background, are removed.
+  function convertValue(value, fromGb, toGb) {
+    if (!value || fromGb === toGb || !fromGb) return value;
+    return value <= 2 ? 1 : 0;
+  }
+
+  // The drawing of an old model in a new layout: the glyphs follow their character (when the cell has the same size), with
+  // their widths in variable mode, and the colors are converted. Returns {model, kept, lost} (counts of drawn glyphs).
+  function relayout(old, meta, advances) {
+    const next = create(meta, advances);
+    const sameCell = old.cellW === next.cellW && old.cellH === next.cellH;
+    let kept = 0, lost = 0;
+    for (const [cp, glyph] of old.glyphs) {
+      const drawn = glyph.pixels.some(Boolean);
+      const target = sameCell ? next.glyphs.get(cp) : null;
+      if (!target) { if (drawn) lost++; continue; }
+      for (let i = 0; i < glyph.pixels.length; i++) target.pixels[i] = convertValue(glyph.pixels[i], old.gb, next.gb);
+      if (next.variable && old.variable) target.width = glyph.width;
+      if (drawn) kept++;
+    }
+    return { model: next, kept, lost };
+  }
+
+  // The part of the metadata that decides the layout and the mode: when it is the same, the drawing needs no change.
+  function layoutKey(meta) {
+    return JSON.stringify({ cell: meta.cell, grid: meta.grid, map: meta.map, mode: meta.mode, widthSource: meta.widthSource || 'magenta', target: meta.target || null });
+  }
+
+  // The name of a character in a message: U+0041 "A", U+0020 (space).
+  function label(cp) {
+    const blank = /^[\p{Cc}\p{Zs}\p{Cf}]$/u.test(String.fromCodePoint(cp));
+    return hex(cp) + (blank ? ' (' + (BLANK_NAMES[cp] || 'blank') + ')' : ' "' + String.fromCodePoint(cp) + '"');
+  }
+
+  // A warning as a sentence, with the place of the cell as the Aseprite extension gives it (rows and columns from 1).
+  function describeWarning(warning) {
+    const place = label(warning.cp) + ' (row ' + (warning.row + 1) + ', column ' + (warning.col + 1) + ')';
+    return place + ': ' + warning.count + (warning.count === 1 ? ' pixel is' : ' pixels are') + ' under the width marker and hidden by it.';
+  }
+
   // "A U+0041", "space U+0020": what to show for a character.
   function describe(cp) {
     const blank = /^[\p{Cc}\p{Zs}\p{Cf}]$/u.test(String.fromCodePoint(cp));
@@ -115,5 +198,5 @@
   // Names of the colors of the palette, for the tool tips.
   const COLOR_NAMES = { plain: ['Black'], gbstudio: ['Darkest', 'Dark', 'Light', 'Palest'] };
 
-  return { PLAIN, GB_SHADES, MARKER, COLOR_NAMES, create, describe };
+  return { PLAIN, GB_SHADES, MARKER, COLOR_NAMES, create, describe, label, describeWarning, impact, relayout, convertValue, layoutKey };
 });

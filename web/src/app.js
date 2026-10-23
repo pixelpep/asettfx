@@ -1,7 +1,7 @@
 // UI wiring for the template generator.
 (function () {
   'use strict';
-  const { charmap, charsets, generate, hintCanvas, fonts, pixelfont } = window.Digiface;
+  const { charmap, charsets, generate, hintCanvas, fonts, pixelfont, metadata, png } = window.Digiface;
   const $ = id => document.getElementById(id);
 
   const CUSTOM_HEX = 'custom-hex';
@@ -92,11 +92,7 @@
       $('applyFontAll').hidden = all.height === letters.height && all.width === letters.width && all.baseline === letters.baseline;
       $('applyFontAll').textContent = 'Make room for the accents too' + dims(all);
     }
-    // the cell size is fixed in GB Studio mode
-    for (const id of ['applyFont', 'applyFontAll']) {
-      $(id).disabled = $('gbstudio').checked;
-      $(id).title = $('gbstudio').checked ? 'The cell size is fixed in GB Studio mode' : '';
-    }
+    applyLocks();  // the cell size buttons are fixed in GB Studio mode and while editing
 
     // the window of the "i" button
     $('fontDialogTitle').textContent = f ? f.label : '';
@@ -169,8 +165,10 @@
   let last = null;       // last successful result
   let sequence = 0;      // drops results of superseded runs
 
-  function currentMap() {
-    const id = charsetSelect.value;
+  function currentMap() { return mapOf(charsetSelect.value); }
+
+  // The map of a character set of the list (a preset, or the custom entries), and its errors.
+  function mapOf(id) {
     if (id === CUSTOM_HEX) {
       const r = charmap.fromHexList($('custom').value);
       return { map: r.tokens, errors: r.errors };
@@ -189,34 +187,73 @@
     return Number.isFinite(v) ? v : fallback;
   };
 
+  // The controls that cannot change, now: the layout and the mode while editing (the drawing would move), and the layout in GB
+  // Studio mode. The others (the guide font, the padding, the margin, the baseline, the ticks) can: they only redraw the guides.
+  const GB_LOCKED = ['charset', 'cellW', 'cellH', 'cols', 'checker', 'baselineTick'];
+  const EDIT_LOCKED = ['charset', 'custom', 'cellW', 'cellH', 'cols', 'forceMono', 'prefill', 'applyFont', 'applyFontAll'];
+  let editing = false;
+  function applyLocks() {
+    const gb = $('gbstudio').checked;
+    const locked = new Set();
+    if (gb) for (const id of GB_LOCKED) locked.add(id);
+    if (editing) for (const id of EDIT_LOCKED) locked.add(id);
+    for (const id of new Set([...GB_LOCKED, ...EDIT_LOCKED])) $(id).disabled = locked.has(id);
+    for (const id of ['applyFont', 'applyFontAll']) {
+      $(id).title = gb ? 'The cell size is fixed in GB Studio mode' : editing ? 'The cell size is fixed while editing' : '';
+    }
+  }
+
   // GB Studio mode: the layout, the 8 x 8 cells and the 16 columns are fixed, the checkerboard is off, and the template uses
-  // the colors GB Studio reads as background. Unchecking brings back what was there before.
-  const GB_LOCKED = ['charset', 'cellW', 'cellH', 'cols', 'checker'];
+  // the colors GB Studio reads as background. Unchecking brings back what was there before. While editing, the drawing follows
+  // (see model.relayout) and the page asks before it loses something.
   let beforeGb = null;
+  function confirmGbSwitch(on) {
+    let target;
+    if (on) target = { cell: { w: 8, h: 8 }, map: mapOf('gbstudio').map, target: 'gbstudio' };
+    else if (beforeGb) target = { cell: { w: parseInt(beforeGb.cellW, 10) || 8, h: parseInt(beforeGb.cellH, 10) || 8 }, map: mapOf(beforeGb.charset).map };
+    else return true;
+    const report = window.Digiface.editor.impact(target);
+    if (!report.hasWork || (!report.lostGlyphs && !report.lossyColors && report.sameCell)) return true;
+    return window.confirm(window.Digiface.editor.describe(report));
+  }
+
+  // The guide font of GB Studio, for the GB Studio layout.
+  function useGbFont() {
+    const id = 'bundled:gb-studio-variable';
+    if (fontSelect.value === id || !fonts.FONTS.some(f => f.id === id)) return;
+    fontSelect.value = id;
+    onFontChoice();
+  }
+
   function setGbStudio(on) {
+    if (editing && !confirmGbSwitch(on)) { $('gbstudio').checked = !on; return; }
     if (on) {
       beforeGb = { charset: charsetSelect.value, cellW: $('cellW').value, cellH: $('cellH').value, cols: $('cols').value,
-        checker: $('checker').checked, ticks: $('baselineTick').checked };
+        checker: $('checker').checked, ticks: $('baselineTick').checked, font: fontSelect.value };
       charsetSelect.value = 'gbstudio';
       $('cellW').value = 8; $('cellH').value = 8; $('cols').value = 16;
       $('checker').checked = false;
-      $('baselineTick').checked = false;
+      $('baselineTick').checked = false;                  // no baseline in a GB Studio font: it is not a guide here
+      useGbFont();
     } else if (beforeGb) {
       charsetSelect.value = beforeGb.charset;
       $('cellW').value = beforeGb.cellW; $('cellH').value = beforeGb.cellH; $('cols').value = beforeGb.cols;
       $('checker').checked = beforeGb.checker;
       $('baselineTick').checked = beforeGb.ticks;
+      if (beforeGb.font && beforeGb.font !== fontSelect.value) { fontSelect.value = beforeGb.font; onFontChoice(); }
       beforeGb = null;
     }
-    for (const id of GB_LOCKED) $(id).disabled = on;
+    applyLocks();
     $('gbNote').hidden = !on;
-    $('downloadJson').hidden = !on;
     refresh();
   }
 
+  // The name of the font: asked when something is downloaded, then used for the file name and as the name of the font.
+  let fontName = 'My Pixel Font';
+
   function readSettings(map) {
     return Object.assign($('gbstudio').checked ? { target: 'gbstudio' } : {}, {
-      name: $('name').value.trim(),
+      name: fontName,
       cellW: num('cellW', 8), cellH: num('cellH', 8), cols: num('cols', 16),
       mode: $('forceMono').checked ? 'mono' : 'var', widthSource: 'magenta',
       map, baseline: num('baseline', 0),
@@ -243,39 +280,8 @@
     }
   }
 
-  // Zoom steps of the + and - buttons beside the preview options.
-  const ZOOMS = [1, 2, 3, 4, 5, 6, 8, 10, 12, 16, 20, 24, 32];
-  let zoom = 4;
-
-  function showZoom() {
-    $('zoomOut').disabled = zoom <= ZOOMS[0];
-    $('zoomIn').disabled = zoom >= ZOOMS[ZOOMS.length - 1];
-    $('zoomOut').title = 'Zoom out (now x' + zoom + ')';
-    $('zoomIn').title = 'Zoom in (now x' + zoom + ')';
-  }
-
-  function stepZoom(direction) {
-    const next = direction > 0 ? ZOOMS.find(z => z > zoom) : ZOOMS.slice().reverse().find(z => z < zoom);
-    if (next) zoom = next;
-    showZoom();
-    if (last) drawPreview(last);
-  }
-
-  function drawPreview(result) {
-    const src = document.createElement('canvas');
-    src.width = result.width; src.height = result.height;
-    src.getContext('2d').putImageData(new ImageData(new Uint8ClampedArray(result.rgba), result.width, result.height), 0, 0);
-
-    const view = $('preview');
-    view.width = result.width * zoom; view.height = result.height * zoom;
-    const ctx = view.getContext('2d');
-    ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(src, 0, 0, view.width, view.height);
-  }
-
   async function refresh() {
     const run = ++sequence;
-    showFileName();
     const chosen = charsetSelect.selectedOptions[0];
     if (chosen) charsetSelect.title = chosen.text;  // the closed list may cut a long label
     const isVar = !$('forceMono').checked;
@@ -300,9 +306,9 @@
     $('count').textContent = count + ' characters' + (unused ? ' and ' + unused + ' unused cells' : '') + ', ' + (cols >= 1 ? generate.rowsFor(map, cols) : '?') + ' rows';
 
     let result = { ok: false, errors: [] };
+    let hint = null;
     if (!errors.length && map.length) {
-      const font = currentFont();
-      const hint = hintCanvas.create({ fontFamily: font.family, weight: font.weight, align: font.align, padding: padding(), lift: lift(), exactSize: font.exactSize });
+      hint = hintProvider();
       result = await generate.generate(readSettings(map), hint);
     } else if (!map.length && !errors.length) {
       messages.push(['error', 'Add at least one character']);
@@ -313,7 +319,8 @@
       for (const e of result.errors) messages.push(['error', e]);
       last = null;
       $('download').disabled = true;
-      $('edit').disabled = true;
+      $('edit').disabled = !editing;
+      $('downloadDrawing').disabled = true;
       $('size').textContent = '';
       $('meta').textContent = '';
       showMessages(messages);
@@ -326,64 +333,167 @@
     $('edit').disabled = false;
     $('size').textContent = result.width + ' x ' + result.height + ' px, ' + (result.png.length / 1024).toFixed(1) + ' KB';
     $('meta').textContent = JSON.stringify(result.meta, null, 2);
-    drawPreview(result);
+    if (hint) {  // the viewer shows the template, and the drawing when it has this layout
+      const layers = generate.layers(readSettings(map), hint);
+      if (layers.ok) { window.Digiface.editor.update(layers); $('downloadDrawing').disabled = false; }
+    }
   }
 
-  // Shows, right after the name field, the name the file will really be saved under.
-  function showFileName() {
-    const saved = generate.fileName($('name').value, num('cellW', 8), num('cellH', 8));
-    $('filename').textContent = '\u2192 ' + saved;
-    $('filename').title = 'Saved as ' + saved;
+  const hintProvider = () => {
+    const font = currentFont();
+    return hintCanvas.create({ fontFamily: font.family, weight: font.weight, align: font.align, padding: padding(), lift: lift(), exactSize: font.exactSize });
+  };
+
+  // What each download is, what it holds and what it is for, shown in the window that asks for the name. gb: GB Studio mode.
+  function describeDownload(kind, gb) {
+    if (kind === 'template') {
+      return '<p>The <b>template</b> is the grid to draw on: one cell per character with a faint guide letter, the baseline ticks, and the settings of the font stored in the PNG.</p>'
+        + '<p>Open it in Aseprite, draw each glyph on a layer above it, hide the template layer, then use the Digiface extension: File &#9656; Scripts &#9656; Digiface &#9656; Export as TTF&hellip;</p>'
+        + (gb ? '<p>For GB Studio it is an indexed PNG in the colors of GB Studio: the palest is the background, the darkest the characters, magenta the widths.</p>' : '');
+    }
+    return '<p>The <b>drawing</b> is what you drew here, without any guide: ' + (gb ? 'the characters in the shades of GB Studio on its palest color' : 'black on white')
+      + ', magenta where a width marker is, and the settings of the font stored in the PNG.</p>'
+      + (gb
+        ? '<p>It is the <b>font image GB Studio reads</b>: put it in the <code>assets/fonts</code> folder of your project.</p>'
+          + '<p>The <b>.json</b> next to it tells GB Studio where the characters beyond the plain Latin-1 letters are (&euro; &lsquo; &rsquo; &ldquo; &rdquo; &hellip; &oelig; &OElig;...): without it, typing them shows another glyph. If your texts only use letters, digits and the accented letters of Latin-1, you can leave it out. It must have the same name as the image.</p>'
+        : '<p>Open it in Aseprite to refine it, and export a font with the Digiface extension (File &#9656; Scripts &#9656; Digiface &#9656; Export as TTF&hellip;).</p>');
   }
 
-  $('download').addEventListener('click', () => {
-    if (!last) return;
-    const url = URL.createObjectURL(new Blob([last.png], { type: 'image/png' }));
+  // Asks for the name of the font in a window before a download, with what the download is. kind: 'template' or 'drawing'.
+  // Returns {name, json} (json: the .json of GB Studio is wanted too), or null when the user cancels. The name stays as it was
+  // typed except for control characters, at most 64 characters.
+  function askFontName(kind) {
+    return new Promise(resolve => {
+      const dialog = $('nameDialog');
+      const form = dialog.querySelector('form');
+      const gb = $('gbstudio').checked;
+      const withJson = kind === 'drawing' && gb;
+      $('nameTitle').textContent = kind === 'template' ? 'Download the template' : 'Download the drawing';
+      $('nameInfo').innerHTML = describeDownload(kind, gb);
+      $('nameInput').value = fontName;
+      $('nameOk').textContent = 'Download';
+      $('nameJsonRow').hidden = !withJson;
+      $('nameJson').checked = true;
+      const warn = $('nameWarn');
+      const hidden = kind === 'drawing' ? window.Digiface.editor.warnings() : [];
+      warn.hidden = !hidden.length;
+      if (hidden.length) {
+        const label = window.Digiface.editorModel.label;
+        warn.textContent = hidden.length + (hidden.length === 1 ? ' character has' : ' characters have') + ' drawing under the width marker, which hides it: '
+          + hidden.slice(0, 5).map(w => label(w.cp)).join(', ') + (hidden.length > 5 ? ' and ' + (hidden.length - 5) + ' more' : '') + '. The hidden pixels are lost in the download.';
+      }
+      let settled = false;
+      const finish = result => {
+        if (settled) return;
+        settled = true;
+        form.removeEventListener('submit', onSubmit);
+        dialog.removeEventListener('close', onClose);
+        dialog.removeEventListener('cancel', onClose);
+        resolve(result);
+      };
+      // the button that submitted tells: Download or Cancel; closing it any other way (Escape) is a cancel
+      const onSubmit = e => finish(e.submitter && e.submitter.value === 'ok'
+        ? { name: $('nameInput').value.replace(/[\u0000-\u001f\u007f]/g, '').slice(0, 64).trim(), json: withJson && $('nameJson').checked } : null);
+      const onClose = () => finish(null);
+      form.addEventListener('submit', onSubmit);
+      dialog.addEventListener('close', onClose);
+      dialog.addEventListener('cancel', onClose);
+      dialog.showModal();
+      $('nameInput').select();
+    });
+  }
+
+  function save(bytes, type, name) {
+    const url = URL.createObjectURL(new Blob([bytes], { type }));
     const a = document.createElement('a');
-    a.href = url; a.download = generate.fileName(last.meta.name, last.meta.cell.w, last.meta.cell.h);
+    a.href = url; a.download = name;
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
-  });
+  }
 
-  // The mapping file of GB Studio for the layout in use, named like the template without its size and "template".
-  $('downloadJson').addEventListener('click', () => {
+  // The template, generated again with the name that was just given.
+  $('download').addEventListener('click', async () => {
     if (!last) return;
-    const text = JSON.stringify({ mapping: generate.gbMapping(last.meta.map) }, null, 2) + '\n';
-    const url = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
-    const a = document.createElement('a');
-    a.href = url; a.download = generate.fileName(last.meta.name, last.meta.cell.w, last.meta.cell.h).replace(/-\d+x\d+-template\.png$/, '.json');
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-  });
-
-  // The editor takes the template as layers, with the settings in use.
-  $('edit').addEventListener('click', () => {
+    const answer = await askFontName('template');
+    if (!answer) return;
+    fontName = answer.name;
     const { map, errors } = currentMap();
     if (errors.length) return;
-    const font = currentFont();
-    const hint = hintCanvas.create({ fontFamily: font.family, weight: font.weight, align: font.align, padding: padding(), lift: lift(), exactSize: font.exactSize });
-    const result = generate.layers(readSettings(map), hint);
-    if (result.ok) window.Digiface.editor.open(result);
+    const result = await generate.generate(readSettings(map), hintProvider());
+    if (result.ok) save(result.png, 'image/png', generate.fileName(fontName, result.meta.cell.w, result.meta.cell.h));
   });
+
+  // The drawing as a PNG: the writing and the width markers over the background, with the metadata, so that the Aseprite
+  // extension finds its settings. In GB Studio mode an indexed image with GB Studio's palette.
+  $('downloadDrawing').addEventListener('click', async () => {
+    const m = window.Digiface.editor.model();
+    if (!m) return;
+    const answer = await askFontName('drawing');
+    if (!answer) return;
+    const name = fontName = answer.name;
+    const meta = Object.assign({}, m.meta, { name });
+    if (!name) delete meta.name;
+    const img = window.Digiface.editorExport.renderDrawing(m);
+    const options = { text: [{ keyword: metadata.KEYWORD, text: metadata.serialize(meta) }] };
+    if (img.palette) options.palette = img.palette;
+    save(await png.encode(img.width, img.height, img.rgba, options), 'image/png', generate.drawingFileName(name, m.cellW, m.cellH));
+    if (answer.json) {   // the mapping of GB Studio, with the name of the image
+      const text = JSON.stringify({ mapping: generate.gbMapping(m.meta.map) }, null, 2) + '\n';
+      save(text, 'application/json', generate.drawingFileName(name, m.cellW, m.cellH).replace(/-\d+x\d+\.png$/, '.json'));
+    }
+  });
+
+  // The Edit button: the settings fold away and the editor takes the place of the preview. Stopping brings them back.
+  let cardStates = [];
+  function startEditing() {
+    if (editing) return;
+    const { map, errors } = currentMap();
+    if (errors.length) return;
+    const result = generate.layers(readSettings(map), hintProvider());
+    if (!result.ok || !window.Digiface.editor.start(result)) return;  // start() may ask, and the user may keep the drawing
+    editing = true;
+    const cards = Array.from(document.querySelectorAll('details.card'));
+    cardStates = cards.map(c => c.open);
+    for (const c of cards) c.open = false;
+    document.body.classList.add('editing');
+    $('edit').classList.add('active');
+    $('edit').setAttribute('aria-pressed', 'true');
+    $('edit').title = 'Stop editing and show the settings (Esc)';
+    applyLocks();
+  }
+
+  function stopEditing() {
+    if (!editing) return;
+    window.Digiface.editor.stop();
+    editing = false;
+    document.querySelectorAll('details.card').forEach((c, i) => { c.open = cardStates[i] !== false; });
+    document.body.classList.remove('editing');
+    $('edit').classList.remove('active');
+    $('edit').setAttribute('aria-pressed', 'false');
+    $('edit').title = 'Draw the glyphs in the page';
+    applyLocks();
+    refresh();
+  }
+
+  $('edit').addEventListener('click', () => (editing ? stopEditing() : startEditing()));
+  document.addEventListener('digiface-editor-done', stopEditing);
 
   charsetSelect.addEventListener('change', () => {
     const p = charsets.presets.find(x => x.id === charsetSelect.value);
     if (p) $('cols').value = p.cols;
+    if (charsetSelect.value === 'gbstudio') useGbFont();   // the GB Studio layout is drawn with the font of GB Studio
     refresh();
   });
 
   let timer = null;
   const schedule = () => { clearTimeout(timer); timer = setTimeout(refresh, 120); };
-  for (const el of document.querySelectorAll('#settings input, #settings select, #settings textarea, #name, #checker, #baselineTick')) {
+  for (const el of document.querySelectorAll('#settings input, #settings select, #settings textarea, #checker, #baselineTick')) {
     el.addEventListener('input', schedule);
     el.addEventListener('change', schedule);
   }
   $('settings').addEventListener('submit', e => e.preventDefault());
   // opened, the metadata sit beside the image (two thirds / one third); folded, the image has the whole width
   $('metaBox').addEventListener('toggle', () => { document.querySelector('.split').classList.toggle('meta-open', $('metaBox').open); });
-  $('zoomOut').addEventListener('click', () => stepZoom(-1));
-  $('zoomIn').addEventListener('click', () => stepZoom(1));
-  showZoom();
   $('fontFile').addEventListener('change', () => { if ($('fontFile').files[0]) loadFontFile($('fontFile').files[0]); });
   fontSelect.addEventListener('change', onFontChoice);
   function applyFit(which) {
@@ -400,12 +510,21 @@
   $('gbstudio').addEventListener('change', () => setGbStudio($('gbstudio').checked));
   $('fontInfoBtn').addEventListener('click', () => { if (!$('fontInfoBtn').hidden) $('fontDialog').showModal(); });
   $('helpBtn').addEventListener('click', () => $('helpDialog').showModal());
+  for (const tab of document.querySelectorAll('#helpDialog .tab')) {
+    tab.addEventListener('click', () => {
+      for (const t of document.querySelectorAll('#helpDialog .tab')) {
+        const on = t === tab;
+        t.classList.toggle('active', on);
+        t.setAttribute('aria-selected', on ? 'true' : 'false');
+        $(t.getAttribute('aria-controls')).hidden = !on;
+      }
+    });
+  }
   $('helpDialog').addEventListener('click', e => { if (e.target === $('helpDialog')) $('helpDialog').close(); });
   $('fontDialog').addEventListener('click', e => { if (e.target === $('fontDialog')) $('fontDialog').close(); });  // a click outside closes it
   $('applyFont').addEventListener('click', () => applyFit('letters'));
   $('applyFontAll').addEventListener('click', () => applyFit('all'));
-  $('name').addEventListener('input', showFileName);  // immediately, without waiting for the preview
 
-  window.Digiface.app = { refresh, state: () => last };
+  window.Digiface.app = { refresh, state: () => last, stopEditing, isEditing: () => editing };
   refresh();
 })();

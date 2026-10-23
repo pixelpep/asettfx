@@ -93,3 +93,75 @@ test('layers from the generator feed the model: the advances give the widths of 
   assert.equal(m.glyphs.get(0x20).width, 8);                // a blank character without blankAdvance keeps its cell
   assert.equal(layers.advances.length, 16 * 6);
 });
+
+test('layoutKey changes with the layout and the mode, not with the guide', () => {
+  const a = meta();
+  const key = model.layoutKey(a);
+  assert.equal(model.layoutKey(Object.assign({}, a, { guide: { checker: false }, metrics: { baseline: 2 }, name: 'other' })), key);
+  assert.notEqual(model.layoutKey(Object.assign({}, a, { mode: 'mono' })), key);
+  assert.notEqual(model.layoutKey(Object.assign({}, a, { cell: { w: 8, h: 5 } })), key);
+  assert.notEqual(model.layoutKey(Object.assign({}, a, { map: ['0041-0046'] })), key);
+  assert.notEqual(model.layoutKey(Object.assign({}, a, { target: 'gbstudio' })), key);
+});
+
+test('a drawing follows its characters when the grid changes and the cell keeps its size', () => {
+  const old = model.create(meta(), [4, 4, 4, 4, 4, 4]);
+  old.glyphs.get(0x41).pixels[0] = 1;
+  old.glyphs.get(0x45).pixels[5] = 1;
+  old.glyphs.get(0x45).width = 2;
+  const moved = Object.assign(meta(), { grid: { cols: 2, rows: 3 }, map: ['0045', '0041-0043'] });   // reordered, E first, F gone
+  const report = model.impact(old, moved);
+  assert.deepEqual(report, { hasWork: true, sameCell: true, lostGlyphs: 0, lossyColors: false });
+  const r = model.relayout(old, moved, [4, 4, 4, 4]);
+  assert.equal(r.kept, 2);
+  assert.equal(r.lost, 0);
+  assert.equal(r.model.glyphs.get(0x41).pixels[0], 1);
+  assert.equal(r.model.glyphs.get(0x45).pixels[5], 1);
+  assert.equal(r.model.glyphs.get(0x45).width, 2);                          // the width follows too
+  assert.equal(r.model.cellAt(0, 0).cp, 0x45);                              // and the first cell is now E
+});
+
+test('characters that leave the layout lose their drawing, the others keep it', () => {
+  const old = model.create(meta());
+  old.glyphs.get(0x41).pixels[0] = 1;
+  old.glyphs.get(0x46).pixels[0] = 1;
+  const fewer = Object.assign(meta(), { map: ['0041-0043'] });
+  assert.equal(model.impact(old, fewer).lostGlyphs, 1);
+  const r = model.relayout(old, fewer);
+  assert.equal(r.lost, 1);
+  assert.equal(r.kept, 1);
+  assert.equal(r.model.glyphs.has(0x46), false);
+});
+
+test('a change of the cell size starts the drawing again', () => {
+  const old = model.create(meta());
+  old.glyphs.get(0x41).pixels[0] = 1;
+  const bigger = Object.assign(meta(), { cell: { w: 8, h: 8 } });
+  const report = model.impact(old, bigger);
+  assert.equal(report.sameCell, false);
+  assert.equal(report.lostGlyphs, 1);
+  const r = model.relayout(old, bigger);
+  assert.equal(r.kept, 0);
+  assert.equal(r.model.glyphs.get(0x41).pixels.every(p => p === 0), true);
+  // an empty drawing loses nothing
+  assert.deepEqual(model.impact(model.create(meta()), bigger), { hasWork: false, sameCell: false, lostGlyphs: 0, lossyColors: false });
+});
+
+test('going to GB Studio keeps the pixels, going back keeps what is ink and drops what is background', () => {
+  assert.deepEqual([0, 1, 2, 3, 4].map(v => model.convertValue(v, false, true)), [0, 1, 2, 3, 4]);
+  assert.deepEqual([0, 1, 2, 3, 4].map(v => model.convertValue(v, true, false)), [0, 1, 1, 0, 0]);
+  assert.deepEqual([0, 1, 2, 3, 4].map(v => model.convertValue(v, true, true)), [0, 1, 2, 3, 4]);
+
+  const gbMeta = { v: 1, cell: { w: 8, h: 8 }, grid: { cols: 16, rows: 6 }, mode: 'mono', map: ['0020-007E'], target: 'gbstudio' };
+  const plainMeta = Object.assign({}, gbMeta); delete plainMeta.target;
+  const gb = model.create(gbMeta);
+  gb.glyphs.get(0x41).pixels[0] = 1; gb.glyphs.get(0x41).pixels[1] = 2; gb.glyphs.get(0x41).pixels[2] = 3; gb.glyphs.get(0x41).pixels[3] = 4;
+  assert.equal(model.impact(gb, plainMeta).lossyColors, true);
+  const back = model.relayout(gb, plainMeta);
+  assert.deepEqual(Array.from(back.model.glyphs.get(0x41).pixels.subarray(0, 4)), [1, 1, 0, 0]);
+  // from black to GB Studio: the same numbers, nothing lost
+  const plain = model.create(plainMeta);
+  plain.glyphs.get(0x41).pixels[0] = 1;
+  assert.equal(model.impact(plain, gbMeta).lossyColors, false);
+  assert.equal(model.relayout(plain, gbMeta).model.glyphs.get(0x41).pixels[0], 1);
+});

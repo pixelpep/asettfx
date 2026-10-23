@@ -57,7 +57,7 @@
     <details class="card" open>
       <summary>Spacing</summary>
       <div class="body">
-        <label class="check"><input id="forceMono" type="checkbox"> Force monospace</label>
+        <label class="check"><input id="forceMono" type="checkbox"> Monospace</label>
         <div id="var-options" class="body">
           <label class="check"><input id="prefill" type="checkbox" checked> Pre-fill the magenta from the hint font</label>
         </div>
@@ -73,27 +73,61 @@
   <section id="output">
     <div class="toolbar">
       <div class="left">
-        <button id="edit" type="button" class="secondary" disabled title="Draw the glyphs in the page">Edit</button>
-        <span class="zoom">
-          <button id="zoomOut" type="button" class="square secondary" aria-label="Zoom out">&minus;</button>
-          <button id="zoomIn" type="button" class="square secondary" aria-label="Zoom in">+</button>
-        </span>
+        <button id="edit" type="button" class="secondary" disabled aria-pressed="false" title="Draw the glyphs in the page">Edit</button>
         <label class="check"><input id="checker" type="checkbox" checked> Checkerboard</label>
         <label class="check"><input id="baselineTick" type="checkbox" checked> Baseline ticks</label>
         <label class="check" title="A font for GB Studio: fixes the layout, the 8 x 8 cells and the 16 columns, and uses the colors of GB Studio's palette."><input id="gbstudio" type="checkbox"> GB Studio</label>
       </div>
       <div class="right">
-        <label class="name">Font name <input id="name" type="text" value="My Pixel Font" maxlength="64"></label>
-        <span id="filename" class="saved-as" title="Name of the downloaded file"></span>
         <span id="size" class="note"></span>
-        <button id="downloadJson" type="button" class="secondary" hidden title="The file GB Studio reads next to the font image, so that characters such as the euro sign, the curly quotes and oe show the right cell. Give it the same name as the image once the font is drawn.">GB Studio .json</button>
-        <button id="download" type="button" class="download">Download PNG</button>
+        <button id="download" type="button" class="secondary" title="The template: the grid to draw on in Aseprite, with the guide characters and the settings">Template</button>
+        <button id="downloadDrawing" type="button" class="download" disabled title="What is drawn in the editor, as a PNG, without any guide">Drawing</button>
       </div>
     </div>
     <p id="gbNote" class="note" hidden>GB Studio mode: the GB Studio layout, the 8 x 8 cells and the 16 columns are fixed, and the template uses the colors GB Studio reads as background. Uncheck GB Studio to change them.</p>
     <ul id="messages"></ul>
     <div class="split">
-      <div class="preview"><canvas id="preview"></canvas></div>
+      <div id="editor" class="editor" hidden tabindex="-1" role="region" aria-label="Viewer and editor">
+        <header class="ed-top">
+          <span class="ed-brand"><strong class="ed-title">Digiface Matrix</strong> <span class="ed-mode">Editor</span></span>
+          <span class="ed-history ed-editing-only">
+            <button id="edUndo" type="button" class="secondary" disabled title="Undo (Cmd or Ctrl+Z)">Undo</button>
+            <button id="edRedo" type="button" class="secondary" disabled title="Redo (Cmd or Ctrl+Shift+Z)">Redo</button>
+          </span>
+          <span class="ed-zoom">
+            <button id="edZoomOut" type="button" class="square secondary" aria-label="Zoom out" title="Zoom out (-)">&minus;</button>
+            <span id="edZoomLabel" class="ed-zoom-label">100%</span>
+            <button id="edZoomIn" type="button" class="square secondary" aria-label="Zoom in" title="Zoom in (+)">+</button>
+          </span>
+          <button id="edFit" type="button" class="secondary" title="Enlarge the image to fill the window and center it (0)">Fit</button>
+          <label class="check ed-guides" title="The guide characters, the checkerboard, the baseline ticks and the limits of the cells"><input id="edGuides" type="checkbox" checked> Visual guides</label>
+          <label class="check ed-editing-only" title="A click in a cell first zooms on that cell; the next clicks in it draw"><input id="edZoomCell" type="checkbox"> Zoom on cell</label>
+          <span class="ed-spacer"></span>
+          <button id="edFullscreen" type="button" class="secondary" title="Use the whole screen">Full screen</button>
+          <button id="edDone" type="button" class="secondary ed-editing-only" title="Stop editing and show the settings (Esc)">Done</button>
+        </header>
+        <nav class="ed-tools ed-editing-only" aria-label="Tools">
+          <button type="button" class="tool active" data-tool="hand" aria-pressed="true" title="Hand: moves the view. Also while Space is held">Hand (H)</button>
+          <button type="button" class="tool" data-tool="brush" aria-pressed="false" title="Brush, with the last color chosen">Brush (B)</button>
+          <button type="button" class="tool" data-tool="eraser" aria-pressed="false" title="Eraser. X switches between the brush and the eraser">Eraser (E)</button>
+          <button type="button" class="tool" data-tool="width" id="edToolWidth" hidden aria-pressed="false" title="Width: click in a cell to set its width; the marker starts at the nearest border between columns, and the whole cell clears it">Width (W)</button>
+          <button type="button" class="tool" data-tool="select" disabled title="Selection: a later milestone">Select (M)</button>
+          <div class="ed-options">
+            <span class="ed-label">Size</span>
+            <div id="edSizes" class="ed-sizes" role="group" aria-label="Size of the brush and of the eraser">
+              <button type="button" class="size active" data-size="1" aria-pressed="true" aria-label="1 pixel" title="1 x 1 px (key 1, [ and ])"><i style="width:4px;height:4px"></i></button>
+              <button type="button" class="size" data-size="2" aria-pressed="false" aria-label="2 pixels" title="2 x 2 px (key 2, [ and ])"><i style="width:8px;height:8px"></i></button>
+              <button type="button" class="size" data-size="3" aria-pressed="false" aria-label="3 pixels" title="3 x 3 px (key 3, [ and ])"><i style="width:12px;height:12px"></i></button>
+              <button type="button" class="size" data-size="4" aria-pressed="false" aria-label="4 pixels" title="4 x 4 px (key 4, [ and ])"><i style="width:16px;height:16px"></i></button>
+            </div>
+            <span class="ed-label">Color</span>
+            <div id="edColors" class="ed-colors" role="group" aria-label="Colors"></div>
+            <label class="check" title="A stroke stays in the cell where it started"><input id="edClip" type="checkbox" checked> Stay in cell</label>
+          </div>
+        </nav>
+        <div id="edStage" class="ed-stage"><canvas id="edCanvas"></canvas></div>
+        <footer class="ed-status"><span id="edStatus"></span></footer>
+      </div>
       <details class="meta" id="metaBox">
         <summary>Metadata stored in the PNG</summary>
         <pre id="meta"></pre>
@@ -102,66 +136,55 @@
   </section>
 </main>
 
-<div id="editor" class="editor" hidden tabindex="-1" role="dialog" aria-label="Editor">
-  <header class="ed-top">
-    <strong class="ed-title">Digiface Matrix</strong>
-    <span class="ed-mode">Editor</span>
-    <span class="ed-history">
-      <button id="edUndo" type="button" class="secondary" disabled title="Undo (Cmd or Ctrl+Z)">Undo</button>
-      <button id="edRedo" type="button" class="secondary" disabled title="Redo (Cmd or Ctrl+Shift+Z)">Redo</button>
-    </span>
-    <span class="ed-zoom">
-      <button id="edZoomOut" type="button" class="square secondary" aria-label="Zoom out" title="Zoom out (-)">&minus;</button>
-      <span id="edZoomLabel" class="ed-zoom-label">100%</span>
-      <button id="edZoomIn" type="button" class="square secondary" aria-label="Zoom in" title="Zoom in (+)">+</button>
-    </span>
-    <button id="edFit" type="button" class="secondary" title="Fit to the window (0)">Fit</button>
-    <button id="edActual" type="button" class="secondary" title="Actual size (1)">1:1</button>
-    <span class="ed-spacer"></span>
-    <button id="edFullscreen" type="button" class="secondary" title="Use the whole screen">Full screen</button>
-    <button id="edClose" type="button" class="secondary" title="Back to the settings (Esc)">Close</button>
-  </header>
-  <nav class="ed-tools" aria-label="Tools">
-    <button type="button" class="tool active" data-tool="hand" aria-pressed="true" title="Hand (H, or hold Space)">Hand</button>
-    <button type="button" class="tool" data-tool="brush" aria-pressed="false" title="Brush (B)">Brush</button>
-    <button type="button" class="tool" data-tool="eraser" aria-pressed="false" title="Eraser (E)">Eraser</button>
-    <button type="button" class="tool" data-tool="select" disabled title="Selection (M): a later milestone">Select</button>
-    <div class="ed-options">
-      <span class="ed-label">Size</span>
-      <div id="edSizes" class="ed-sizes" role="group" aria-label="Size of the brush and of the eraser">
-        <button type="button" class="size active" data-size="1" aria-pressed="true" aria-label="1 pixel" title="1 x 1 px ([ and ])"><i style="width:4px;height:4px"></i></button>
-        <button type="button" class="size" data-size="2" aria-pressed="false" aria-label="2 pixels" title="2 x 2 px ([ and ])"><i style="width:8px;height:8px"></i></button>
-        <button type="button" class="size" data-size="3" aria-pressed="false" aria-label="3 pixels" title="3 x 3 px ([ and ])"><i style="width:12px;height:12px"></i></button>
-        <button type="button" class="size" data-size="4" aria-pressed="false" aria-label="4 pixels" title="4 x 4 px ([ and ])"><i style="width:16px;height:16px"></i></button>
-      </div>
-      <label class="check" title="A stroke stays in the cell where it started"><input id="edClip" type="checkbox" checked> Stay in cell</label>
-      <span class="ed-label">Color</span>
-      <div id="edColors" class="ed-colors" role="group" aria-label="Colors"></div>
-    </div>
-  </nav>
-  <div id="edStage" class="ed-stage"><canvas id="edCanvas"></canvas></div>
-  <aside class="ed-layers" aria-label="Layers">
-    <h3>View</h3>
-    <label class="check" title="The guide characters, the checkerboard and the baseline ticks"><input id="edGuides" type="checkbox" checked> Visual guides</label>
-    <label class="check"><input id="edGrid" type="checkbox"> Cell grid</label>
-  </aside>
-  <footer class="ed-status"><span id="edStatus"></span></footer>
-</div>
-
 <footer class="foot">Made by <a href="https://pixelpep.com" target="_blank" rel="noopener">pixelPep</a>. Free and open source (Apache 2.0).</footer>
 
+<dialog id="nameDialog">
+  <form method="dialog">
+    <h2 id="nameTitle">Name of the font</h2>
+    <div id="nameInfo" class="info"></div>
+    <p id="nameWarn" class="warn" hidden></p>
+    <p><label>Name of the font <input id="nameInput" type="text" maxlength="64" autocomplete="off"></label></p>
+    <p id="nameJsonRow" class="check-row" hidden><input id="nameJson" type="checkbox" checked> <label for="nameJson">Also save the <b>.json</b> next to it</label></p>
+    <p class="buttons"><button id="nameOk" value="ok">Download</button> <button id="nameCancel" value="cancel" class="secondary" formnovalidate>Cancel</button></p>
+  </form>
+</dialog>
+
 <dialog id="helpDialog">
-  <h2>How to use Digiface</h2>
-  <p>Draw your pixel-art letters in Aseprite and turn them into a real font. Digiface is made for GB Studio projects (it has the GB Studio character layout and its two default fonts) and for any design work that needs a crisp pixel typeface: the font installs like any other and stays sharp at sizes that are multiples of the cell height.</p>
-  <p>For a GB Studio font, tick <b>GB Studio</b> next to <b>Baseline ticks</b>: the layout, the 8 x 8 cells and the 16 columns are fixed, and the template is an indexed PNG in the colors of GB Studio's palette. In Aseprite, draw the characters with the darkest color (the second of the palette), keep the palest as the background and use the magenta for the widths. Then export the image as a PNG (File &#9656; Export As&hellip;) and put it, with the <b>GB Studio .json</b> of the same name, in the <code>assets/fonts</code> folder of your project.</p>
-  <ol>
-    <li>Choose a character set, the cell size and the spacing here. A guide font shows the character to draw in each cell.</li>
-    <li>Download the PNG template.</li>
-    <li>Open it in Aseprite and draw each glyph in black on a layer above it. The template is only a guide.</li>
-    <li>For a variable-width font, paint pure magenta <b>#FF00FF</b> over the unused columns on the right of each glyph. Without magenta the font is monospace.</li>
-    <li>Hide the template layer, then choose <b>File &#9656; Scripts &#9656; Digiface &#9656; Export as TTF&hellip;</b>.</li>
-  </ol>
-  <p>The export needs the <a href="https://github.com/pixelpep/digiface/releases" target="_blank" rel="noopener">Digiface for Aseprite extension</a>: download the <code>.aseprite-extension</code> file and double-click it.</p>
+  <div class="tabs" role="tablist">
+    <button type="button" role="tab" id="helpTabHow" class="tab active" aria-selected="true" aria-controls="helpHow">How to use</button>
+    <button type="button" role="tab" id="helpTabKeys" class="tab" aria-selected="false" aria-controls="helpKeys">Shortcuts</button>
+  </div>
+  <div id="helpHow" role="tabpanel">
+    <p>Draw your pixel-art letters, in the page or in Aseprite, and turn them into a real font. Digiface is made for GB Studio projects (it has the GB Studio character layout and its two default fonts) and for any design work that needs a crisp pixel typeface: the font installs like any other and stays sharp at sizes that are multiples of the cell height.</p>
+    <ol>
+      <li>Choose a character set, the cell size and the spacing in the cards. A guide font shows the character to draw in each cell.</li>
+      <li>Press <b>Edit</b> to draw right here (brush, eraser, width of each character), or download the <b>Template</b> and draw on it in Aseprite.</li>
+      <li>Download the <b>Drawing</b>: a PNG with what you drew, without any guide.</li>
+      <li>In Aseprite, the <a href="https://github.com/pixelpep/digiface/releases" target="_blank" rel="noopener">Digiface extension</a> turns the PNG into a font: <b>File &#9656; Scripts &#9656; Digiface &#9656; Export as TTF&hellip;</b>. Download the <code>.aseprite-extension</code> file and double-click it.</li>
+    </ol>
+    <p><b>GB Studio:</b> tick <b>GB Studio</b> next to <b>Baseline ticks</b>. The layout, the 8 x 8 cells and the 16 columns are fixed, and the colors are the ones of GB Studio's palette. The drawing you download is the font image GB Studio reads: put it, with its <b>.json</b> (the window offers it), in the <code>assets/fonts</code> folder of your project.</p>
+  </div>
+  <div id="helpKeys" role="tabpanel" hidden>
+    <table class="keys">
+      <tr><th colspan="2">Tools</th></tr>
+      <tr><td><kbd>H</kbd></td><td>Hand; also while <kbd>Space</kbd> is held</td></tr>
+      <tr><td><kbd>B</kbd></td><td>Brush, with the last color chosen</td></tr>
+      <tr><td><kbd>E</kbd></td><td>Eraser</td></tr>
+      <tr><td><kbd>X</kbd></td><td>Switch between the brush and the eraser</td></tr>
+      <tr><td><kbd>W</kbd></td><td>Width (variable fonts)</td></tr>
+      <tr><td><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> <kbd>4</kbd></td><td>Size of the brush and of the eraser (<kbd>[</kbd> and <kbd>]</kbd> step through them)</td></tr>
+      <tr><td><kbd>Shift</kbd> + click</td><td>A line from the last pixel painted</td></tr>
+      <tr><th colspan="2">View</th></tr>
+      <tr><td><kbd>+</kbd> <kbd>-</kbd></td><td>Zoom in and out</td></tr>
+      <tr><td><kbd>0</kbd></td><td>Fit: enlarge the whole sheet to the window</td></tr>
+      <tr><td><kbd>Cmd</kbd>/<kbd>Ctrl</kbd> + wheel</td><td>Zoom (also the pinch of a trackpad)</td></tr>
+      <tr><td>Wheel, <kbd>Space</kbd> + drag, middle button</td><td>Move the view</td></tr>
+      <tr><th colspan="2">Editing</th></tr>
+      <tr><td><kbd>Cmd</kbd>/<kbd>Ctrl</kbd> + <kbd>Z</kbd></td><td>Undo</td></tr>
+      <tr><td><kbd>Cmd</kbd>/<kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Z</kbd></td><td>Redo (<kbd>Ctrl</kbd> + <kbd>Y</kbd> too)</td></tr>
+      <tr><td><kbd>Esc</kbd></td><td>Stop editing</td></tr>
+    </table>
+  </div>
   <form method="dialog"><button id="helpDialogClose">Close</button></form>
 </dialog>
 
@@ -186,6 +209,7 @@
 <script src="src/editor/model.js"></script>
 <script src="src/editor/tools.js"></script>
 <script src="src/editor/history.js"></script>
+<script src="src/editor/export.js"></script>
 <script src="src/editor/ui.js"></script>
 <script src="src/app.js"></script>
 </body>

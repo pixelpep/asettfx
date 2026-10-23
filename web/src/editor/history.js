@@ -1,4 +1,5 @@
-// Undo and redo of the editor. An entry is the list of the pixels a gesture changed: [{cp, i, before, after}].
+// Undo and redo of the editor. An entry is the list of what a gesture changed: pixels, [{cp, i, before, after}], and widths,
+// [{kind: 'width', cp, before, after}].
 // Pure, no DOM. docs/EDITOR.md section 5.
 (function (root, factory) {
   const api = factory();
@@ -15,7 +16,7 @@
     function apply(model, changes, key, reverse) {
       const updated = [];
       const list = reverse ? changes.slice().reverse() : changes;
-      for (const c of list) updated.push(model.setPixel(c.cp, c.i, c[key]));
+      for (const c of list) updated.push(c.kind === 'width' ? model.setWidth(c.cp, c[key]) : model.setPixel(c.cp, c.i, c[key]));
       return updated;
     }
 
@@ -27,7 +28,8 @@
         if (undoStack.length > max) undoStack.shift();
         redoStack = [];
       },
-      // Each of these returns the pixels of the sheet that changed, [{x, y, value}], or null when there is nothing to do.
+      // Each of these returns what changed, as the model gives it (setPixel: {x, y, value}, setWidth: {kind: 'width', cp, width}),
+      // or null when there is nothing to do.
       undo(model) {
         const changes = undoStack.pop();
         if (!changes) return null;

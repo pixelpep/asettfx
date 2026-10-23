@@ -19,17 +19,14 @@
     return { zoom, x: Math.round((stage.width - image.width * zoom) / 2), y: Math.round((stage.height - image.height * zoom) / 2) };
   }
 
-  // The largest zoom of the list at which the whole image fits in the stage, with a margin around it, centered.
+  // The largest zoom at which the whole image fits in the stage, with a small margin around it, centered. It is not limited to
+  // the steps of the list: the image fills the stage as much as it can (a tiny image is enlarged up to the greatest step).
   function fit(image, stage, margin) {
-    const m = margin === undefined ? 24 : margin;
+    const m = margin === undefined ? 12 : margin;
     const room = { width: Math.max(1, stage.width - 2 * m), height: Math.max(1, stage.height - 2 * m) };
-    let zoom = ZOOMS[0];
-    for (const z of ZOOMS) if (image.width * z <= room.width && image.height * z <= room.height) zoom = z;
+    const zoom = Math.max(ZOOMS[0] / 2, Math.min(ZOOMS[ZOOMS.length - 1], room.width / image.width, room.height / image.height));
     return centered(zoom, image, stage);
   }
-
-  // One pixel of the image for one pixel of the stage, centered.
-  function actual(image, stage) { return centered(1, image, stage); }
 
   // Another zoom, with the point (px, py) of the stage staying on the same pixel of the image.
   function zoomAt(view, zoom, px, py) {
@@ -65,5 +62,5 @@
   function toImage(view, sx, sy) { return { x: (sx - view.x) / view.zoom, y: (sy - view.y) / view.zoom }; }
   function toStage(view, ix, iy) { return { x: view.x + ix * view.zoom, y: view.y + iy * view.zoom }; }
 
-  return { ZOOMS, MIN_VISIBLE, fit, actual, zoomAt, stepZoom, pan, clamp, toImage, toStage, nearest };
+  return { ZOOMS, MIN_VISIBLE, fit, zoomAt, stepZoom, pan, clamp, toImage, toStage, nearest };
 });

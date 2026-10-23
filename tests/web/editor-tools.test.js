@@ -161,3 +161,90 @@ test('empty gestures are not kept and the history has a limit', () => {
   h.clear();
   assert.equal(h.canUndo(), false);
 });
+
+// ---- the width layer (milestone 3)
+const vmeta = () => Object.assign(meta(), { mode: 'var', widthSource: 'magenta' });
+const variable = () => model.create(vmeta(), [4, 4, 4, 4, 4, 4]);
+
+test('the Width tool puts the marker at the nearest border between columns, in the cell where it started', () => {
+  const m = variable();
+  const s = tools.beginWidthStroke(m);
+  assert.deepEqual(s.add(6.2, 1), [{ kind: 'width', cp: 0x42, width: 2 }]);  // cell B starts at x = 4: 2.2 is nearest to the border 2
+  assert.equal(m.glyphs.get(0x42).width, 2);
+  s.add(5.4, 1);                                                              // 1.4 -> border 1
+  assert.equal(m.glyphs.get(0x42).width, 1);
+  assert.deepEqual(s.add(5.4, 3), []);                                        // the same width: nothing changes
+  s.add(9.9, 1);                                                              // dragged into the next cell: still the cell B, clamped to its width
+  assert.equal(m.glyphs.get(0x42).width, 4);
+  assert.equal(m.glyphs.get(0x43).width, 4);                                  // the other cell is not touched
+  assert.deepEqual(s.end(), []);                                              // it is back to where it was: no change for the history
+});
+
+test('the whole range of widths can be chosen: the left half of a column and its right half differ', () => {
+  const m = variable();
+  const at = (x) => { const s = tools.beginWidthStroke(m); s.add(x, 1); return m.glyphs.get(0x41).width; };
+  assert.equal(at(0.2), 1);                                                    // the first border would give 0: a glyph keeps one column
+  assert.equal(at(1.4), 1);
+  assert.equal(at(1.6), 2);
+  assert.equal(at(2.4), 2);
+  assert.equal(at(3.6), 4);                                                    // the right half of the last column: the whole cell, no marker
+  assert.equal(tools.widthAt(m, m.cellAt(0, 0), 3.99), 4);
+  assert.deepEqual(tools.beginWidthStroke(m).add(0.2, 0), [{ kind: 'width', cp: 0x41, width: 1 }]);
+});
+
+test('the history entry of a width stroke goes from the first width to the last', () => {
+  const m = variable();
+  const s = tools.beginWidthStroke(m);
+  s.add(6, 1); s.add(5, 1); s.add(6, 1);
+  assert.deepEqual(s.end(), [{ kind: 'width', cp: 0x42, before: 4, after: 2 }]);
+});
+
+test('the Width tool does nothing in a monospace font, in an unused cell, or outside the sheet', () => {
+  const mono = model.create(meta());
+  assert.deepEqual(tools.beginWidthStroke(mono).add(1.4, 1), []);
+  const m = variable();
+  assert.deepEqual(tools.beginWidthStroke(m).add(5, 5), []);                   // the unused cell (index 4)
+  assert.deepEqual(tools.beginWidthStroke(m).add(-3, 0), []);
+  const s = tools.beginWidthStroke(m);
+  s.add(5, 5);
+  assert.deepEqual(s.add(1, 1), []);                                           // started in an unused cell: the stroke stays dead
+  assert.deepEqual(s.end(), []);
+});
+
+test('the history undoes and redoes widths with the pixels of the same gesture', () => {
+  const m = variable();
+  const h = history.create();
+  const px = tools.beginStroke(m, { tool: 'brush', size: 1, color: 1 }); px.add(3, 0);
+  const wd = tools.beginWidthStroke(m); wd.add(2, 0);
+  h.push(px.end().concat(wd.end()));
+  assert.equal(m.glyphs.get(0x41).width, 2);
+  assert.equal(count(m, 0x41), 1);
+  const undone = h.undo(m);
+  assert.equal(m.glyphs.get(0x41).width, 4);
+  assert.equal(count(m, 0x41), 0);
+  assert.ok(undone.some(u => u.kind === 'width' && u.cp === 0x41 && u.width === 4));
+  assert.ok(undone.some(u => u.value === 0 && u.x === 3));
+  const redone = h.redo(m);
+  assert.equal(m.glyphs.get(0x41).width, 2);
+  assert.equal(count(m, 0x41), 1);
+  assert.ok(redone.some(u => u.kind === 'width' && u.width === 2));
+});
+
+test('ink under the width marker is a warning, with the place of the cell', () => {
+  const m = variable();
+  m.glyphs.get(0x42).pixels[3] = 1;                                          // column 3 of the first row of B
+  assert.deepEqual(m.warnings(), []);                                        // the width is the whole cell
+  m.setWidth(0x42, 2);
+  m.glyphs.get(0x42).pixels[0] = 1;                                          // column 0: under nothing
+  const list = m.warnings();
+  assert.deepEqual(list, [{ id: 'ink-under-marker', cp: 0x42, index: 1, row: 0, col: 1, count: 1 }]);
+  assert.equal(model.describeWarning(list[0]), 'U+0042 "B" (row 1, column 2): 1 pixel is under the width marker and hidden by it.');
+  m.glyphs.get(0x43).pixels.fill(1); m.setWidth(0x43, 1);
+  assert.equal(m.warnings().length, 2);
+  assert.match(model.describeWarning(m.warnings()[1]), /U\+0043 "C" \(row 1, column 3\): 12 pixels are under/);
+  // no marker in a monospace font, so nothing to warn about
+  const mono = model.create(meta());
+  mono.glyphs.get(0x41).pixels.fill(1); mono.setWidth(0x41, 1);
+  assert.deepEqual(mono.warnings(), []);
+  assert.equal(model.label(0x20), 'U+0020 (space)');
+});

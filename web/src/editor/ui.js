@@ -1,5 +1,9 @@
-// The editor screen: a full window with the tools on the left, the layers on the right, the view in the middle.
-// Browser only. Milestones 1 and 2: the layers, the view (zoom, hand), the brush and the eraser with the palette and the history.
+// The viewer and the editor, one component: in the page, in the place of the preview, with a header (zoom, fit, full screen) that
+// is always there, the view in the middle and the view options on the right. While editing, the tools are added on the left and
+// undo, redo and Done in the header. The page gives it the layers (generate.layers) after every change of its settings, and
+// starts and stops the editing. The drawing stays visible when the editing stops.
+// Browser only. Milestones 1 to 3: the layers, the view (zoom, hand), the brush and the eraser with the palette and the history,
+// the width layer and the warnings.
 // docs/EDITOR.md sections 5, 6 and 10.
 (function () {
   'use strict';
@@ -25,13 +29,17 @@
   let history = null;
   let stroke = null;             // {id, stroke}: the gesture of the brush or the eraser in progress
   let color = 1;                 // the number of the color of the palette
+  let shownLayout = null;        // the layout the view was fitted for
+  let fitted = true;             // the view is the fitted one, so it follows the size of the stage; zooming or moving it by hand ends that
   let size = 1;                  // the size of the brush and of the eraser, in pixels
   let clip = true;               // a stroke stays in the cell where it started
-  let guides = true;             // the visual guides: the guide characters, the checkerboard, the baseline ticks
-  let showGrid = false;
+  let zoomOnCell = false;        // a click in a cell first zooms on that cell
+  let focusedCell = null;        // the index of the cell the view was zoomed on, until the view is moved by hand
+  let guides = true;             // the visual guides: the guide characters, the checkerboard, the baseline ticks, the limits of the cells
   let lastPoint = null;          // the last pixel painted: the start of a line drawn with Shift
   let shiftDown = false;
-  let session = null;            // {key, model, history}: the drawing kept while the page stays open
+  let session = null;            // {layout, model, history}: the drawing kept while the page stays open
+  let editing = false;
 
   const stageSize = () => ({ width: stage.clientWidth, height: stage.clientHeight });
   const imageSize = () => ({ width: m.width, height: m.height });
@@ -69,11 +77,11 @@
     ctx.strokeStyle = 'rgba(0,255,0,.6)';
     ctx.lineWidth = 1;
     ctx.strokeRect(dx - 0.5, dy - 0.5, dw + 1, dh + 1);
-    if (showGrid && m.cellW * v.zoom >= 6) {
+    if (guides && m.cellW * v.zoom >= 6) {
       // "difference" keeps the lines visible on a pale background as well as on a dark one
       ctx.save();
       ctx.globalCompositeOperation = 'difference';
-      ctx.strokeStyle = 'rgba(255,255,255,.7)';
+      ctx.strokeStyle = 'rgba(255,255,255,.55)';
       ctx.lineWidth = 1;
       ctx.beginPath();
       for (let c = 1; c < m.cols; c++) { const x = dx + Math.round(c * m.cellW * v.zoom * dpr) + 0.5; ctx.moveTo(x, dy); ctx.lineTo(x, dy + dh); }
@@ -81,26 +89,43 @@
       ctx.stroke();
       ctx.restore();
     }
+    drawHiddenInkCue(ctx, dpr);
     drawBrushOutline(ctx, dpr);
     $('edZoomLabel').textContent = Math.round(v.zoom * 100) + '%';
     showStatus();
   }
 
-  // The square the brush or the eraser would cover under the pointer, semi-transparent in the color of the brush (red for the
-  // eraser); with Shift held, the line it would draw from the last pixel painted.
+  // A yellow frame on each cell that has drawing under its width marker: the marker hides it, so it could not be seen otherwise.
+  function drawHiddenInkCue(ctx, dpr) {
+    if (!editing || !m.variable) return;
+    const list = m.warnings();
+    if (!list.length) return;
+    ctx.strokeStyle = '#ffcc00';
+    ctx.lineWidth = Math.max(2, Math.round(2 * dpr));
+    for (const w of list) {
+      const a = view.toStage(v, w.col * m.cellW, w.row * m.cellH);
+      const inset = ctx.lineWidth / 2;
+      ctx.strokeRect(Math.round(a.x * dpr) + inset, Math.round(a.y * dpr) + inset, Math.round(m.cellW * v.zoom * dpr) - ctx.lineWidth, Math.round(m.cellH * v.zoom * dpr) - ctx.lineWidth);
+    }
+  }
+
+  // The square the brush or the eraser would cover under the pointer, with the colors inverted under it, so that the zone shows
+  // on any background; with Shift held, the line it would draw from the last pixel painted.
   function drawBrushOutline(ctx, dpr) {
-    if (!pointer || panning || handActive() || (tool !== 'brush' && tool !== 'eraser')) return;
+    if (!editing || !pointer || panning || handActive()) return;
     const p = view.toImage(v, pointer.x, pointer.y);
+    if (tool === 'width') { drawWidthIndicator(ctx, dpr, p.x, p.y); return; }
+    if (tool !== 'brush' && tool !== 'eraser') return;
     const px = Math.floor(p.x), py = Math.floor(p.y);
     const n = tools.clampSize(size);
     const o = Math.floor((n - 1) / 2);
-    const rgb = tool === 'eraser' ? [255, 0, 102] : m.palette[color - 1];
-    const fill = 'rgba(' + rgb.join(',') + ',' + (tool === 'eraser' ? .4 : .55) + ')';
     const rect = (x, y) => {
       const a = view.toStage(v, x - o, y - o);
       return [Math.round(a.x * dpr), Math.round(a.y * dpr), Math.round(n * v.zoom * dpr), Math.round(n * v.zoom * dpr)];
     };
-    ctx.fillStyle = fill;
+    ctx.save();
+    ctx.globalCompositeOperation = 'difference';
+    ctx.fillStyle = '#fff';
     if (shiftDown && lastPoint) {
       ctx.beginPath();
       for (const [x, y] of tools.line(lastPoint.x, lastPoint.y, px, py)) ctx.rect(...rect(x, y));
@@ -108,10 +133,46 @@
     } else {
       ctx.fillRect(...rect(px, py));
     }
-    ctx.strokeStyle = tool === 'eraser' ? 'rgba(255,0,102,.95)' : 'rgba(0,255,0,.95)';
+    ctx.restore();
+  }
+
+  // What the Width tool would do in the cell under the pointer (or in the cell it started in, while it is down): the new marker
+  // from the border the pointer is nearest to, over the marker that is there, a bright line on that border and the new width
+  // in a badge, so that the value shows on the canvas.
+  function drawWidthIndicator(ctx, dpr, ix, iy) {
+    if (!m.variable) return;
+    const cell = stroke && stroke.onWidth ? stroke.cell : m.cellAt(ix, iy);
+    if (!cell || !cell.assigned) return;
+    const width = tools.widthAt(m, cell, ix);
+    const top = view.toStage(v, cell.x0 + width, cell.y0);
+    const hPx = Math.round(m.cellH * v.zoom * dpr), wPx = Math.round((m.cellW - width) * v.zoom * dpr);
+    const x = Math.round(top.x * dpr), y = Math.round(top.y * dpr);
+    if (wPx > 0) {  // the new marker, over the old one
+      ctx.fillStyle = 'rgba(255,255,255,.5)';
+      ctx.fillRect(x, y, wPx, hPx);
+    }
+    const line = Math.max(2, Math.round(dpr * 2));
+    ctx.fillStyle = '#000';
+    ctx.fillRect(x - line, y, line * 3, hPx);
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(x - Math.floor(line / 2), y, line, hPx);
+    // the badge with the new width, above the cell (inside it when the cell is at the top of the view)
+    const text = String(width);
+    const size = Math.max(11, Math.round(12 * dpr));
+    ctx.font = '700 ' + size + 'px system-ui, sans-serif';
+    const tw = Math.ceil(ctx.measureText(text).width) + Math.round(10 * dpr);
+    const th = size + Math.round(6 * dpr);
+    const bx = Math.max(0, Math.min(canvas.width - tw, x - Math.round(tw / 2)));
+    const by = y - th - Math.round(3 * dpr) >= 0 ? y - th - Math.round(3 * dpr) : y + Math.round(3 * dpr);
+    ctx.fillStyle = '#000';
+    ctx.fillRect(bx, by, tw, th);
+    ctx.strokeStyle = '#fff';
     ctx.lineWidth = 1;
-    const r = rect(px, py);
-    ctx.strokeRect(r[0] + 0.5, r[1] + 0.5, r[2] - 1, r[3] - 1);
+    ctx.strokeRect(bx + 0.5, by + 0.5, tw - 1, th - 1);
+    ctx.fillStyle = '#fff';
+    ctx.textBaseline = 'middle';
+    ctx.textAlign = 'center';
+    ctx.fillText(text, bx + tw / 2, by + th / 2 + 1);
   }
 
   function resize() {
@@ -121,7 +182,7 @@
     canvas.height = Math.max(1, Math.round(s.height * dpr));
     canvas.style.width = s.width + 'px';
     canvas.style.height = s.height + 'px';
-    if (m) { v = view.clamp(v, imageSize(), s); draw(); }
+    if (m) { v = fitted ? view.fit(imageSize(), s) : view.clamp(v, imageSize(), s); draw(); }
   }
 
   function showStatus() {
@@ -135,17 +196,21 @@
   }
 
   // ---- the writing layer
-  function applyPixels(list) {
+  // What changed, as the model gives it: pixels of the writing layer ({x, y, value}) and widths ({kind: 'width', cp, width}).
+  function applyUpdates(list) {
     if (!list || !list.length) return;
     let x0 = Infinity, y0 = Infinity, x1 = -1, y1 = -1;
+    let widths = false;
     const data = writing.image.data;
     for (const p of list) {
+      if (p.kind === 'width') { widths = true; continue; }
       const rgba = m.rgbaOf(p.value);
       const o = (p.y * m.width + p.x) * 4;
       data[o] = rgba[0]; data[o + 1] = rgba[1]; data[o + 2] = rgba[2]; data[o + 3] = rgba[3];
       if (p.x < x0) x0 = p.x; if (p.y < y0) y0 = p.y; if (p.x > x1) x1 = p.x; if (p.y > y1) y1 = p.y;
     }
-    writing.ctx.putImageData(writing.image, 0, 0, x0, y0, x1 - x0 + 1, y1 - y0 + 1);
+    if (x1 >= 0) writing.ctx.putImageData(writing.image, 0, 0, x0, y0, x1 - x0 + 1, y1 - y0 + 1);
+    if (widths) layers.width.getContext('2d').putImageData(new ImageData(new Uint8ClampedArray(m.renderWidth()), m.width, m.height), 0, 0);
     draw();
   }
 
@@ -153,15 +218,16 @@
     $('edUndo').disabled = !history.canUndo() || !!stroke;
     $('edRedo').disabled = !history.canRedo() || !!stroke;
   }
-  function undo() { if (stroke) return; applyPixels(history.undo(m)); showHistory(); }
-  function redo() { if (stroke) return; applyPixels(history.redo(m)); showHistory(); }
+  function undo() { if (stroke) return; applyUpdates(history.undo(m)); showHistory(); }
+  function redo() { if (stroke) return; applyUpdates(history.redo(m)); showHistory(); }
 
   function strokeAt(e) {
     const p = stagePoint(e);
     const i = view.toImage(v, p.x, p.y);
     const x = Math.floor(i.x), y = Math.floor(i.y);
+    if (stroke.onWidth) { applyUpdates(stroke.stroke.add(i.x, i.y)); return; }   // the Width tool takes the position as it is
     lastPoint = { x, y };
-    applyPixels(stroke.stroke.add(x, y));
+    applyUpdates(stroke.stroke.add(x, y));
   }
 
   function endStroke() {
@@ -172,18 +238,27 @@
   }
 
   // ---- view
-  function setView(next) { v = view.clamp(next, imageSize(), stageSize()); draw(); }
+  function setView(next) { fitted = false; focusedCell = null; v = view.clamp(next, imageSize(), stageSize()); draw(); }
 
   function zoomTo(zoom, px, py) {
     const s = stageSize();
     setView(view.zoomAt(v, zoom, px === undefined ? s.width / 2 : px, py === undefined ? s.height / 2 : py));
   }
   const zoomStep = (direction, px, py) => zoomTo(view.stepZoom(v, direction), px, py);
-  const fit = () => setView(view.fit(imageSize(), stageSize()));
-  const actual = () => setView(view.actual(imageSize(), stageSize()));
+  // The view fitted on one cell, centered, with a small margin.
+  function fitToCell(cell) {
+    const s = stageSize(), margin = 24;
+    const zoom = Math.min(view.ZOOMS[view.ZOOMS.length - 1], Math.max(1, (s.width - 2 * margin) / m.cellW), Math.max(1, (s.height - 2 * margin) / m.cellH));
+    fitted = false;
+    v = view.clamp({ zoom, x: Math.round(s.width / 2 - (cell.x0 + m.cellW / 2) * zoom), y: Math.round(s.height / 2 - (cell.y0 + m.cellH / 2) * zoom) }, imageSize(), s);
+    focusedCell = cell.index;
+    draw();
+  }
+
+  function fit() { focusedCell = null; fitted = true; v = view.fit(imageSize(), stageSize()); draw(); }
 
   // ---- tools
-  function handActive() { return tool === 'hand' || spaceDown; }
+  function handActive() { return !editing || tool === 'hand' || spaceDown; }
 
   function showCursor() {
     stage.classList.toggle('hand', handActive());
@@ -191,7 +266,10 @@
   }
 
   function selectTool(name) {
+    if (name === 'width' && !(m && m.variable)) return;
     tool = name;
+    const opts = document.querySelector('#editor .ed-options');
+    if (opts) opts.classList.toggle('width-mode', name === 'width');
     for (const b of document.querySelectorAll('#editor .tool')) {
       const on = b.dataset.tool === name;
       b.classList.toggle('active', on);
@@ -222,11 +300,17 @@
       panning = { id: e.pointerId, x: e.clientX, y: e.clientY, view: v };
       try { canvas.setPointerCapture(e.pointerId); } catch (err) { /* the pointer may be gone already */ }
       showCursor();
-    } else if (e.button === 0 && (tool === 'brush' || tool === 'eraser')) {
+    } else if (e.button === 0 && (tool === 'brush' || tool === 'eraser' || tool === 'width')) {
       e.preventDefault();
-      stroke = { id: e.pointerId, stroke: tools.beginStroke(m, { tool, size, color, clip }) };
+      const onWidth = tool === 'width';
+      const p0 = view.toImage(v, stagePoint(e).x, stagePoint(e).y);
+      if (zoomOnCell) {                                 // the first click in a cell zooms on it; the next ones, in it, act
+        const target = m.cellAt(p0.x, p0.y);
+        if (target && target.assigned && target.index !== focusedCell) { fitToCell(target); return; }
+      }
+      stroke = { id: e.pointerId, onWidth, cell: onWidth ? m.cellAt(p0.x, p0.y) : null, stroke: onWidth ? tools.beginWidthStroke(m) : tools.beginStroke(m, { tool, size, color, clip }) };
       try { canvas.setPointerCapture(e.pointerId); } catch (err) { /* the pointer may be gone already */ }
-      if (e.shiftKey && lastPoint) applyPixels(stroke.stroke.add(lastPoint.x, lastPoint.y));  // Shift: a line from the last pixel painted
+      if (!onWidth && e.shiftKey && lastPoint) applyUpdates(stroke.stroke.add(lastPoint.x, lastPoint.y));  // Shift: a line from the last pixel painted
       strokeAt(e);
       showHistory();
     }
@@ -270,7 +354,10 @@
   function onKeyDown(e) {
     if (e.key === 'Shift' && !shiftDown) { shiftDown = true; draw(); }
     if (e.code === 'Space') {
-      if (typing(e.target)) return;  // a space in a text field stays a space
+      // a space in a field, or on a control of the page outside the editor that has the focus, keeps its meaning; in the editor,
+      // whatever button was clicked last, it is the hand
+      const inside = e.target && e.target.closest && e.target.closest('#editor');
+      if (!inside && e.target && e.target.matches && e.target.matches('input, textarea, select, button, summary, [contenteditable=""], [contenteditable=true]')) return;
       e.preventDefault();
       if (!e.repeat) setSpace(true);
       return;
@@ -290,16 +377,17 @@
       case '[': setSize(SIZES[Math.max(0, SIZES.indexOf(size) - 1)]); break;
       case ']': setSize(SIZES[Math.min(SIZES.length - 1, SIZES.indexOf(size) + 1)]); break;
       case '0': fit(); break;
-      case '1': actual(); break;
+      case 'w': case 'W': selectTool('width'); break;
+      case '1': case '2': case '3': case '4': setSize(Number(e.key)); break;
       case '+': case '=': zoomStep(1); break;
       case '-': case '_': zoomStep(-1); break;
-      case 'Escape': close(); break;
+      case 'Escape': if (!document.fullscreenElement) document.dispatchEvent(new CustomEvent('digiface-editor-done')); break;
       default: return;
     }
     e.preventDefault();
   }
   function onKeyUp(e) {
-    if (e.code === 'Space') setSpace(false);
+    if (e.code === 'Space') { setSpace(false); if (e.target && e.target.closest && e.target.closest('#editor')) e.preventDefault(); }
     if (e.key === 'Shift') { shiftDown = false; draw(); }
   }
   function onBlur() { setSpace(false); endPan(); shiftDown = false; }
@@ -327,13 +415,15 @@
       b.title = names[i] + (m.palette.length > 1 ? ' (' + (i + 1) + ' of ' + m.palette.length + ')' : '');
       b.setAttribute('aria-label', names[i]);
       b.setAttribute('aria-pressed', i + 1 === color ? 'true' : 'false');
-      b.addEventListener('click', () => {
+      b.addEventListener('click', () => {  // choosing a color is going back to the writing
         color = i + 1;
         if (tool !== 'brush') selectTool('brush');
         showColors();
       });
       box.appendChild(b);
     });
+    $('edToolWidth').hidden = !m.variable;                       // only a variable font has widths
+    if (!m.variable && tool === 'width') selectTool('brush');
   }
 
   // ---- buttons and panels
@@ -344,11 +434,10 @@
   $('edZoomIn').addEventListener('click', () => zoomStep(1));
   $('edZoomOut').addEventListener('click', () => zoomStep(-1));
   $('edFit').addEventListener('click', fit);
-  $('edActual').addEventListener('click', actual);
-  $('edClose').addEventListener('click', () => close());
+  $('edDone').addEventListener('click', () => document.dispatchEvent(new CustomEvent('digiface-editor-done')));
   for (const b of document.querySelectorAll('#editor .tool:not([disabled])')) b.addEventListener('click', () => selectTool(b.dataset.tool));
   $('edGuides').addEventListener('change', e => { guides = e.target.checked; draw(); });
-  $('edGrid').addEventListener('change', e => { showGrid = e.target.checked; draw(); });
+  $('edZoomCell').addEventListener('change', e => { zoomOnCell = e.target.checked; focusedCell = null; });
 
   const canFullscreen = typeof editorEl.requestFullscreen === 'function';
   $('edFullscreen').hidden = !canFullscreen;
@@ -362,69 +451,119 @@
 
   // ---- open and close
   // result: what generate.layers gives (the metadata, the background, the ghost and the advances).
-  const hasWork = model_ => { for (const g of model_.glyphs.values()) if (g.pixels.some(Boolean)) return true; return false; };
+  const draftLayers = result => ({
+    background: toCanvas(result.background, m.width, m.height),
+    plain: toCanvas(result.plainBackground, m.width, m.height),
+    template: toCanvas(result.ghost, m.width, m.height),
+    writing: toCanvas(m.renderWriting(), m.width, m.height),
+    width: toCanvas(m.renderWidth(), m.width, m.height)
+  });
 
-  // result: what generate.layers gives (the metadata, the background, the ghost and the advances). The drawing is kept while the
-  // page stays open: opening again with the same settings gives it back; with other settings it asks before starting over.
-  // Returns false when the user keeps the drawing instead.
-  function open(result) {
-    const key = JSON.stringify({ meta: result.meta, advances: result.advances });
-    if (session && session.key === key) {
-      m = session.model; history = session.history;
-    } else {
-      if (session && hasWork(session.model) &&
-          !window.confirm('The settings changed since your drawing. Start a new drawing? The current one will be lost.')) return false;
-      m = model.create(result.meta, result.advances);
-      history = historyModule.create();
-      session = { key, model: m, history };
-      lastPoint = null;
-    }
-    layers = {
-      background: toCanvas(result.background, m.width, m.height),
-      plain: toCanvas(result.plainBackground, m.width, m.height),
-      template: toCanvas(result.ghost, m.width, m.height),
-      writing: toCanvas(m.renderWriting(), m.width, m.height),
-      width: toCanvas(m.renderWidth(), m.width, m.height)
-    };
-    writing = { image: new ImageData(new Uint8ClampedArray(m.renderWriting()), m.width, m.height), ctx: layers.writing.getContext('2d') };
-    stroke = null; color = 1;
-    $('edClip').checked = clip;
-    $('edGuides').checked = guides;
-    $('edGrid').checked = showGrid;
-    setSize(size);
+  function useModel(next) {
+    m = next;
+    stroke = null;
     showColors();
     showHistory();
+  }
+
+  function describeImpact(report) {
+    const lines = [];
+    if (!report.sameCell) lines.push('The cell size changed: the drawing starts again.');
+    else if (report.lostGlyphs) lines.push(report.lostGlyphs + ' drawn character' + (report.lostGlyphs > 1 ? 's are' : ' is') + ' not in the new layout and will be lost.');
+    if (report.lossyColors) lines.push("GB Studio's two light shades will be removed and the two dark ones become black.");
+    return lines.join('\n') + '\nContinue?';
+  }
+
+  // What a layout change (a metadata: {cell, map, target...}) would do to the drawing in hand; see model.impact.
+  function impact(meta) {
+    return session ? model.impact(session.model, meta) : { hasWork: false, sameCell: true, lostGlyphs: 0, lossyColors: false };
+  }
+
+  // Shows the layers of generate.layers, with the drawing when it has this layout (the session of the editor), and a blank sheet
+  // of the layout otherwise: the drawing of another layout is kept for when the layout comes back, or for the next editing.
+  function showLayers(result) {
+    const layout = model.layoutKey(result.meta);
+    if (session && session.layout === layout) {
+      m = session.model;
+      m.meta = result.meta;
+      history = session.history;
+    } else {
+      m = model.create(result.meta, result.advances);
+      history = historyModule.create();
+    }
+    layers = draftLayers(result);
+    writing = { image: new ImageData(new Uint8ClampedArray(m.renderWriting()), m.width, m.height), ctx: layers.writing.getContext('2d') };
+    color = Math.min(color, m.palette.length);
+    useModel(m);
+    editorEl.hidden = false;
+    resize();
+    if (shownLayout !== layout) { fitted = true; v = view.fit(imageSize(), stageSize()); shownLayout = layout; }
+    draw();
+  }
+
+  // Starts the editing, with the layers of generate.layers. The drawing is kept while the page stays open: the same layout gives
+  // it back, another layout carries the drawings of the characters over when the cell keeps its size (and asks before it loses
+  // something). Returns false when the user keeps the drawing instead.
+  function start(result) {
+    const layout = model.layoutKey(result.meta);
+    let next = null;
+    if (session && session.layout === layout) {
+      next = session.model;
+    } else {
+      if (session) {
+        const report = model.impact(session.model, result.meta);
+        if (report.hasWork && (report.lostGlyphs || report.lossyColors) && !window.confirm(describeImpact(report))) return false;
+        next = model.relayout(session.model, result.meta, result.advances).model;
+      } else if (m && model.layoutKey(m.meta) === layout) {
+        next = m;                                   // what the viewer shows is the sheet to draw on
+      } else {
+        next = model.create(result.meta, result.advances);
+      }
+      session = { layout, model: next, history: historyModule.create() };
+    }
+    editing = true;
+    editorEl.classList.add('editing');
     selectTool('hand');
     panning = null; spaceDown = false; shiftDown = false; pointer = null; wheelSum = 0;
-    editorEl.hidden = false;
-    document.body.classList.add('editing');
-    resize();
-    v = view.fit(imageSize(), stageSize());
-    draw();
+    showLayers(result);
+    fitted = true; resize();
     document.addEventListener('keydown', onKeyDown);
     document.addEventListener('keyup', onKeyUp);
     window.addEventListener('blur', onBlur);
-    if (typeof ResizeObserver === 'function') { observer = new ResizeObserver(resize); observer.observe(stage); }
-    editorEl.focus();
     return true;
   }
 
-  function close() {
-    if (editorEl.hidden) return;
-    editorEl.hidden = true;
-    document.body.classList.remove('editing');
+  // The settings of the page changed: new guide layers. While editing, and when the layout changed (GB Studio), the drawing
+  // follows its characters (the page asked about the loss before, with impact()); when the editing is stopped, a changed
+  // layout shows a blank sheet and the drawing waits.
+  function update(result) {
+    const layout = model.layoutKey(result.meta);
+    if (editing && session && session.layout !== layout) {
+      const next = model.relayout(session.model, result.meta, result.advances).model;
+      session = { layout, model: next, history: historyModule.create() };
+      m = next;
+      shownLayout = null;
+    }
+    showLayers(result);
+  }
+
+  function stop() {
+    if (!editing) return;
+    editing = false;
+    editorEl.classList.remove('editing');
     document.removeEventListener('keydown', onKeyDown);
     document.removeEventListener('keyup', onKeyUp);
     window.removeEventListener('blur', onBlur);
-    if (observer) { observer.disconnect(); observer = null; }
-    if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
-    panning = null; spaceDown = false;
-    const button = $('edit');
-    if (button) button.focus();
+    panning = null; stroke = null; spaceDown = false; shiftDown = false;
+    resize();
+    draw();
   }
 
+  if (typeof ResizeObserver === 'function') new ResizeObserver(resize).observe(stage);
+
   window.Digiface.editor = {
-    open, close, isOpen: () => !editorEl.hidden, model: () => m,
-    state: () => ({ tool, spaceDown, view: v, guides, showGrid, handActive: handActive(), color, size, clip, shiftDown, lastPoint, canUndo: history.canUndo(), canRedo: history.canRedo() })
+    start, update, stop, impact, describe: describeImpact, isOpen: () => editing, model: () => m,
+    warnings: () => (m ? m.warnings() : []),
+    state: () => ({ tool, spaceDown, view: v, guides, handActive: handActive(), color, size, clip, shiftDown, lastPoint, canUndo: history.canUndo(), canRedo: history.canRedo() })
   };
 })();

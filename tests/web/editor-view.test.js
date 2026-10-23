@@ -5,21 +5,23 @@ const v = require('../../web/src/editor/view.js');
 const image = { width: 128, height: 48 };
 const stage = { width: 1000, height: 600 };
 
-test('fit picks the largest whole zoom that holds the image with its margin, and centers it', () => {
-  const view = v.fit(image, stage, 24);
-  assert.equal(view.zoom, 6);                // 128 * 6 = 768 <= 952; 128 * 8 = 1024 does not fit
-  assert.equal(view.x, Math.round((1000 - 768) / 2));
-  assert.equal(view.y, Math.round((600 - 288) / 2));
-  // a huge sheet is shown smaller than its size
-  assert.equal(v.fit({ width: 4096, height: 4096 }, stage).zoom, 0.25);
-  // a tiny stage still gives a zoom of the list
-  assert.equal(v.fit(image, { width: 10, height: 10 }).zoom, v.ZOOMS[0]);
-});
-
-test('actual is one image pixel per stage pixel, centered', () => {
-  const view = v.actual(image, stage);
-  assert.equal(view.zoom, 1);
-  assert.deepEqual([view.x, view.y], [436, 276]);
+test('fit fills the stage as much as the image allows, with its margin, and centers it', () => {
+  const view = v.fit(image, stage, 24);                       // room 952 x 552: 128 wide gives 7.4375, 48 high gives 11.5
+  assert.ok(Math.abs(view.zoom - 952 / 128) < 1e-9);
+  assert.equal(view.x, Math.round((1000 - 128 * view.zoom) / 2));
+  assert.equal(view.y, Math.round((600 - 48 * view.zoom) / 2));
+  // the image touches the limit of the room on its tight side, and never goes beyond it
+  assert.ok(128 * view.zoom <= 952 + 1e-6 && 48 * view.zoom <= 552 + 1e-6);
+  // a tall image is limited by its height
+  const tall = v.fit({ width: 16, height: 112 }, stage, 24);
+  assert.ok(Math.abs(tall.zoom - 552 / 112) < 1e-9);
+  // a huge sheet is shown smaller than its size, a tiny one is enlarged up to the greatest step
+  assert.ok(v.fit({ width: 4096, height: 4096 }, stage).zoom < 0.15);
+  assert.equal(v.fit({ width: 2, height: 2 }, stage).zoom, v.ZOOMS[v.ZOOMS.length - 1]);
+  // a tiny stage still gives a positive zoom
+  assert.ok(v.fit(image, { width: 10, height: 10 }).zoom > 0);
+  // the default margin is small
+  assert.ok(v.fit(image, stage).zoom > v.fit(image, stage, 24).zoom);
 });
 
 test('zooming at a point keeps the pixel under it', () => {

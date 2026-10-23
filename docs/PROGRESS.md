@@ -1,10 +1,10 @@
 # Progress
 
-Last updated: 2026-10-23
+Last updated: 2026-10-24
 
 ## Status
 
-Version 0.2.0 is ready to publish (notes in `docs/releases/0.2.0.md`): the spec, the web template generator, the Lua pipeline, and the Aseprite menu commands and dialogs with packaging. Since then the template generator gained pixel fonts (bundled and from a file, drawn pixel for pixel, with a suggested cell size), a bottom margin and a left padding for the guide characters, and a new page layout; these changes are in 0.2.0. On 2026-10-21 the project was renamed from ASETTFX to Digiface (Digiface Matrix, Digiface for Aseprite), internal names included; the 0.1.0 release and its tag were deleted, 0.2.0 replaces it. It is tested automatically (47 node tests, 116 Lua tests run inside Aseprite; the dialogs use a stand-in for `Dialog` there) and was tried by hand in Aseprite 1.3.16 on macOS. Release notes: `docs/releases/0.1.0.md`.
+Version 0.2.0 is published: the spec, the web template generator, the Lua pipeline, and the Aseprite menu commands and dialogs with packaging (notes in `docs/releases/0.2.0.md`). Since then, not released yet (see the changelog): the **editor** in the page (milestones 1 to 3 of 6, `docs/EDITOR.md`), a **GB Studio mode** (layout, indexed PNGs with GB Studio's palette, the `.json` of the mapping, `target` in the metadata), the two downloads **Template** and **Drawing** with their explanation windows, the neon design with Source Sans 3, and the project docs. It is tested automatically (node tests of the web tool and the editor, Lua tests run inside Aseprite, tests of the private hosting code) and tried by hand in Aseprite 1.3.16 on macOS and in Chrome. GB Studio itself has not been tried with a PNG made here.
 
 ## First trial in Aseprite (2026-10-16)
 
@@ -12,13 +12,14 @@ The menu appeared at the right place. Feedback and what was done: many file perm
 
 ## Next
 
-1. [ ] Host Digiface Matrix on a server of its own, then link the page from the README and the release notes.
-2. [ ] A bigger real font end to end, drawn by you: draw, export, install the TTF, use it in a design tool. Check the pre-filled magenta workflow on it. (Done with GB Studio's own `gbs-mono.png` and `gbs-var.png`: 213 characters each export to a valid TTF that renders correctly.)
-3. [ ] Next version (0.2.0: the template generator changes are the main part, the extension only got a fix for fractional numbers): bump the version in `package.json` and `aseprite-extension/package.json`, date the changelog, write `docs/releases/0.2.0.md`, `sh tools/pack.sh`, GitHub release.
-4. [ ] A way to open the template generator without cloning the repository: the hosted page (item 1), or GitHub Pages on `web/`, or a zip of `web/` attached to the release.
-5. [ ] User documentation: a short guide with screenshots of the generator and of the export dialog, and the usual questions (variable width and magenta, why a cell needs 8 rows for accents, installing the font).
-6. [ ] Try the extension on Windows or Linux and on other Aseprite versions.
-7. [ ] Web editor: draw the glyphs in the page (layers, brush, eraser, selection, width layer, GB Studio palette, PNG export). Designed, not started: see [docs/EDITOR.md](EDITOR.md), milestones 1 to 6 on an `editor` branch.
+1. [ ] **Editor, milestone 4**: the rectangle selection (move, nudge, cut, copy, paste, delete, floating paste). Then milestone 5 (automatic saving in the browser, the list of what is wrong in the download window) and 6 (adjustments). See [docs/EDITOR.md](EDITOR.md).
+2. [ ] **Try a font in GB Studio itself**: a PNG of the *Drawing* and its `.json` in `assets/fonts` of a project, then a text with the euro sign, the curly quotes and oe.
+3. [ ] **Next version** (0.3.0: the editor, the GB Studio mode and the new look are the main part, the extension only got the GB Studio palette as pure colors): bump the version in `package.json` and `aseprite-extension/package.json`, date the changelog, write `docs/releases/0.3.0.md`, `sh tools/pack.sh`, and the maintainer creates the GitHub release.
+4. [ ] A bigger real font end to end, drawn in the editor: draw, download the drawing, export the TTF in Aseprite, install it, use it in a design tool. (Done with GB Studio's own `gbs-mono.png` and `gbs-var.png`: 213 characters each export to a valid TTF.)
+5. [ ] A TrueType export from the page (and OpenType), by porting the Lua writer; see "Later" in `docs/EDITOR.md`.
+6. [ ] A way to open Digiface Matrix without cloning the repository: a hosted page, or GitHub Pages on `web/`, or a zip of `web/` attached to the release.
+7. [ ] User documentation: a short guide with screenshots of the editor and of the export dialog, and the usual questions (variable width and magenta, why a cell needs 8 rows for accents, installing the font).
+8. [ ] Try the extension on Windows or Linux and on other Aseprite versions.
 
 ## Done
 
@@ -31,12 +32,15 @@ The menu appeared at the right place. Feedback and what was done: many file perm
 - [x] Step 3, `aseprite-extension/digiface/`: PNG chunk reader with CRC, metadata validator shared with the web tool through `spec/conformance/`, settings resolution (PNG, sprite properties, sidecar), flatten of the visible layers over white, cell analysis (ink, magenta, advances), the export checks
 - [x] Step 4: `outline.lua` and `ttf.lua` (ten tables, cmap 4 and 12, long loca when needed, checksums), `export.lua`; verified by an independent TTF reader in the tests, by fontTools, and by rendering text in Chrome
 - [x] Step 5: `digiface.lua` (menu group and two commands), `package.json` manifest, `form.lua`, `report.lua`, `ui.lua`, `commands.lua`, packaging
+- [x] Editor in the page, milestones 1 to 3 (`web/src/editor/`: view, model, tools, history, export, screen): viewer and editor as one component, brush, eraser, width tool, undo and redo, zoom and fit, zoom on cell, visual guides, the drawing following its characters when the layout changes, GB Studio from inside the editor
+- [x] GB Studio mode: layout and colors fixed, indexed PNGs with GB Studio's palette checked with GB Studio's own pixel rule, the `.json` of the mapping (tested against a port of its encoder), `target: "gbstudio"` in the metadata and the conformance cases, the palette recognized by the extension
+- [x] Downloads: **Template** and **Drawing** with a window that explains them and asks for the name of the font
+- [x] New look (neon design system, Source Sans 3 under the OFL), signature, help with a Shortcuts tab, presentation for games and design work
 - [x] Command-line tools: `tools/inspect.sh`, `tools/export.sh`, `tools/make-sample.sh`, `tools/validate_ttf.py`, `tools/pack.sh`, `tools/install-dev.sh`, `tools/check-package.sh` (unpacks the package elsewhere and exports a font from it)
 
 ## Later (not planned yet)
 
-- Web glyph editor: now planned, see [docs/EDITOR.md](EDITOR.md). What stays here is its TrueType and OpenType export and the project archive, listed in that file under "Later".
-- Live text preview in the existing web tool from an imported glyph PNG, without a full editor.
+- What stays under "Later" in [docs/EDITOR.md](EDITOR.md): the TrueType and OpenType export from the page, the project file and the import of a PNG, testing the font with a live text, the lasso and the other tools.
 - Kerning.
 - More bundled pixel fonts, if their license is confirmed (DaFont's own FAQ says the license shown there is only an indication, and that a missing license does not mean a font is free). Candidates: Alagard (author's note: "Give credit if used. That's it."), Early GameBoy (CC BY-SA 3.0 in the file, a different author on DaFont). Fonts with no statement, or with a personal-use restriction, are left to *Pixel font from a file...*.
 
@@ -45,7 +49,9 @@ The menu appeared at the right place. Feedback and what was done: many file perm
 - Where the menu entry really appears (expected: File > Scripts > Digiface) and how the dialogs look (widths, wrapping of the check lines, the file chooser) is unknown until it is opened in the Aseprite window.
 - Pre-filled magenta widths come from a system font and a simple rule (last ink column + 2). Needs a check on real glyphs; the rule is in `spec/GRID.md` 6.1. The user copies the magenta onto a visible layer (6.2); nothing in the extension edits layers.
 - The `widthSource = auto` rules (an empty cell is half the cell width) and the default `spacing` are to validate visually on a real font.
-- Ghost characters use a system font, so they look different per OS and are crowded for accented characters in 8 px cells. Serif fonts are hard to read at that size.
+- Ghost characters from a system font look different per OS and are crowded for accented characters in 8 px cells; the bundled pixel fonts do not have the problem.
+- The editor is dark only (the neon design has no light mode), and its zoom works on whole steps except Fit, which is fractional.
+- A drawing that is hidden under a width marker is lost in the download (it is flagged); automatic saving does not exist yet, so a reload loses the drawing.
 - Known limits of the font output: no kerning, no hinting, no `gasp`; the OS/2 Unicode range bits cover only the common blocks; undrawn characters are left out of the font, so a browser falls back to another font for them.
 - The metadata schema is mirrored by `web/src/metadata.js` and `aseprite-extension/digiface/meta.lua`; `spec/conformance/` keeps them in agreement, but a change to the schema must be made in all three.
 
@@ -67,8 +73,10 @@ The menu appeared at the right place. Feedback and what was done: many file perm
 | Export reading | Flatten visible layers over white; `FF00FF` = marker; luminance < 128 = ink (inverted for `ink: light`); impure pixels are counted and reported as a warning, never an error |
 | Width marker | Pure magenta `#FF00FF`; advance = non-magenta columns |
 | Font output | Pure Lua `string.pack`, on-curve straight outlines at 64 units per pixel, rules in `spec/TTF.md`; undrawn characters are not exported, spaces are |
-| Hint rendering | System font through canvas at 8x, thresholded to 1-bit; no bundled font for now |
-| Web tool | Plain scripts (UMD), no build, works from `file://`; PNG encoded in JS, `CompressionStream` with stored-block fallback |
+| Hint rendering | System font through canvas at 8x, thresholded to 1-bit, or a bundled or loaded pixel font drawn pixel for pixel |
+| Web tool | Plain scripts (UMD), no build, works from `file://`; PNG encoded in JS (RGBA or indexed), `CompressionStream` with stored-block fallback |
+| Editor | In the page, the preview and the editor are one component; the drawing is stored per character, so a layout change carries it along; width is a tool of its own; the name of the font is asked when something is downloaded |
+| GB Studio | `target: "gbstudio"`: 8 x 8 cells, 16 columns, at most 15 rows; indexed PNGs, palest color first, darkest second; colors chosen so that GB Studio reads the guide as background (green channel 205 to 249); the `.json` only for 0x80-0x9F |
 | Packaging | Zip with `package.json` at its root, built by `tools/pack.sh`; modules live under an `digiface.` namespace so they cannot collide with other extensions |
 | Tests | `npm test` (node) and `npm run test:aseprite` (Lua inside Aseprite batch mode). The validators share `spec/conformance/*.json`; generated files (`charsets.js`, `charsets.lua`, `blank.lua`) are checked in sync |
 | Local references | `ase2ttf-0.2.0/` and `gbstudio_style-fonts/` are gitignored and not redistributed |

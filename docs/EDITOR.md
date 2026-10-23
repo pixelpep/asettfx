@@ -1,105 +1,108 @@
-# Digiface Matrix editor: design and plan
+# Digiface Matrix editor: design and state
 
-Status: milestones 1 and 2 of 6 are written, with a round of adjustments after trying them (the window, the layers, the zoom and the hand; the brush, the eraser, the palettes and undo); the width layer is next. Last updated: 2026-10-23.
+Status: milestones 1 to 3 of 6 are written and have been tried and adjusted three times: the editor in the page, the brush, the eraser and the width tool, the downloads. Next: the selection tool (milestone 4). Last updated: 2026-10-24.
 
-The idea: draw the glyphs in the browser, on the template, with a few tools, instead of only downloading a template to draw in Aseprite. This file records what was decided, how it is built, and in which order.
+The idea: draw the glyphs in the browser, on the template, with a few tools, instead of only downloading a template to draw in Aseprite. This file records what was decided, how it works, and what is left.
 
-## 1. Decisions so far
+## 1. Decisions
 
 | Question | Decision |
 |---|---|
 | What is "normal mode"? | Monospace: pure black only, no width layer. |
+| Window or page? | In the page: the preview and the editor are one component (same header, same zoom); editing adds the tools and folds the settings. A full screen button gives it the whole screen. |
 | Selection tool | A rectangle first. The lasso comes later, if the need is confirmed. |
-| Changing the grid after drawing | The grid is locked inside the editor for now (go back to the settings, with a confirmation that the drawing is erased). The model is built so that this limit can be lifted later (see section 2). |
-| What the first version exports | Two PNGs (for Aseprite, for GB Studio with its `.json`). A TrueType font comes later, and an OpenType one with it (section 9). |
-| Name of the layers in the interface | English: Width, Writing, Template, Background. |
+| Width | A tool of its own, not a mode of the brush and the eraser, with its value shown on the canvas. |
+| Cell grid | Part of the visual guides (check box in the header). |
+| GB Studio from inside the editor | Yes: the drawing follows (section 6). |
+| Changing the grid while editing | Locked (the character set, the cell size, the columns, the mode). The model is built so that the limit can be lifted later (section 2). |
+| What the editor downloads | **Template** and **Drawing** as PNGs, the drawing with its GB Studio `.json` in GB Studio mode. A TrueType font comes later, and an OpenType one with it (section 9). |
+| Name of the font | Asked in a window when something is downloaded, with an explanation of that download. |
+| Warnings panel | None: a yellow frame in the editor and a note in the window of the download. |
+| Names in the interface | English: Width, Writing, Template, Background. |
 
 ## 2. Model: glyphs, not a grid
 
-The drawing is stored **per character** (per code point), not per position in the grid. The grid is a view of these glyphs.
+The drawing is stored **per character** (per code point), not per position in the grid. The grid is a view of these glyphs (`web/src/editor/model.js`).
 
-- Each glyph holds its pixels (a `cellW x cellH` array of palette indexes, 0 meaning empty) and, in variable mode, its width (the number of columns of the cell that are not width marker).
-- Changing the number of columns or the character set, or adding or removing a character, then moves the drawings with their characters: nothing is lost or shifted.
-- Changing the **cell size** needs a rule (where the old drawing is anchored, what is cut and warned about). It is not part of the first version.
-- The history of the editor (undo and redo) records the changes of a glyph, not whole images.
+- Each glyph holds its pixels (a `cellW x cellH` array of palette indexes, 0 meaning empty) and, in a variable font, its width (the number of columns of the cell that are not width marker).
+- A change of the layout moves the drawings with their characters (`model.relayout`): changing the columns or the character set, or ticking GB Studio, loses nothing as long as the cell keeps its size and the characters are still in the layout. `model.impact` says before what would be lost.
+- A change of the **cell size** starts the drawing again (it needs a rule, where the old drawing is anchored and what is cut, that is not written).
+- Undo and redo record the changes of pixels and widths, not whole images (`history.js`).
 
-## 3. Layers (from top to bottom)
+## 3. Layers, from top to bottom
 
-1. **Width** (variable mode only): the width marker of each cell. It is not a bitmap but one number per cell, drawn as magenta columns on the right of the cell, over its whole height, so that the rule "right side, full height" cannot be broken. It hides the writing under it.
-2. **Writing**: the pixels drawn by the user. All the tools act on this layer (and the width tool on the width layer).
-3. **Template**: the guide characters in the hint font.
+1. **Width** (variable fonts only): the width marker of each cell. It is not a bitmap but one number per cell, drawn as magenta columns on the right of the cell, over its whole height, so that the rule "right side, full height" cannot be broken. It hides the writing under it.
+2. **Writing**: the pixels drawn by the user. The brush and the eraser act on it.
+3. **Template**: the guide characters in the guide font.
 4. **Background**: white, or the palest color of GB Studio in GB Studio mode, with the checkerboard and the baseline ticks when they are ticked.
 
-The window has one check box, **Visual guides**, for everything that is only a help (the guide characters, the checkerboard, the baseline ticks): on, the four layers are shown; off, the background is plain. The writing and the width are never hidden, as they are the drawing. A second check box, **Cell grid**, draws the limits of the cells (it uses a difference blend, so that it shows on a pale background as well as on a dark one).
+One check box in the header, **Visual guides**, shows or hides everything that is only a help: the guide characters, the checkerboard, the baseline ticks and the limits of the cells (drawn with a difference blend, so that they show on a pale background as well as on a dark one). The writing and the width are never hidden: they are the drawing.
 
-## 4. Palettes by mode
+## 4. Colors by mode
 
 | Mode | Writing layer | Width layer |
 |---|---|---|
-| Monospace | pure black only | none |
-| Variable | pure black only | magenta, from the pointer column to the right edge of the cell |
-| GB Studio (monospace or variable) | the 4 colors of GB Studio's palette | magenta, if variable |
+| Monospace | pure black only | none (no Width tool) |
+| Variable | pure black only | magenta |
+| GB Studio (monospace or variable) | the four shades of GB Studio's palette, on one row | magenta, if variable |
 
-With the magenta chosen in the palette, the brush sets the start of the marker at the clicked column (everything on its right becomes magenta, dragging moves it), and the eraser clears the marker of the cell. Only assigned cells can be edited: the unused cells (the 11 hatched cells of the GB Studio layout, the empty cells at the end of the grid) are not.
+## 5. Tools and keys
 
-## 5. Tools
+- **Hand** (H): moves the view. Also while Space is held, until it is released (in the editor, whichever button was clicked last; the cursor becomes a hand once the pointer moves). The middle button and the two-finger scroll of a trackpad also move the view. It is not in the history. Space stays a space in a text field and on the controls of the page outside the editor, and a hand left on when the window loses the focus is released.
+- **Brush** (B) and **Eraser** (E): a square of 1, 2, 3 or 4 pixels (four square buttons that show the size; keys 1 to 4; `[` and `]` step through them), with the pixels between two pointer events filled in. B takes the last color chosen. X switches between the brush and the eraser. Under the pointer one square of the size of the tool shows the zone that a click would touch, with the colors inverted. With Shift held, a click draws a line from the last pixel painted, with a preview. *Stay in cell* (on by default, the last option of the column) keeps a stroke in the cell where it started; the unused cells cannot be drawn on.
+- **Width** (W, variable fonts only): a click in a cell sets the width of its glyph. The marker starts at the nearest border between two columns, so that the whole range can be chosen: the right half of the last column gives the whole cell, which clears the marker, and a glyph keeps one column at least. Dragging follows the pointer, even beyond the cell, the width staying in the cell where it started. A white line on that border and a badge with the new width show on the canvas, over the pink.
+- **Selection** (M): a later milestone. A rectangle first: move the pixels, nudge them with the arrows, cut, copy, paste and delete, with the keyboard and buttons; a pasted selection floats until it is validated (click outside, Enter) or cancelled (Escape); the clipboard is internal.
+- **Zoom**: buttons, `+` and `-`, Cmd or Ctrl and the wheel (also the pinch of a trackpad). **Fit** (0) enlarges the whole sheet to fill the window and centers it, and keeps doing so when the window changes size until the view is zoomed or moved by hand. There is no 1:1.
+- **Zoom on cell** (a check box of the header, while editing): a click in a cell first fits the view on that cell, without drawing; the next clicks in it act; a click in another cell fits that one.
+- **Undo and redo**: Cmd or Ctrl+Z, Cmd or Ctrl+Shift+Z (Ctrl+Y too), and the buttons; a gesture is undone as a whole, pixels and widths together.
+- Escape stops the editing. The help has a **Shortcuts** tab with all of this, and the labels of the tools carry their key (*Brush (B)*).
 
-- **Hand** (H): moves the view. Also active while the space bar is held, and the previous tool comes back on release. The middle mouse button and the two-finger scroll of a trackpad also move the view. Not in the history (the position and the zoom belong to the view, not to the drawing). The space bar stays a space in a text field, and a hand that was left on when the window lost the focus is released.
-- **Brush** (B) and **Eraser** (E): a square of 1, 2, 3 or 4 pixels, chosen with four square buttons that show the size (`[` and `]` step through them), with the pixels between two pointer events filled in so that a fast stroke has no gaps. A semi-transparent square of the size of the brush (in its color, red for the eraser) shows under the pointer what a click would cover. With **Shift** held, a click draws a line from the last pixel painted, with a preview of the line. **X** switches between the brush and the eraser. An option, on by default, keeps a stroke inside the cell where it started.
-- **Rectangle selection** (M): move the pixels with the mouse, nudge them with the arrow keys, cut, copy, paste and delete, with the keyboard and with buttons. A pasted selection floats: it can be moved with the mouse until it is validated (click outside, Enter) or cancelled (Escape). The clipboard is internal to the application. The selection acts on the writing layer.
-- **Zoom**: wheel with Cmd or Ctrl, pinch, buttons, 0 for "fit", 1 for the real size, centered on the pointer.
-- **Undo and redo**: Cmd+Z and Cmd+Shift+Z, for strokes, cuts, pastes, moves and widths.
+## 6. Screen and behavior
 
-## 6. Screen
+The preview of the page and the editor are **one component**, always there, in the place of the preview.
 
-A full screen mode opened by an **Edit** button (the Fullscreen API, with an overlay of the page as a fallback):
+- **Header**: zoom out, the zoom, zoom in, **Fit**, **Visual guides**, full screen. While editing: undo, redo, **Zoom on cell** and **Done**. The name of the application shows in full screen.
+- **Edit** (the first button of the toolbar) folds the three settings cards and adds the tools on the left; *Done*, Escape or the button again shows the settings back as they were. Starting does not scroll the page. A **status bar** names the position, the cell, the character and its width.
+- The drawing stays in the view when the editing stops, and **Drawing** downloads it.
+- **Locked while editing** (grayed): the character set, the cell size and its buttons, the columns, *Monospace* and *Pre-fill the magenta*, because a change would move the drawing. **Free**: the guide font, its padding and bottom margin, the baseline, the checkerboard and the baseline ticks (they redraw the guides and leave the drawing alone).
+- **GB Studio** can be ticked from inside the editor. The layout becomes the GB Studio one and the glyphs keep their place by character. Nothing is asked when the cell is already 8 x 8 and the characters are in the GB Studio set. Otherwise the page asks first: another cell size starts the drawing again, the characters outside the GB Studio set lose their drawing, and going back from GB Studio, the darkest and the dark shade become black (what the exporter reads as ink) while the light and the palest shade are removed (what it reads as background). A layout change clears the history. In GB Studio mode *Baseline ticks* is unchecked and disabled, and the GB Studio Variable guide font is chosen (also when the GB Studio layout is chosen in the list); unticking brings the previous settings back.
+- **What becomes of the drawing**: it is kept while the page stays open, even after *Done*. The same layout gives it back, undo included. When the layout changed while the editing was stopped, the view shows a blank sheet of the new layout and the drawing waits; when the editing starts, the drawings of the characters that are still there are carried over (when the cell keeps its size) and the page asks before it loses something. Automatic saving in the browser (milestone 5) will make it survive a reload.
 
-- top bar: undo, redo, zoom, fit, export, close;
-- toolbox on the left: hand, brush, eraser, selection, size, palette;
-- right panel: the layers and, for the cell under the pointer, its character, its code point (`U+0041`) and its width;
-- status bar: position and cell.
+## 7. Downloads and warnings
 
-The look follows the neon design system of the page. The header keeps the name of the application, followed by the word *Editor*. The interface will be adjusted while the editing is tried.
+Two buttons of the toolbar download, **Template** and **Drawing**. Each opens a small window that **says what the download is, what it holds and what it is for**, and asks for the **name of the font** (with the last name in it), which gives the name of the file and the name the font will have.
 
-## 6b. Open questions about the screen
-
-- **A window or the page itself?** Instead of a window over the page, the **Edit** button could collapse the settings cards and let the image of the page be edited in place, with the tools around it, and keep the full screen button for more room. There would be no "close", so no question about what becomes of the drawing, and the export buttons stay in the toolbar. To decide with the maintainer.
-- **GB Studio from inside the editor?** The check box of the page could be offered in the editor. It changes the layout (8 x 8 cells, 16 columns, the GB Studio character set) and the palette, so the drawing would have to follow: lossless when the cell size is already 8 x 8 (the glyphs are kept by character), lossy from GB Studio's four shades back to black. To decide.
-- **What becomes of the drawing when the editor is closed?** For now it is kept in memory while the page stays open: opening again with the same settings gives it back, and with other settings the editor asks before starting a new drawing. Automatic saving in the browser (milestone 5) makes it survive a reload.
-
-## 7. Export and warnings
-
-- **Download PNG (drawing)**: the writing and the width layers flattened over the background, with the `digiface` metadata chunk, so that the Aseprite extension recognizes the settings: black on white and magenta in the normal modes, an indexed image with GB Studio's palette in GB Studio mode, with the **GB Studio .json** as now.
-- A panel lists the warnings before the export, with the cells named as in the extension (`U+0041 "A" (row 3, column 2)`), and the export stays possible:
-  - writing under the width layer (it is hidden by it, so lost in the export);
-  - characters with nothing drawn;
-  - GB Studio: pixels of the Light shade are background for the TrueType export, as the Mid shade is ink.
+- **Template**: the grid to draw on, with the guide characters, the baseline ticks and the settings in the PNG, to open in Aseprite. Generated again with the name that was given. In GB Studio mode an indexed PNG in GB Studio's colors.
+- **Drawing**: the writing and the width layers over the background, without any guide, with the `digiface` metadata chunk so that the Aseprite extension recognizes the settings: black on white and magenta in the normal modes, an indexed PNG with GB Studio's palette in GB Studio mode (`editor/export.js`).
+- **The GB Studio `.json`**: in GB Studio mode the window of the drawing offers it (ticked) and saves it with the image under the same name. GB Studio needs it only for the characters beyond the plain Latin-1 letters (the euro sign, the curly quotes, the ellipsis, oe...): typed without it they show another glyph.
+- **Hidden drawing**: a cell that has drawing under its width marker (the marker hides it, so it is lost in the download) is framed in yellow in the editor, and the window of the drawing says so. The download stays possible. Later the same window can list the characters with nothing drawn, and for GB Studio the pixels of the Light shade, which the TrueType export reads as background (the Mid shade is ink).
 
 ## 8. Saving
 
-- First version: the drawing is saved automatically in the browser (it stays on the computer of the user and is never sent anywhere).
-- Next: a project file to download and open, and the import of a PNG drawn in Aseprite (the ink goes to the writing layer, the magenta to the width layer), to retouch it.
+- The drawing is kept in memory while the page is open (section 6).
+- Next: automatic saving in the browser (it stays on the computer of the user and is never sent anywhere), a project file to download and open, and the import of a PNG drawn in Aseprite (the ink goes to the writing layer, the magenta to the width layer) to retouch it.
 
 ## 9. Later
 
 - **TrueType export** from the page: the writer of the Aseprite extension (`outline.lua`, `ttf.lua`, `export.lua`, rules in `spec/TTF.md`) ported to JavaScript, with the checks of `spec/CHECKS.md`, kept in agreement with the Lua code by shared test fixtures.
 - **OpenType**: the same file with TrueType outlines is accepted by the applications under the `.otf` extension. A CFF flavored OpenType font needs a second writer (a `CFF` table and charstrings): possible, as the outlines are rectilinear, but separate.
 - **Test the font**: type a text and see it set with the drawn glyphs and their widths, live, and later with the exported font loaded in the page.
-- Lasso selection, rectangles and flood fill, flips, copying a glyph to another cell, a live text preview with the drawn glyphs and their advances, onion skin of the neighbor glyph, changing the cell size without losing the drawing, kerning, pen pressure.
+- Lasso selection, rectangles and flood fill, flips, copying a glyph to another cell, onion skin of the neighbor glyph, changing the cell size without losing the drawing, kerning, pen pressure.
 
 ## 10. Milestones of the first version
 
-Each one is tried by the maintainer before the next one starts, on a `editor` branch.
+Each one is tried by the maintainer before the next one starts, on an `editor` branch.
 
-1. Full screen shell, rendering of the layers, zoom and hand. **Done:** the Edit button opens the window (`web/src/editor/`: `view.js` for the zoom and the position, `model.js` for the glyphs and the layers, `ui.js` for the screen), the template is rendered as separate layers (`template.renderLayers`, `generate.layers`), each layer has an eye, the cell grid can be shown, and the status bar names the cell under the pointer.
-2. Brush, eraser, palettes, undo and redo. **Done:** `editor/tools.js` (brush and eraser strokes, the footprint of a square brush, lines between two pointer positions, the option to stay in the cell where a stroke started, unused cells left alone), `editor/history.js` (undo and redo of whole gestures, 500 at most), the palette by mode (black, or the four shades of GB Studio), the size of the brush (1 to 16, `[` and `]`), B and E to choose the tool, Cmd or Ctrl+Z to undo and Cmd or Ctrl+Shift+Z (or Ctrl+Y) to redo, an outline of the brush under the pointer, and the writing layer turning visible when a stroke starts on it. The header of the window keeps the name of the application.
-3. Width layer and the three modes.
+1. **Done.** The window, the layers, zoom and hand: `web/src/editor/` (`view.js` for the zoom and the position, `model.js` for the glyphs and the layers, `ui.js` for the screen), the template rendered as separate layers (`template.renderLayers`, `generate.layers`).
+2. **Done.** Brush, eraser, colors, undo and redo: `tools.js` (strokes, the footprint of a square brush, lines between two pointer positions, staying in a cell, unused cells left alone), `history.js` (500 gestures at most), the colors by mode.
+3. **Done.** The width layer and the three modes: the Width tool and its indicator, widths in the history, the cue on hidden drawing.
+   Added along the way: the editor in the page and the viewer as the preview, Fit, Zoom on cell, GB Studio from inside the editor, the two downloads with their windows, the shortcuts tab.
 4. Selection and clipboard.
-5. Warnings, PNG export (and the GB Studio `.json`), automatic saving.
-6. Shortcuts, status bar, adjustments of the interface.
+5. Automatic saving, the list of what is wrong in the download window (empty characters, GB Studio shades).
+6. Adjustments of the interface.
 
 ## 11. How it is tested
 
-- The model (glyphs, layout, width layer, history, tool algorithms, composition, warnings) and the export are pure modules, tested with `node --test`.
-- The exported PNG is read back with the pixel rule of GB Studio (as for the templates) and by the Aseprite extension in batch mode (the settings are recognized, the glyph widths are the expected ones).
-- The screens are checked in headless Chrome: layout, tool switching, the space bar and the hand, undo, export.
+- The model (glyphs, layout, relayout and impact, widths, history, tools, composition, hidden drawing), the view and the export are pure modules, tested with `node --test` (`tests/web/editor-*.test.js`).
+- The exported PNGs are read back with the pixel rule of GB Studio (taken from its source) and by the Aseprite extension in batch mode (the settings are recognized, the glyph widths are the expected ones).
+- The screens are checked in headless Chrome with real events: view and fit, the tools and their keys, Space and the hand, the width tool and its indicator, undo, zoom on cell, the locks, the GB Studio switch and its questions, the windows and the downloads.

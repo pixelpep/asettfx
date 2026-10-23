@@ -81,5 +81,45 @@
     };
   }
 
-  return { MIN_SIZE, MAX_SIZE, clampSize, footprint, line, beginStroke };
+  // The width a position gives to a glyph: the number of columns kept, from 1 (a glyph keeps one column at least) to the width of
+  // the cell (no marker). The marker starts at the nearest border between two columns, so that the whole range can be chosen:
+  // the left half of a column puts the marker at its left, the right half at its right. x is a position of the sheet, not
+  // rounded; cell is the cell it is in (model.cellAt).
+  function widthAt(model, cell, x) {
+    return Math.max(1, Math.min(model.cellW, Math.round(x - cell.x0)));
+  }
+
+  // A stroke of the Width tool, in a variable font: it sets the width of the cell where it started to the one the pointer gives
+  // (see widthAt), and follows the pointer, even beyond the cell, as long as the button is down. It is a tool of its own, apart
+  // from the brush and the eraser: it also clears the marker (a width of the whole cell).
+  // add(x, y) takes a position of the sheet, not rounded, and returns the change of the width layer, [{kind: 'width', cp, width}];
+  // end() returns the changes for the history: [{kind: 'width', cp, before, after}].
+  function beginWidthStroke(model) {
+    let start = null;
+    let first = true;
+    let dead = !model.variable;
+    let change = null;
+
+    return {
+      add(x, y) {
+        if (dead) return [];
+        if (first) {
+          first = false;
+          const cell = model.cellAt(x, y);
+          if (!cell || !cell.assigned) { dead = true; return []; }
+          start = cell;
+          change = { kind: 'width', cp: cell.cp, before: cell.glyph.width, after: cell.glyph.width };
+        }
+        const width = widthAt(model, start, x);
+        if (start.glyph.width === width) return [];
+        change.after = width;
+        return [model.setWidth(start.cp, width)];
+      },
+      end() {
+        return change && change.before !== change.after ? [change] : [];
+      }
+    };
+  }
+
+  return { MIN_SIZE, MAX_SIZE, clampSize, footprint, line, beginStroke, widthAt, beginWidthStroke };
 });

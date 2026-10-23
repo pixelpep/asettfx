@@ -8,7 +8,7 @@ Double-click `digiface-<version>.aseprite-extension`, or in Aseprite choose *Edi
 
 ## Use
 
-1. Make a template with the Digiface Matrix and open the PNG in Aseprite.
+1. Make a template with Digiface Matrix (the **Template** button) and open the PNG in Aseprite. Or draw the glyphs in Digiface Matrix itself (the **Edit** button), download the **Drawing**, and open that PNG: its settings are inside, there is no guide to hide, and you can go straight to step 4.
 2. Draw each glyph in black on a layer above the template, one glyph per cell. In variable-space mode, paint pure magenta (`#FF00FF`) over the unused columns on the right of a glyph.
 3. Hide the template layer.
 4. Choose *File > Scripts > Digiface > Export as TTF...*. At the top, *Spacing* shows what was found: magenta means variable spacing, no magenta means monospace. You may choose monospace when magenta is present, and the magenta is then ignored. The dialog lists problems it found, with the row and column of each character concerned (errors block the export, warnings do not). Enter the family name and press Export.
@@ -18,6 +18,10 @@ If the PNG carries no settings, the dialog asks for the grid first. *Settings...
 Aseprite asks you to approve each file the script opens (the PNG the first time, the font you save). After a first export the settings are kept inside the sprite, so later exports ask less. If the permission dialog offers to trust the script for good, that stops the questions.
 
 The *Typography* check box makes the typographic apostrophe, quotes, dashes and the no-break space that word processors insert use your plain glyphs. Without it they fall back to another font.
+
+## GB Studio
+
+A template or a drawing made in GB Studio mode is an indexed PNG with the palette of GB Studio's font sheets (the palest color first, for the background; the darkest second, for the characters). Opened in Aseprite it stays indexed, so only these colors can be used, and the extension counts them as pure colors: no warning about stray colors. The darkest and the middle-dark shades are read as ink, the two light ones as background. Digiface Matrix also saves the `.json` that GB Studio reads next to the font image; see the README of the repository.
 
 ## What is read
 
