@@ -9,7 +9,7 @@
   const editorEl = $('editor');
   const stage = $('edStage');
   const canvas = $('edCanvas');
-  const LAYERS = ['background', 'template', 'writing', 'width'];  // from the bottom
+  const SIZES = [1, 2, 3, 4];     // the sizes of the brush and of the eraser offered
   const WHEEL_STEP = 40;  // wheel distance (in pixels) for one step of zoom
 
   let m = null;                  // the model of the drawing
@@ -27,8 +27,11 @@
   let color = 1;                 // the number of the color of the palette
   let size = 1;                  // the size of the brush and of the eraser, in pixels
   let clip = true;               // a stroke stays in the cell where it started
-  const visible = { background: true, template: true, writing: true, width: true };
+  let guides = true;             // the visual guides: the guide characters, the checkerboard, the baseline ticks
   let showGrid = false;
+  let lastPoint = null;          // the last pixel painted: the start of a line drawn with Shift
+  let shiftDown = false;
+  let session = null;            // {key, model, history}: the drawing kept while the page stays open
 
   const stageSize = () => ({ width: stage.clientWidth, height: stage.clientHeight });
   const imageSize = () => ({ width: m.width, height: m.height });
@@ -60,32 +63,55 @@
     ctx.imageSmoothingEnabled = false;
     const dx = Math.round(v.x * dpr), dy = Math.round(v.y * dpr);
     const dw = Math.round(m.width * v.zoom * dpr), dh = Math.round(m.height * v.zoom * dpr);
-    for (const name of LAYERS) if (visible[name]) ctx.drawImage(layers[name], 0, 0, m.width, m.height, dx, dy, dw, dh);
+    // from the bottom: the background (plain when the guides are off), the guide characters, the writing, the widths
+    const order = guides ? [layers.background, layers.template, layers.writing, layers.width] : [layers.plain, layers.writing, layers.width];
+    for (const layer of order) ctx.drawImage(layer, 0, 0, m.width, m.height, dx, dy, dw, dh);
     ctx.strokeStyle = 'rgba(0,255,0,.6)';
     ctx.lineWidth = 1;
     ctx.strokeRect(dx - 0.5, dy - 0.5, dw + 1, dh + 1);
     if (showGrid && m.cellW * v.zoom >= 6) {
-      ctx.strokeStyle = 'rgba(0,255,0,.35)';
+      // "difference" keeps the lines visible on a pale background as well as on a dark one
+      ctx.save();
+      ctx.globalCompositeOperation = 'difference';
+      ctx.strokeStyle = 'rgba(255,255,255,.7)';
+      ctx.lineWidth = 1;
       ctx.beginPath();
       for (let c = 1; c < m.cols; c++) { const x = dx + Math.round(c * m.cellW * v.zoom * dpr) + 0.5; ctx.moveTo(x, dy); ctx.lineTo(x, dy + dh); }
       for (let r = 1; r < m.rows; r++) { const y = dy + Math.round(r * m.cellH * v.zoom * dpr) + 0.5; ctx.moveTo(dx, y); ctx.lineTo(dx + dw, y); }
       ctx.stroke();
+      ctx.restore();
     }
     drawBrushOutline(ctx, dpr);
     $('edZoomLabel').textContent = Math.round(v.zoom * 100) + '%';
     showStatus();
   }
 
-  // The square the brush or the eraser would cover under the pointer.
+  // The square the brush or the eraser would cover under the pointer, semi-transparent in the color of the brush (red for the
+  // eraser); with Shift held, the line it would draw from the last pixel painted.
   function drawBrushOutline(ctx, dpr) {
     if (!pointer || panning || handActive() || (tool !== 'brush' && tool !== 'eraser')) return;
     const p = view.toImage(v, pointer.x, pointer.y);
+    const px = Math.floor(p.x), py = Math.floor(p.y);
     const n = tools.clampSize(size);
     const o = Math.floor((n - 1) / 2);
-    const a = view.toStage(v, Math.floor(p.x) - o, Math.floor(p.y) - o);
+    const rgb = tool === 'eraser' ? [255, 0, 102] : m.palette[color - 1];
+    const fill = 'rgba(' + rgb.join(',') + ',' + (tool === 'eraser' ? .4 : .55) + ')';
+    const rect = (x, y) => {
+      const a = view.toStage(v, x - o, y - o);
+      return [Math.round(a.x * dpr), Math.round(a.y * dpr), Math.round(n * v.zoom * dpr), Math.round(n * v.zoom * dpr)];
+    };
+    ctx.fillStyle = fill;
+    if (shiftDown && lastPoint) {
+      ctx.beginPath();
+      for (const [x, y] of tools.line(lastPoint.x, lastPoint.y, px, py)) ctx.rect(...rect(x, y));
+      ctx.fill();
+    } else {
+      ctx.fillRect(...rect(px, py));
+    }
     ctx.strokeStyle = tool === 'eraser' ? 'rgba(255,0,102,.95)' : 'rgba(0,255,0,.95)';
     ctx.lineWidth = 1;
-    ctx.strokeRect(Math.round(a.x * dpr) + 0.5, Math.round(a.y * dpr) + 0.5, Math.round(n * v.zoom * dpr) - 1, Math.round(n * v.zoom * dpr) - 1);
+    const r = rect(px, py);
+    ctx.strokeRect(r[0] + 0.5, r[1] + 0.5, r[2] - 1, r[3] - 1);
   }
 
   function resize() {
@@ -130,16 +156,12 @@
   function undo() { if (stroke) return; applyPixels(history.undo(m)); showHistory(); }
   function redo() { if (stroke) return; applyPixels(history.redo(m)); showHistory(); }
 
-  function showWriting() {  // painting on a hidden layer would show nothing
-    if (visible.writing) return;
-    visible.writing = true;
-    $('edLayerWriting').checked = true;
-  }
-
   function strokeAt(e) {
     const p = stagePoint(e);
     const i = view.toImage(v, p.x, p.y);
-    applyPixels(stroke.stroke.add(Math.floor(i.x), Math.floor(i.y)));
+    const x = Math.floor(i.x), y = Math.floor(i.y);
+    lastPoint = { x, y };
+    applyPixels(stroke.stroke.add(x, y));
   }
 
   function endStroke() {
@@ -202,15 +224,16 @@
       showCursor();
     } else if (e.button === 0 && (tool === 'brush' || tool === 'eraser')) {
       e.preventDefault();
-      showWriting();
       stroke = { id: e.pointerId, stroke: tools.beginStroke(m, { tool, size, color, clip }) };
       try { canvas.setPointerCapture(e.pointerId); } catch (err) { /* the pointer may be gone already */ }
+      if (e.shiftKey && lastPoint) applyPixels(stroke.stroke.add(lastPoint.x, lastPoint.y));  // Shift: a line from the last pixel painted
       strokeAt(e);
       showHistory();
     }
   });
   canvas.addEventListener('pointermove', e => {
     pointer = stagePoint(e);
+    shiftDown = e.shiftKey;
     if (panning && e.pointerId === panning.id) {
       setView(view.pan(panning.view, e.clientX - panning.x, e.clientY - panning.y));
     } else if (stroke && e.pointerId === stroke.id) {
@@ -245,6 +268,7 @@
 
   // ---- keyboard, while the editor is open
   function onKeyDown(e) {
+    if (e.key === 'Shift' && !shiftDown) { shiftDown = true; draw(); }
     if (e.code === 'Space') {
       if (typing(e.target)) return;  // a space in a text field stays a space
       e.preventDefault();
@@ -262,8 +286,9 @@
       case 'h': case 'H': selectTool('hand'); break;
       case 'b': case 'B': selectTool('brush'); break;
       case 'e': case 'E': selectTool('eraser'); break;
-      case '[': setSize(size - 1); break;
-      case ']': setSize(size + 1); break;
+      case 'x': case 'X': selectTool(tool === 'brush' ? 'eraser' : 'brush'); break;
+      case '[': setSize(SIZES[Math.max(0, SIZES.indexOf(size) - 1)]); break;
+      case ']': setSize(SIZES[Math.min(SIZES.length - 1, SIZES.indexOf(size) + 1)]); break;
       case '0': fit(); break;
       case '1': actual(); break;
       case '+': case '=': zoomStep(1); break;
@@ -273,13 +298,20 @@
     }
     e.preventDefault();
   }
-  function onKeyUp(e) { if (e.code === 'Space') { setSpace(false); } }
-  function onBlur() { setSpace(false); endPan(); }
+  function onKeyUp(e) {
+    if (e.code === 'Space') setSpace(false);
+    if (e.key === 'Shift') { shiftDown = false; draw(); }
+  }
+  function onBlur() { setSpace(false); endPan(); shiftDown = false; }
 
   // ---- tool options
   function setSize(value) {
-    size = tools.clampSize(value);
-    $('edSize').value = size;
+    size = SIZES.includes(value) ? value : 1;
+    for (const b of document.querySelectorAll('#edSizes .size')) {
+      const on = Number(b.dataset.size) === size;
+      b.classList.toggle('active', on);
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    }
     draw();
   }
 
@@ -307,8 +339,7 @@
   // ---- buttons and panels
   $('edUndo').addEventListener('click', undo);
   $('edRedo').addEventListener('click', redo);
-  $('edSize').addEventListener('input', () => { if ($('edSize').value !== '') setSize($('edSize').value); });
-  $('edSize').addEventListener('change', () => setSize($('edSize').value));
+  for (const b of document.querySelectorAll('#edSizes .size')) b.addEventListener('click', () => setSize(Number(b.dataset.size)));
   $('edClip').addEventListener('change', e => { clip = e.target.checked; });
   $('edZoomIn').addEventListener('click', () => zoomStep(1));
   $('edZoomOut').addEventListener('click', () => zoomStep(-1));
@@ -316,9 +347,7 @@
   $('edActual').addEventListener('click', actual);
   $('edClose').addEventListener('click', () => close());
   for (const b of document.querySelectorAll('#editor .tool:not([disabled])')) b.addEventListener('click', () => selectTool(b.dataset.tool));
-  for (const name of LAYERS) {
-    $('edLayer' + name[0].toUpperCase() + name.slice(1)).addEventListener('change', e => { visible[name] = e.target.checked; draw(); });
-  }
+  $('edGuides').addEventListener('change', e => { guides = e.target.checked; draw(); });
   $('edGrid').addEventListener('change', e => { showGrid = e.target.checked; draw(); });
 
   const canFullscreen = typeof editorEl.requestFullscreen === 'function';
@@ -333,25 +362,40 @@
 
   // ---- open and close
   // result: what generate.layers gives (the metadata, the background, the ghost and the advances).
+  const hasWork = model_ => { for (const g of model_.glyphs.values()) if (g.pixels.some(Boolean)) return true; return false; };
+
+  // result: what generate.layers gives (the metadata, the background, the ghost and the advances). The drawing is kept while the
+  // page stays open: opening again with the same settings gives it back; with other settings it asks before starting over.
+  // Returns false when the user keeps the drawing instead.
   function open(result) {
-    m = model.create(result.meta, result.advances);
+    const key = JSON.stringify({ meta: result.meta, advances: result.advances });
+    if (session && session.key === key) {
+      m = session.model; history = session.history;
+    } else {
+      if (session && hasWork(session.model) &&
+          !window.confirm('The settings changed since your drawing. Start a new drawing? The current one will be lost.')) return false;
+      m = model.create(result.meta, result.advances);
+      history = historyModule.create();
+      session = { key, model: m, history };
+      lastPoint = null;
+    }
     layers = {
       background: toCanvas(result.background, m.width, m.height),
+      plain: toCanvas(result.plainBackground, m.width, m.height),
       template: toCanvas(result.ghost, m.width, m.height),
       writing: toCanvas(m.renderWriting(), m.width, m.height),
       width: toCanvas(m.renderWidth(), m.width, m.height)
     };
     writing = { image: new ImageData(new Uint8ClampedArray(m.renderWriting()), m.width, m.height), ctx: layers.writing.getContext('2d') };
-    history = historyModule.create();
     stroke = null; color = 1;
     $('edClip').checked = clip;
-    $('edSize').value = size;
+    $('edGuides').checked = guides;
+    $('edGrid').checked = showGrid;
+    setSize(size);
     showColors();
     showHistory();
-    $('edRowWidth').hidden = !m.variable;
-    visible.width = true; $('edLayerWidth').checked = true;
     selectTool('hand');
-    panning = null; spaceDown = false; pointer = null; wheelSum = 0;
+    panning = null; spaceDown = false; shiftDown = false; pointer = null; wheelSum = 0;
     editorEl.hidden = false;
     document.body.classList.add('editing');
     resize();
@@ -362,6 +406,7 @@
     window.addEventListener('blur', onBlur);
     if (typeof ResizeObserver === 'function') { observer = new ResizeObserver(resize); observer.observe(stage); }
     editorEl.focus();
+    return true;
   }
 
   function close() {
@@ -380,6 +425,6 @@
 
   window.Digiface.editor = {
     open, close, isOpen: () => !editorEl.hidden, model: () => m,
-    state: () => ({ tool, spaceDown, view: v, visible: Object.assign({}, visible), showGrid, handActive: handActive(), color, size, clip, canUndo: history.canUndo(), canRedo: history.canRedo() })
+    state: () => ({ tool, spaceDown, view: v, guides, showGrid, handActive: handActive(), color, size, clip, shiftDown, lastPoint, canUndo: history.canUndo(), canRedo: history.canRedo() })
   };
 })();

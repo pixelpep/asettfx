@@ -73,6 +73,7 @@
   <section id="output">
     <div class="toolbar">
       <div class="left">
+        <button id="edit" type="button" class="secondary" disabled title="Draw the glyphs in the page">Edit</button>
         <span class="zoom">
           <button id="zoomOut" type="button" class="square secondary" aria-label="Zoom out">&minus;</button>
           <button id="zoomIn" type="button" class="square secondary" aria-label="Zoom in">+</button>
@@ -86,7 +87,6 @@
         <span id="filename" class="saved-as" title="Name of the downloaded file"></span>
         <span id="size" class="note"></span>
         <button id="downloadJson" type="button" class="secondary" hidden title="The file GB Studio reads next to the font image, so that characters such as the euro sign, the curly quotes and oe show the right cell. Give it the same name as the image once the font is drawn.">GB Studio .json</button>
-        <button id="edit" type="button" class="secondary" disabled title="Draw the glyphs in the page">Edit</button>
         <button id="download" type="button" class="download">Download PNG</button>
       </div>
     </div>
@@ -105,7 +105,7 @@
 <div id="editor" class="editor" hidden tabindex="-1" role="dialog" aria-label="Editor">
   <header class="ed-top">
     <strong class="ed-title">Digiface Matrix</strong>
-    <span class="ed-mode">Edit</span>
+    <span class="ed-mode">Editor</span>
     <span class="ed-history">
       <button id="edUndo" type="button" class="secondary" disabled title="Undo (Cmd or Ctrl+Z)">Undo</button>
       <button id="edRedo" type="button" class="secondary" disabled title="Redo (Cmd or Ctrl+Shift+Z)">Redo</button>
@@ -127,7 +127,13 @@
     <button type="button" class="tool" data-tool="eraser" aria-pressed="false" title="Eraser (E)">Eraser</button>
     <button type="button" class="tool" data-tool="select" disabled title="Selection (M): a later milestone">Select</button>
     <div class="ed-options">
-      <label title="Size of the brush and of the eraser, in pixels ([ and ])">Size <input id="edSize" type="number" min="1" max="16" step="1" value="1"></label>
+      <span class="ed-label">Size</span>
+      <div id="edSizes" class="ed-sizes" role="group" aria-label="Size of the brush and of the eraser">
+        <button type="button" class="size active" data-size="1" aria-pressed="true" aria-label="1 pixel" title="1 x 1 px ([ and ])"><i style="width:4px;height:4px"></i></button>
+        <button type="button" class="size" data-size="2" aria-pressed="false" aria-label="2 pixels" title="2 x 2 px ([ and ])"><i style="width:8px;height:8px"></i></button>
+        <button type="button" class="size" data-size="3" aria-pressed="false" aria-label="3 pixels" title="3 x 3 px ([ and ])"><i style="width:12px;height:12px"></i></button>
+        <button type="button" class="size" data-size="4" aria-pressed="false" aria-label="4 pixels" title="4 x 4 px ([ and ])"><i style="width:16px;height:16px"></i></button>
+      </div>
       <label class="check" title="A stroke stays in the cell where it started"><input id="edClip" type="checkbox" checked> Stay in cell</label>
       <span class="ed-label">Color</span>
       <div id="edColors" class="ed-colors" role="group" aria-label="Colors"></div>
@@ -135,12 +141,8 @@
   </nav>
   <div id="edStage" class="ed-stage"><canvas id="edCanvas"></canvas></div>
   <aside class="ed-layers" aria-label="Layers">
-    <h3>Layers</h3>
-    <label id="edRowWidth" class="check"><input id="edLayerWidth" type="checkbox" checked> Width</label>
-    <label class="check"><input id="edLayerWriting" type="checkbox" checked> Writing</label>
-    <label class="check"><input id="edLayerTemplate" type="checkbox" checked> Template</label>
-    <label class="check"><input id="edLayerBackground" type="checkbox" checked> Background</label>
     <h3>View</h3>
+    <label class="check" title="The guide characters, the checkerboard and the baseline ticks"><input id="edGuides" type="checkbox" checked> Visual guides</label>
     <label class="check"><input id="edGrid" type="checkbox"> Cell grid</label>
   </aside>
   <footer class="ed-status"><span id="edStatus"></span></footer>

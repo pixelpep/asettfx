@@ -1,6 +1,6 @@
 # Digiface Matrix editor: design and plan
 
-Status: milestones 1 and 2 of 6 are written (the window, the layers, the zoom and the hand; the brush, the eraser, the palettes and undo); the width layer is next. Last updated: 2026-10-23.
+Status: milestones 1 and 2 of 6 are written, with a round of adjustments after trying them (the window, the layers, the zoom and the hand; the brush, the eraser, the palettes and undo); the width layer is next. Last updated: 2026-10-23.
 
 The idea: draw the glyphs in the browser, on the template, with a few tools, instead of only downloading a template to draw in Aseprite. This file records what was decided, how it is built, and in which order.
 
@@ -30,7 +30,7 @@ The drawing is stored **per character** (per code point), not per position in th
 3. **Template**: the guide characters in the hint font.
 4. **Background**: white, or the palest color of GB Studio in GB Studio mode, with the checkerboard and the baseline ticks when they are ticked.
 
-Each layer has an eye to show or hide it.
+The window has one check box, **Visual guides**, for everything that is only a help (the guide characters, the checkerboard, the baseline ticks): on, the four layers are shown; off, the background is plain. The writing and the width are never hidden, as they are the drawing. A second check box, **Cell grid**, draws the limits of the cells (it uses a difference blend, so that it shows on a pale background as well as on a dark one).
 
 ## 4. Palettes by mode
 
@@ -45,7 +45,7 @@ With the magenta chosen in the palette, the brush sets the start of the marker a
 ## 5. Tools
 
 - **Hand** (H): moves the view. Also active while the space bar is held, and the previous tool comes back on release. The middle mouse button and the two-finger scroll of a trackpad also move the view. Not in the history (the position and the zoom belong to the view, not to the drawing). The space bar stays a space in a text field, and a hand that was left on when the window lost the focus is released.
-- **Brush** (B) and **Eraser** (E): a square of 1 to 16 pixels, with the pixels between two pointer events filled in so that a fast stroke has no gaps. An option, on by default, keeps a stroke inside the cell where it started.
+- **Brush** (B) and **Eraser** (E): a square of 1, 2, 3 or 4 pixels, chosen with four square buttons that show the size (`[` and `]` step through them), with the pixels between two pointer events filled in so that a fast stroke has no gaps. A semi-transparent square of the size of the brush (in its color, red for the eraser) shows under the pointer what a click would cover. With **Shift** held, a click draws a line from the last pixel painted, with a preview of the line. **X** switches between the brush and the eraser. An option, on by default, keeps a stroke inside the cell where it started.
 - **Rectangle selection** (M): move the pixels with the mouse, nudge them with the arrow keys, cut, copy, paste and delete, with the keyboard and with buttons. A pasted selection floats: it can be moved with the mouse until it is validated (click outside, Enter) or cancelled (Escape). The clipboard is internal to the application. The selection acts on the writing layer.
 - **Zoom**: wheel with Cmd or Ctrl, pinch, buttons, 0 for "fit", 1 for the real size, centered on the pointer.
 - **Undo and redo**: Cmd+Z and Cmd+Shift+Z, for strokes, cuts, pastes, moves and widths.
@@ -59,7 +59,13 @@ A full screen mode opened by an **Edit** button (the Fullscreen API, with an ove
 - right panel: the layers and, for the cell under the pointer, its character, its code point (`U+0041`) and its width;
 - status bar: position and cell.
 
-The look follows the neon design system of the page. The interface will be adjusted while the editing is tried.
+The look follows the neon design system of the page. The header keeps the name of the application, followed by the word *Editor*. The interface will be adjusted while the editing is tried.
+
+## 6b. Open questions about the screen
+
+- **A window or the page itself?** Instead of a window over the page, the **Edit** button could collapse the settings cards and let the image of the page be edited in place, with the tools around it, and keep the full screen button for more room. There would be no "close", so no question about what becomes of the drawing, and the export buttons stay in the toolbar. To decide with the maintainer.
+- **GB Studio from inside the editor?** The check box of the page could be offered in the editor. It changes the layout (8 x 8 cells, 16 columns, the GB Studio character set) and the palette, so the drawing would have to follow: lossless when the cell size is already 8 x 8 (the glyphs are kept by character), lossy from GB Studio's four shades back to black. To decide.
+- **What becomes of the drawing when the editor is closed?** For now it is kept in memory while the page stays open: opening again with the same settings gives it back, and with other settings the editor asks before starting a new drawing. Automatic saving in the browser (milestone 5) makes it survive a reload.
 
 ## 7. Export and warnings
 
@@ -78,7 +84,8 @@ The look follows the neon design system of the page. The interface will be adjus
 
 - **TrueType export** from the page: the writer of the Aseprite extension (`outline.lua`, `ttf.lua`, `export.lua`, rules in `spec/TTF.md`) ported to JavaScript, with the checks of `spec/CHECKS.md`, kept in agreement with the Lua code by shared test fixtures.
 - **OpenType**: the same file with TrueType outlines is accepted by the applications under the `.otf` extension. A CFF flavored OpenType font needs a second writer (a `CFF` table and charstrings): possible, as the outlines are rectilinear, but separate.
-- Lasso selection, lines, rectangles and flood fill, flips, copying a glyph to another cell, a live text preview with the drawn glyphs and their advances, onion skin of the neighbor glyph, changing the cell size without losing the drawing, kerning, pen pressure.
+- **Test the font**: type a text and see it set with the drawn glyphs and their widths, live, and later with the exported font loaded in the page.
+- Lasso selection, rectangles and flood fill, flips, copying a glyph to another cell, a live text preview with the drawn glyphs and their advances, onion skin of the neighbor glyph, changing the cell size without losing the drawing, kerning, pen pressure.
 
 ## 10. Milestones of the first version
 

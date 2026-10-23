@@ -150,3 +150,21 @@ test('with the mapping file GB Studio shows the cell of the euro sign, the curly
   // letters of Latin-1 and ASCII do not need the mapping
   for (const ch of 'Cur éàç«') assert.equal(cellOf(gbEncode(ch, {})[0]), ch.codePointAt(0));
 });
+
+test('generate.layers also gives the background without its guides: no checkerboard, no ticks, the unused cells still shaded', () => {
+  const tpl = require('../../web/src/template.js');
+  const r = gen.layers({
+    name: 'T', cellW: 8, cellH: 8, cols: 4, mode: 'mono', map: ['0041-0043', '_'], baseline: 1,
+    guide: { checker: true, baseline: true, hint: 'ghost' }
+  }, (cp, w, h) => { const m = new Uint8Array(w * h); m[0] = 1; return m; });
+  assert.equal(r.ok, true);
+  const at = (buf, x, y) => Array.from(buf.subarray((y * r.width + x) * 4, (y * r.width + x) * 4 + 3));
+  const C = tpl.COLORS;
+  assert.deepEqual(at(r.background, 8, 0), C.checkerB);       // the second cell is the dark square of the checkerboard
+  assert.deepEqual(at(r.plainBackground, 8, 0), C.checkerA);  // plain: every cell the same
+  assert.deepEqual(at(r.background, 0, 6), C.baseline);       // a baseline tick (baseline 1: row 8 - 1 - 1)
+  assert.deepEqual(at(r.plainBackground, 0, 6), C.checkerA);
+  assert.deepEqual(at(r.background, 24, 0), C.unassigned);    // the fourth cell is unused in both
+  assert.deepEqual(at(r.plainBackground, 24, 0), C.unassigned);
+  assert.equal(r.plainBackground.length, r.background.length);
+});

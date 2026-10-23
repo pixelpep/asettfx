@@ -60,7 +60,9 @@
     const prepared = prepare(settings);
     if (!prepared.ok) return prepared;
     const parts = template.renderLayers(prepared.config, maskProvider);
-    return Object.assign({ ok: true, meta: prepared.meta, config: prepared.config }, parts);
+    // The background without its guides: no checkerboard, no baseline ticks (the unused cells stay shaded).
+    const plain = template.renderLayers(Object.assign({}, prepared.config, { guide: Object.assign({}, prepared.config.guide, { checker: false, baseline: false, hint: 'none' }), prefillWidths: false }), null);
+    return Object.assign({ ok: true, meta: prepared.meta, config: prepared.config, plainBackground: plain.background }, parts);
   }
 
   // The name of the downloaded file: the font name in lowercase with hyphens, then the cell size and "template".
