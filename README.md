@@ -1,6 +1,6 @@
 # Digiface
 
-Pixel fonts from Aseprite to TTF. Turn pixel-art glyphs drawn in [Aseprite](https://www.aseprite.org/) into a valid bitmap-style TrueType font (`.ttf`), for game engines and design tools such as Figma.
+Pixel fonts from Aseprite to TTF. Draw your pixel-art letters in [Aseprite](https://www.aseprite.org/) and turn them into a real TrueType font (`.ttf`) for your game, your interface or your posters. Made for [GB Studio](https://www.gbstudio.dev/) projects (it has the GB Studio character layout and ships its two default fonts) and for any design work that needs a crisp pixel typeface: the font installs like any other and stays sharp at sizes that are multiples of the cell height.
 
 > **Status: version 0.2.0.** The spec, the web template generator and the Aseprite extension (reading, checks, TTF writer, menu and dialogs) are written and tried in Aseprite 1.3.16 on macOS. Download the extension from the [Releases](https://github.com/pixelpep/digiface/releases) page. See [Roadmap](#roadmap).
 
@@ -60,6 +60,10 @@ Next: see [docs/PROGRESS.md](docs/PROGRESS.md).
 ## Credits
 
 The template generator ships a few pixel fonts, unchanged, to draw its guide characters: Alkhemikal, Digital Disco, Digital Disco Thin, Grape Soda and Kiwi Soda by [jeti](https://fontenddev.com/) ([CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)), and Bytesized by Baltdev ([SIL OFL 1.1](web/fonts/licenses/OFL-Bytesized.txt)), GB Studio Mono and GB Studio Variable by Chris Maltby, from GB Studio ([MIT](web/fonts/licenses/MIT-GB-Studio.txt)), and Minecraft Standard and Minecraft Standard Bold by Polda18 ([CC0](https://creativecommons.org/publicdomain/zero/1.0/)). Details and sources: [web/fonts/LICENSES.md](web/fonts/LICENSES.md). Any other pixel font can be used from a file on your computer.
+
+## About
+
+Made by [pixelPep](https://pixelpep.com). Digiface is not affiliated with Aseprite or GB Studio; the names are used to say what it works with.
 
 ## License
 

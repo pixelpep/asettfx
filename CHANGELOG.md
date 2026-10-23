@@ -5,6 +5,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Changed
+
+- The README and the help window now present Digiface for games (GB Studio) and for design work, without naming a design tool, and say that it is not affiliated with Aseprite or GB Studio. The page has a "Made by pixelPep" line at the bottom.
+
 ## [0.2.0] - 2026-10-21
 
 First published version under the name Digiface (the earlier 0.1.0, published as ASETTFX, was withdrawn: nobody used it, and its internal names changed). It includes everything of 0.1.0 below.

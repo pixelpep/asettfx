@@ -61,6 +61,9 @@ canvas { display: block; image-rendering: pixelated; margin: 0 auto; }
 .meta > summary { cursor: pointer; font-size: 13px; font-weight: 600; color: var(--muted); padding: 2px 0 6px; }
 pre { margin: 0; overflow: auto; max-height: 70vh; padding: 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; font-size: 12px; }
 
+footer.foot { max-width: 1500px; margin: 20px auto 0; padding-top: 12px; border-top: 1px solid var(--line); text-align: center; font-size: 13px; color: var(--muted); }
+footer.foot a { color: var(--accent); }
+
 /* The "i" next to the font list opens what is known about the font */
 .with-info { display: flex; gap: 6px; align-items: stretch; }
 .with-info select { flex: 1; min-width: 0; }
