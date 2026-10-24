@@ -1,10 +1,10 @@
 # Progress
 
-Last updated: 2026-10-24
+Last updated: 2026-10-23
 
 ## Status
 
-Version 0.2.0 is published: the spec, the web template generator, the Lua pipeline, and the Aseprite menu commands and dialogs with packaging (notes in `docs/releases/0.2.0.md`). Since then, not released yet (see the changelog): the **editor** in the page (milestones 1 to 3 of 6, `docs/EDITOR.md`), a **GB Studio mode** (layout, indexed PNGs with GB Studio's palette, the `.json` of the mapping, `target` in the metadata), the two downloads **Template** and **Drawing** with their explanation windows, the neon design with Source Sans 3, and the project docs. It is tested automatically (node tests of the web tool and the editor, Lua tests run inside Aseprite, tests of the private hosting code) and tried by hand in Aseprite 1.3.16 on macOS and in Chrome. GB Studio itself has not been tried with a PNG made here.
+Version 0.3.0 is ready to publish (notes in `docs/releases/0.3.0.md`); 0.2.0 is published (the spec, the web template generator, the Lua pipeline, and the Aseprite menu commands and dialogs with packaging). What 0.3.0 adds (see the changelog): the **editor** in the page (milestones 1 to 4 of 6, `docs/EDITOR.md`), a **GB Studio mode** (layout, indexed PNGs with GB Studio's palette, the `.json` of the mapping, `target` in the metadata), the two downloads **Template** and **Drawing** with their explanation windows, the neon design with Source Sans 3, and the project docs. It is tested automatically (node tests of the web tool and the editor, Lua tests run inside Aseprite, tests of the private hosting code) and tried by hand in Aseprite 1.3.16 on macOS and in Chrome. GB Studio itself has not been tried with a PNG made here.
 
 ## First trial in Aseprite (2026-10-16)
 
@@ -12,9 +12,9 @@ The menu appeared at the right place. Feedback and what was done: many file perm
 
 ## Next
 
-1. [ ] **Editor, milestone 4**: the rectangle selection (move, nudge, cut, copy, paste, delete, floating paste). Then milestone 5 (automatic saving in the browser, the list of what is wrong in the download window) and 6 (adjustments). See [docs/EDITOR.md](EDITOR.md).
+1. [ ] **Editor, milestone 5**: automatic saving in the browser, and the list of what is wrong in the download window. Then milestone 6 (adjustments). See [docs/EDITOR.md](EDITOR.md).
 2. [ ] **Try a font in GB Studio itself**: a PNG of the *Drawing* and its `.json` in `assets/fonts` of a project, then a text with the euro sign, the curly quotes and oe.
-3. [ ] **Next version** (0.3.0: the editor, the GB Studio mode and the new look are the main part, the extension only got the GB Studio palette as pure colors): bump the version in `package.json` and `aseprite-extension/package.json`, date the changelog, write `docs/releases/0.3.0.md`, `sh tools/pack.sh`, and the maintainer creates the GitHub release.
+3. [ ] **Publish 0.3.0**: commit, tag `v0.3.0`, and create the GitHub release with `docs/releases/0.3.0.md` and `dist/digiface-0.3.0.aseprite-extension`. Then rebuild the hosted copy and the itch.io zip.
 4. [ ] A bigger real font end to end, drawn in the editor: draw, download the drawing, export the TTF in Aseprite, install it, use it in a design tool. (Done with GB Studio's own `gbs-mono.png` and `gbs-var.png`: 213 characters each export to a valid TTF.)
 5. [ ] A TrueType export from the page (and OpenType), by porting the Lua writer; see "Later" in `docs/EDITOR.md`.
 6. [ ] A way to open Digiface Matrix without cloning the repository: a hosted page, or GitHub Pages on `web/`, or a zip of `web/` attached to the release.
@@ -33,6 +33,7 @@ The menu appeared at the right place. Feedback and what was done: many file perm
 - [x] Step 4: `outline.lua` and `ttf.lua` (ten tables, cmap 4 and 12, long loca when needed, checksums), `export.lua`; verified by an independent TTF reader in the tests, by fontTools, and by rendering text in Chrome
 - [x] Step 5: `digiface.lua` (menu group and two commands), `package.json` manifest, `form.lua`, `report.lua`, `ui.lua`, `commands.lua`, packaging
 - [x] Editor in the page, milestones 1 to 3 (`web/src/editor/`: view, model, tools, history, export, screen): viewer and editor as one component, brush, eraser, width tool, undo and redo, zoom and fit, zoom on cell, visual guides, the drawing following its characters when the layout changes, GB Studio from inside the editor
+- [x] Editor, milestone 4: the rectangle selection (`editor/selection.js`): select, move, nudge, cut, copy, paste, delete, floating pixels, one gesture for undo
 - [x] GB Studio mode: layout and colors fixed, indexed PNGs with GB Studio's palette checked with GB Studio's own pixel rule, the `.json` of the mapping (tested against a port of its encoder), `target: "gbstudio"` in the metadata and the conformance cases, the palette recognized by the extension
 - [x] Downloads: **Template** and **Drawing** with a window that explains them and asks for the name of the font
 - [x] New look (neon design system, Source Sans 3 under the OFL), signature, help with a Shortcuts tab, presentation for games and design work

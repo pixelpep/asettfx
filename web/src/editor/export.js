@@ -1,4 +1,4 @@
-// The drawing as an image to download: the writing and the width layers over the background, without any guide. Pure, no DOM.
+// The drawing as an image to download: the shadow, the writing and the width layers over the background, without any guide. Pure, no DOM.
 // docs/EDITOR.md section 7.
 (function (root, factory) {
   const model = (typeof require === 'function' && typeof module === 'object') ? require('./model.js') : root.Digiface.editorModel;
@@ -16,12 +16,14 @@
   // m: a model. Returns {width, height, rgba, palette}: palette is null for a plain image (black on white), and the list of
   // colors for GB Studio. The cells that are not used are background; the marker is magenta, over the writing.
   function renderDrawing(m) {
-    const background = m.gb ? model.GB_SHADES[3] : WHITE;
+    const background = m.gb ? model.GB_SHADES[m.background - 1] : WHITE;
     const rgba = new Uint8Array(m.width * m.height * 4);
     for (let o = 0; o < rgba.length; o += 4) { rgba[o] = background[0]; rgba[o + 1] = background[1]; rgba[o + 2] = background[2]; rgba[o + 3] = 255; }
+    const shadow = m.renderShadow();
     const writing = m.renderWriting();
     const marker = m.renderWidth();
     for (let o = 0; o < rgba.length; o += 4) {
+      if (shadow[o + 3]) { rgba[o] = shadow[o]; rgba[o + 1] = shadow[o + 1]; rgba[o + 2] = shadow[o + 2]; }
       if (writing[o + 3]) { rgba[o] = writing[o]; rgba[o + 1] = writing[o + 1]; rgba[o + 2] = writing[o + 2]; }
       if (marker[o + 3]) { rgba[o] = marker[o]; rgba[o + 1] = marker[o + 1]; rgba[o + 2] = marker[o + 2]; }
     }

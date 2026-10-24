@@ -2,12 +2,12 @@
 // is always there, the view in the middle and the view options on the right. While editing, the tools are added on the left and
 // undo, redo and Done in the header. The page gives it the layers (generate.layers) after every change of its settings, and
 // starts and stops the editing. The drawing stays visible when the editing stops.
-// Browser only. Milestones 1 to 3: the layers, the view (zoom, hand), the brush and the eraser with the palette and the history,
-// the width layer and the warnings.
+// Browser only. Milestones 1 to 4: the layers, the view (zoom, hand), the brush and the eraser with the palette and the history,
+// the width layer, and the rectangle selection with its clipboard.
 // docs/EDITOR.md sections 5, 6 and 10.
 (function () {
   'use strict';
-  const { editorView: view, editorModel: model, editorTools: tools, editorHistory: historyModule } = window.Digiface;
+  const { editorView: view, editorModel: model, editorTools: tools, editorHistory: historyModule, editorSelection: selection } = window.Digiface;
   const $ = id => document.getElementById(id);
 
   const editorEl = $('editor');
@@ -40,6 +40,10 @@
   let shiftDown = false;
   let session = null;            // {layout, model, history}: the drawing kept while the page stays open
   let editing = false;
+  let selRect = null;            // the selection, {x, y, w, h} in pixels of the sheet, or null
+  let floating = null;           // the selection lifted off the layer, moving (see selection.js), with its canvas
+  let clipboard = null;          // the buffer copied or cut, kept for the pastes of this page
+  let selDrag = null;            // {id, mode: 'new' | 'move', ...} while the pointer defines or moves the selection
 
   const stageSize = () => ({ width: stage.clientWidth, height: stage.clientHeight });
   const imageSize = () => ({ width: m.width, height: m.height });
@@ -71,8 +75,14 @@
     ctx.imageSmoothingEnabled = false;
     const dx = Math.round(v.x * dpr), dy = Math.round(v.y * dpr);
     const dw = Math.round(m.width * v.zoom * dpr), dh = Math.round(m.height * v.zoom * dpr);
-    // from the bottom: the background (plain when the guides are off), the guide characters, the writing, the widths
-    const order = guides ? [layers.background, layers.template, layers.writing, layers.width] : [layers.plain, layers.writing, layers.width];
+    // from the bottom: the background (plain when the guides are off), the guide characters, the drop shadows, the writing, the widths
+    const order = guides ? [layers.background, layers.template, layers.shadow, layers.writing, layers.width] : [layers.plain, layers.shadow, layers.writing, layers.width];
+    const swapped = m.gb && m.background !== 4;   // Switch changed the background: a plain sheet of that color replaces the first layer
+    if (swapped) {
+      ctx.fillStyle = 'rgb(' + m.palette[m.background - 1].join(',') + ')';
+      ctx.fillRect(dx, dy, dw, dh);
+      order.shift();
+    }
     for (const layer of order) ctx.drawImage(layer, 0, 0, m.width, m.height, dx, dy, dw, dh);
     ctx.strokeStyle = 'rgba(0,255,0,.6)';
     ctx.lineWidth = 1;
@@ -90,6 +100,7 @@
       ctx.restore();
     }
     drawHiddenInkCue(ctx, dpr);
+    drawSelection(ctx, dpr);
     drawBrushOutline(ctx, dpr);
     $('edZoomLabel').textContent = Math.round(v.zoom * 100) + '%';
     showStatus();
@@ -109,8 +120,8 @@
     }
   }
 
-  // The square the brush or the eraser would cover under the pointer, with the colors inverted under it, so that the zone shows
-  // on any background; with Shift held, the line it would draw from the last pixel painted.
+  // The square the brush or the eraser would cover under the pointer, with the colors partly inverted under it (45%), so that the
+  // zone shows on any background without hiding the pixels; with Shift held, the line it would draw from the last pixel painted.
   function drawBrushOutline(ctx, dpr) {
     if (!editing || !pointer || panning || handActive()) return;
     const p = view.toImage(v, pointer.x, pointer.y);
@@ -125,6 +136,7 @@
     };
     ctx.save();
     ctx.globalCompositeOperation = 'difference';
+    ctx.globalAlpha = 0.45;                       // part of the inversion only, so that the pixels under it stay readable
     ctx.fillStyle = '#fff';
     if (shiftDown && lastPoint) {
       ctx.beginPath();
@@ -192,7 +204,9 @@
     const cell = m.cellAt(p.x, p.y);
     if (!cell) { el.textContent = 'Outside the sheet'; return; }
     const what = cell.assigned ? model.describe(cell.cp) + (m.variable ? ', width ' + cell.glyph.width : '') : 'unused cell';
-    el.textContent = 'x ' + Math.floor(p.x) + ', y ' + Math.floor(p.y) + '  |  row ' + (cell.row + 1) + ', column ' + (cell.col + 1) + '  |  ' + what;
+    const chosen = floating ? floatRect() : selRect;
+    el.textContent = 'x ' + Math.floor(p.x) + ', y ' + Math.floor(p.y) + '  |  row ' + (cell.row + 1) + ', column ' + (cell.col + 1) + '  |  ' + what
+      + (chosen ? '  |  selection ' + chosen.w + ' x ' + chosen.h : '');
   }
 
   // ---- the writing layer
@@ -200,26 +214,201 @@
   function applyUpdates(list) {
     if (!list || !list.length) return;
     let x0 = Infinity, y0 = Infinity, x1 = -1, y1 = -1;
-    let widths = false;
+    let widths = false, shadows = false, pixels = false, background = false;
     const data = writing.image.data;
     for (const p of list) {
       if (p.kind === 'width') { widths = true; continue; }
+      if (p.kind === 'shadows') { shadows = true; continue; }
+      if (p.kind === 'background') { background = true; continue; }
+      pixels = true;
       const rgba = m.rgbaOf(p.value);
       const o = (p.y * m.width + p.x) * 4;
       data[o] = rgba[0]; data[o + 1] = rgba[1]; data[o + 2] = rgba[2]; data[o + 3] = rgba[3];
       if (p.x < x0) x0 = p.x; if (p.y < y0) y0 = p.y; if (p.x > x1) x1 = p.x; if (p.y > y1) y1 = p.y;
     }
     if (x1 >= 0) writing.ctx.putImageData(writing.image, 0, 0, x0, y0, x1 - x0 + 1, y1 - y0 + 1);
+    if (pixels || background) announce();
+    if (shadows || (pixels && m.shadows.length)) {   // a shadow follows the pixels it copies
+      layers.shadow.getContext('2d').putImageData(new ImageData(new Uint8ClampedArray(m.renderShadow()), m.width, m.height), 0, 0);
+      if (shadows) showShadows();
+    }
     if (widths) layers.width.getContext('2d').putImageData(new ImageData(new Uint8ClampedArray(m.renderWidth()), m.width, m.height), 0, 0);
     draw();
   }
 
+  // Tells the page that what is drawn changed (the Drawing button needs to know whether there is anything to download).
+  const hasInk = () => !!m && Array.from(m.glyphs.values()).some(g => g.pixels.some(Boolean));
+  function announce() { document.dispatchEvent(new CustomEvent('digiface-drawing-changed')); }
+
   function showHistory() {
+    announce();
     $('edUndo').disabled = !history.canUndo() || !!stroke;
     $('edRedo').disabled = !history.canRedo() || !!stroke;
   }
-  function undo() { if (stroke) return; applyUpdates(history.undo(m)); showHistory(); }
-  function redo() { if (stroke) return; applyUpdates(history.redo(m)); showHistory(); }
+  // ---- the selection
+  const floatRect = () => floating && { x: floating.x, y: floating.y, w: floating.buffer.w, h: floating.buffer.h };
+
+  function bufferCanvas(buffer) {
+    const rgba = new Uint8Array(buffer.w * buffer.h * 4);
+    buffer.pixels.forEach((value, i) => { if (value) rgba.set(m.rgbaOf(value), i * 4); });
+    return toCanvas(rgba, buffer.w, buffer.h);
+  }
+
+  function showSelection() {
+    const has = !!(selRect || floating);
+    $('edSelection').hidden = tool !== 'select';
+    $('edSelCut').disabled = !has;
+    $('edSelCopy').disabled = !has;
+    $('edSelDelete').disabled = !has;
+    $('edSelPaste').disabled = !clipboard;
+  }
+
+  // Places the floating selection where it is, as one gesture for the history; the selection stays on what was placed.
+  function commitFloat() {
+    if (!floating) return;
+    const done = selection.commit(m, floating);
+    selRect = floatRect();
+    floating = null;
+    applyUpdates(done.updates);
+    history.push(done.changes);
+    showHistory();
+    showSelection();
+  }
+
+  // Puts back what was lifted and forgets the float; the selection returns to where it was taken.
+  function cancelFloat() {
+    if (!floating) return;
+    const updates = selection.cancel(m, floating);
+    selRect = floating.from ? { x: floating.from.x, y: floating.from.y, w: floating.buffer.w, h: floating.buffer.h } : null;
+    floating = null;
+    applyUpdates(updates);
+    showSelection();
+    draw();
+  }
+
+  // Lifts the selected pixels off the layer so that they can move.
+  function liftSelection() {
+    if (floating || !selRect) return;
+    const lifted = selection.lift(m, selRect);
+    floating = lifted.float;
+    floating.canvas = bufferCanvas(floating.buffer);
+    selRect = null;
+    applyUpdates(lifted.updates);
+    showSelection();
+  }
+
+  function copySelection() {
+    const rect = floating ? floatRect() : selRect;
+    if (!rect) return false;
+    clipboard = floating ? floating.buffer : selection.readBuffer(m, rect);
+    showSelection();
+    return true;
+  }
+
+  // Clears the selected pixels, as one gesture; the selection stays on the place.
+  function deleteSelection() {
+    if (floating) {   // what was lifted is gone: the clearing is the gesture
+      const changes = selection.merge(floating.restore);
+      selRect = floatRect();
+      floating = null;
+      history.push(changes);
+      showHistory();
+    } else if (selRect) {
+      const cleared = selection.clearRect(m, selRect);
+      applyUpdates(cleared.updates);
+      history.push(cleared.changes);
+      showHistory();
+    }
+    showSelection();
+    draw();
+  }
+
+  // Clears the whole drawing (the widths stay), after a warning, as one gesture: undo brings everything back.
+  function deleteImage() {
+    if (stroke || selDrag) return;
+    if (floating) cancelFloat();
+    let pixels = 0, chars = 0;
+    for (const g of m.glyphs.values()) {
+      const n = g.pixels.reduce((k, v) => k + (v ? 1 : 0), 0);
+      pixels += n; if (n) chars++;
+    }
+    if (!pixels) return;
+    if (!window.confirm('Delete the whole image? ' + pixels + ' drawn pixel' + (pixels === 1 ? '' : 's') + ' in ' + chars + ' character' + (chars === 1 ? '' : 's') + ' will be cleared. Undo brings them back.')) return;
+    selRect = null;
+    const cleared = selection.clearRect(m, { x: 0, y: 0, w: m.width, h: m.height });
+    applyUpdates(cleared.updates);
+    history.push(cleared.changes);
+    showHistory();
+    showSelection();
+    draw();
+  }
+
+  function cutSelection() { if (copySelection()) deleteSelection(); }
+
+  // A paste floats at the pointer when it is over the sheet, else at the center of the view; it is placed when something else is done.
+  function pasteClipboard() {
+    if (!clipboard) return;
+    commitFloat();
+    selectTool('select');
+    const s = stageSize();
+    const at = pointer ? view.toImage(v, pointer.x, pointer.y) : view.toImage(v, s.width / 2, s.height / 2);
+    const x = Math.floor(at.x), y = Math.floor(at.y);
+    const inSheet = x >= 0 && y >= 0 && x < m.width && y < m.height;
+    const center = view.toImage(v, s.width / 2, s.height / 2);
+    floating = selection.pasteFloat(m, clipboard, inSheet ? x : Math.floor(center.x), inSheet ? y : Math.floor(center.y));
+    floating.canvas = bufferCanvas(floating.buffer);
+    selRect = null;
+    showSelection();
+    draw();
+  }
+
+  function nudge(dx, dy) {
+    if (!selRect && !floating) return;
+    liftSelection();
+    selection.moveTo(m, floating, floating.x + dx, floating.y + dy);
+    draw();
+  }
+
+  function selectAllOfCell(x, y) {
+    const rect = selection.cellRect(m, x, y);
+    if (!rect) return;
+    commitFloat();
+    selRect = rect;
+    showSelection();
+    draw();
+  }
+
+  // A dotted line of 2 screen pixels with the colors inverted at 50%, so that it shows on any background without hiding the pixels.
+  function outline(ctx, dpr, r) {
+    const a = view.toStage(v, r.x, r.y);
+    const width = Math.max(1, Math.round(2 * dpr));
+    const x = Math.round(a.x * dpr), y = Math.round(a.y * dpr);
+    const w = Math.round(r.w * v.zoom * dpr), h = Math.round(r.h * v.zoom * dpr);
+    ctx.save();
+    ctx.globalCompositeOperation = 'difference';
+    ctx.globalAlpha = 0.5;
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = width;
+    ctx.setLineDash([Math.round(3 * dpr), Math.round(3 * dpr)]);
+    ctx.strokeRect(x + width / 2, y + width / 2, Math.max(1, w - width), Math.max(1, h - width));
+    ctx.restore();
+  }
+
+  function drawSelection(ctx, dpr) {
+    if (!editing) return;
+    if (floating) {
+      const b = floating.buffer;
+      const a = view.toStage(v, floating.x, floating.y);
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(floating.canvas, 0, 0, b.w, b.h, Math.round(a.x * dpr), Math.round(a.y * dpr), Math.round(b.w * v.zoom * dpr), Math.round(b.h * v.zoom * dpr));
+      outline(ctx, dpr, floatRect());
+    } else if (selRect) {
+      outline(ctx, dpr, selRect);
+    }
+  }
+
+  function undo() { if (stroke || selDrag) return; if (floating) { cancelFloat(); return; } selRect = null; showSelection(); applyUpdates(history.undo(m)); showHistory(); }
+  function redo() { if (stroke || selDrag || floating) return; selRect = null; showSelection(); applyUpdates(history.redo(m)); showHistory(); }
 
   function strokeAt(e) {
     const p = stagePoint(e);
@@ -267,6 +456,7 @@
 
   function selectTool(name) {
     if (name === 'width' && !(m && m.variable)) return;
+    if (tool === 'select' && name !== 'select') { commitFloat(); selRect = null; }
     tool = name;
     const opts = document.querySelector('#editor .ed-options');
     if (opts) opts.classList.toggle('width-mode', name === 'width');
@@ -276,6 +466,8 @@
       b.setAttribute('aria-pressed', on ? 'true' : 'false');
     }
     showCursor();
+    if (m) showSelection();
+    draw();
   }
 
   function setSpace(on) {
@@ -300,6 +492,23 @@
       panning = { id: e.pointerId, x: e.clientX, y: e.clientY, view: v };
       try { canvas.setPointerCapture(e.pointerId); } catch (err) { /* the pointer may be gone already */ }
       showCursor();
+    } else if (e.button === 0 && tool === 'select') {
+      e.preventDefault();
+      const i = view.toImage(v, stagePoint(e).x, stagePoint(e).y);
+      const x = Math.floor(i.x), y = Math.floor(i.y);
+      const target = floating ? floatRect() : selRect;
+      try { canvas.setPointerCapture(e.pointerId); } catch (err) { /* the pointer may be gone already */ }
+      if (target && selection.inside(target, x, y)) {          // inside the selection: it moves with the pointer
+        liftSelection();
+        selDrag = { id: e.pointerId, mode: 'move', dx: x - floating.x, dy: y - floating.y };
+      } else {                                                 // elsewhere: what floats is placed, and a new selection starts
+        commitFloat();
+        selRect = null;
+        const ax = Math.max(0, Math.min(m.width - 1, x)), ay = Math.max(0, Math.min(m.height - 1, y));
+        selDrag = { id: e.pointerId, mode: 'new', ax, ay, moved: false };
+      }
+      showSelection();
+      draw();
     } else if (e.button === 0 && (tool === 'brush' || tool === 'eraser' || tool === 'width')) {
       e.preventDefault();
       const onWidth = tool === 'width';
@@ -323,6 +532,15 @@
     } else if (stroke && e.pointerId === stroke.id) {
       strokeAt(e);
       showStatus();
+    } else if (selDrag && e.pointerId === selDrag.id) {
+      const i = view.toImage(v, pointer.x, pointer.y);
+      const x = Math.floor(i.x), y = Math.floor(i.y);
+      if (selDrag.mode === 'move') selection.moveTo(m, floating, x - selDrag.dx, y - selDrag.dy);
+      else {
+        selDrag.moved = selDrag.moved || x !== selDrag.ax || y !== selDrag.ay;
+        selRect = selection.normalize(m, selDrag.ax, selDrag.ay, Math.max(0, Math.min(m.width - 1, x)), Math.max(0, Math.min(m.height - 1, y)));
+      }
+      draw();
     } else {
       draw();
     }
@@ -330,8 +548,19 @@
   canvas.addEventListener('pointerup', e => {
     if (panning && e.pointerId === panning.id) endPan();
     if (stroke && e.pointerId === stroke.id) endStroke();
+    if (selDrag && e.pointerId === selDrag.id) {
+      if (selDrag.mode === 'new' && !selDrag.moved) selRect = null;   // a click that does not drag selects nothing
+      selDrag = null;
+      showSelection();
+      draw();
+    }
   });
-  canvas.addEventListener('pointercancel', () => { endPan(); endStroke(); });
+  canvas.addEventListener('dblclick', e => {   // a double click selects the whole cell
+    if (!editing || tool !== 'select') return;
+    const i = view.toImage(v, stagePoint(e).x, stagePoint(e).y);
+    selectAllOfCell(Math.floor(i.x), Math.floor(i.y));
+  });
+  canvas.addEventListener('pointercancel', () => { endPan(); endStroke(); selDrag = null; });
   canvas.addEventListener('pointerleave', () => { if (!panning && !stroke) { pointer = null; draw(); } });
 
   stage.addEventListener('wheel', e => {
@@ -366,6 +595,9 @@
       const k = e.key.toLowerCase();
       if (k === 'z') { e.preventDefault(); if (e.shiftKey) redo(); else undo(); }
       else if (k === 'y' && e.ctrlKey) { e.preventDefault(); redo(); }
+      else if (k === 'c') { if (copySelection()) e.preventDefault(); }
+      else if (k === 'x') { if (selRect || floating) { e.preventDefault(); cutSelection(); } }
+      else if (k === 'v') { if (clipboard) { e.preventDefault(); pasteClipboard(); } }
       return;
     }
     if (e.metaKey || e.ctrlKey || e.altKey || typing(e.target)) return;
@@ -378,10 +610,21 @@
       case ']': setSize(SIZES[Math.min(SIZES.length - 1, SIZES.indexOf(size) + 1)]); break;
       case '0': fit(); break;
       case 'w': case 'W': selectTool('width'); break;
+      case 'm': case 'M': selectTool('select'); break;
+      case 'Enter': if (floating) commitFloat(); else return; break;
+      case 'Delete': case 'Backspace': if (selRect || floating) deleteSelection(); else return; break;
+      case 'ArrowLeft': case 'ArrowRight': case 'ArrowUp': case 'ArrowDown':
+        if (tool !== 'select' || !(selRect || floating)) return;
+        { const n = e.shiftKey ? 4 : 1; nudge(e.key === 'ArrowLeft' ? -n : e.key === 'ArrowRight' ? n : 0, e.key === 'ArrowUp' ? -n : e.key === 'ArrowDown' ? n : 0); }
+        break;
       case '1': case '2': case '3': case '4': setSize(Number(e.key)); break;
       case '+': case '=': zoomStep(1); break;
       case '-': case '_': zoomStep(-1); break;
-      case 'Escape': if (!document.fullscreenElement) document.dispatchEvent(new CustomEvent('digiface-editor-done')); break;
+      case 'Escape':
+        if (floating) cancelFloat();
+        else if (selRect) { selRect = null; showSelection(); draw(); }
+        else if (!document.fullscreenElement) document.dispatchEvent(new CustomEvent('digiface-editor-done'));
+        break;
       default: return;
     }
     e.preventDefault();
@@ -422,11 +665,150 @@
       });
       box.appendChild(b);
     });
+    $('edSwitch').hidden = !m.gb;                                // swapping colors needs more than one
     $('edToolWidth').hidden = !m.variable;                       // only a variable font has widths
     if (!m.variable && tool === 'width') selectTool('brush');
   }
 
+  // ---- switching two colors
+  let switchPick = [1, 2];
+  function showSwitch() {
+    const names = model.COLOR_NAMES.gbstudio;
+    ['switchA', 'switchB'].forEach((id, k) => {
+      const box = $(id);
+      box.textContent = '';
+      m.palette.forEach((rgb, i) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'swatch' + (switchPick[k] === i + 1 ? ' active' : '');
+        b.style.background = 'rgb(' + rgb.join(',') + ')';
+        b.title = names[i];
+        b.setAttribute('aria-label', names[i]);
+        b.setAttribute('aria-pressed', switchPick[k] === i + 1 ? 'true' : 'false');
+        b.addEventListener('click', () => { switchPick[k] = i + 1; showSwitch(); });
+        box.appendChild(b);
+      });
+    });
+    $('switchOk').disabled = switchPick[0] === switchPick[1];
+  }
+  function openSwitch() {
+    if (!m.gb || stroke || selDrag) return;
+    if (floating) commitFloat();
+    switchPick = [color, color === 1 ? 2 : 1];
+    showSwitch();
+    $('switchDialog').showModal();
+  }
+  function doSwitch() {
+    const done = selection.swapColors(m, switchPick[0], switchPick[1]);
+    if (!done.changes.length) return;
+    applyUpdates(done.updates);
+    history.push(done.changes);
+    showHistory();
+    draw();
+  }
+  $('edSwitch').addEventListener('click', openSwitch);
+  $('switchForm').addEventListener('submit', e => {
+    if (e.submitter && e.submitter.value === 'ok' && switchPick[0] !== switchPick[1]) doSwitch();
+  });
+
+  // ---- drop shadows (GB Studio)
+  // A shadow is a copy of the pixels of one color, under the writing; the tiles at the end of the tool bar list them.
+  const swatchStyle = i => 'rgb(' + m.palette[i - 1].join(',') + ')';
+  const sameShadows = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+
+  function showShadows() {
+    const box = $('edShadows');
+    const on = !!(m && m.gb);
+    $('edShadow').hidden = !on;
+    box.hidden = !on || !m.shadows.length;
+    box.textContent = '';
+    if (!on) return;
+    const names = model.COLOR_NAMES.gbstudio;
+    for (const s of m.shadows) {
+      const tile = document.createElement('div');
+      tile.className = 'shadow-tile';
+      const open = document.createElement('button');
+      open.type = 'button'; open.className = 'open';
+      open.title = 'Drop shadow of ' + names[s.source - 1] + ' in ' + names[s.color - 1] + ': click to change its settings';
+      const chips = document.createElement('span');
+      chips.className = 'chips';
+      for (const [k, i] of [[0, s.source], [1, s.color]]) {
+        if (k) chips.append('\u203a');
+        const c = document.createElement('i');
+        c.className = 'chip'; c.style.background = swatchStyle(i);
+        chips.appendChild(c);
+      }
+      const text = document.createElement('span');
+      text.textContent = 'x' + (s.dx > 0 ? '+' : '') + s.dx + ' y' + (s.dy > 0 ? '+' : '') + s.dy + ' t' + s.thickness;
+      open.append(chips, text);
+      open.addEventListener('click', () => openShadow(s.id));
+      const trash = document.createElement('button');
+      trash.type = 'button'; trash.className = 'trash';
+      trash.setAttribute('aria-label', 'Delete this drop shadow'); trash.title = 'Delete this drop shadow';
+      trash.innerHTML = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 4h11M6 4V2.5h4V4M4 4l.7 9.5h6.6L12 4M6.8 6.5v5M9.2 6.5v5"/></svg>';
+      trash.addEventListener('click', () => changeShadows(m.shadows.filter(o => o.id !== s.id)));
+      tile.append(open, trash);
+      box.appendChild(tile);
+    }
+  }
+
+  // One gesture for the history: the list of shadows before and after.
+  function changeShadows(list) {
+    if (sameShadows(list, m.shadows)) return;
+    const before = m.shadows.map(s => Object.assign({}, s));
+    const after = list.map(s => Object.assign({}, s));
+    applyUpdates([m.setShadows(after)]);
+    history.push([{ kind: 'shadows', before, after }]);
+    showHistory();
+  }
+
+  let shadowDraft = null, shadowEditing = null;
+  function showShadowPickers() {
+    const names = model.COLOR_NAMES.gbstudio;
+    for (const [id, key] of [['shadowSource', 'source'], ['shadowColor', 'color']]) {
+      const box = $(id);
+      box.textContent = '';
+      m.palette.forEach((rgb, i) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'swatch' + (shadowDraft[key] === i + 1 ? ' active' : '');
+        b.style.background = 'rgb(' + rgb.join(',') + ')';
+        b.title = names[i]; b.setAttribute('aria-label', names[i]);
+        b.setAttribute('aria-pressed', shadowDraft[key] === i + 1 ? 'true' : 'false');
+        b.addEventListener('click', () => { shadowDraft[key] = i + 1; showShadowPickers(); });
+        box.appendChild(b);
+      });
+    }
+  }
+  function openShadow(id) {
+    if (!m.gb || stroke || selDrag) return;
+    if (floating) commitFloat();
+    const found = id ? m.shadows.find(s => s.id === id) : null;
+    shadowEditing = found ? found.id : null;
+    shadowDraft = found ? Object.assign({}, found) : { source: color, color: color <= 2 ? 3 : 1, thickness: 1, dx: 1, dy: 1 };
+    $('shadowThickness').value = shadowDraft.thickness; $('shadowX').value = shadowDraft.dx; $('shadowY').value = shadowDraft.dy;
+    $('shadowTitle').textContent = found ? 'Change the drop shadow' : 'Drop shadow';
+    $('shadowOk').textContent = found ? 'Apply' : 'Add';
+    showShadowPickers();
+    $('shadowDialog').showModal();
+  }
+  const clampInt = (v, lo, hi, fallback) => { const n = parseInt(v, 10); return Number.isFinite(n) ? Math.max(lo, Math.min(hi, n)) : fallback; };
+  $('edShadow').addEventListener('click', () => openShadow(null));
+  $('shadowForm').addEventListener('submit', e => {
+    if (!e.submitter || e.submitter.value !== 'ok') return;
+    const s = Object.assign({}, shadowDraft, {
+      thickness: clampInt($('shadowThickness').value, 1, 4, 1), dx: clampInt($('shadowX').value, -4, 4, 1), dy: clampInt($('shadowY').value, -4, 4, 1)
+    });
+    if (shadowEditing) changeShadows(m.shadows.map(o => o.id === shadowEditing ? Object.assign({}, s, { id: o.id }) : o));
+    else changeShadows(m.shadows.concat([Object.assign(s, { id: m.shadows.reduce((k, o) => Math.max(k, o.id), 0) + 1 })]));
+  });
+
   // ---- buttons and panels
+  $('edSelCut').addEventListener('click', cutSelection);
+  $('edSelCopy').addEventListener('click', copySelection);
+  $('edSelPaste').addEventListener('click', pasteClipboard);
+  $('edSelDelete').addEventListener('click', deleteSelection);
+  $('edDeleteImage').addEventListener('click', deleteImage);
   $('edUndo').addEventListener('click', undo);
   $('edRedo').addEventListener('click', redo);
   for (const b of document.querySelectorAll('#edSizes .size')) b.addEventListener('click', () => setSize(Number(b.dataset.size)));
@@ -434,7 +816,6 @@
   $('edZoomIn').addEventListener('click', () => zoomStep(1));
   $('edZoomOut').addEventListener('click', () => zoomStep(-1));
   $('edFit').addEventListener('click', fit);
-  $('edDone').addEventListener('click', () => document.dispatchEvent(new CustomEvent('digiface-editor-done')));
   for (const b of document.querySelectorAll('#editor .tool:not([disabled])')) b.addEventListener('click', () => selectTool(b.dataset.tool));
   $('edGuides').addEventListener('change', e => { guides = e.target.checked; draw(); });
   $('edZoomCell').addEventListener('change', e => { zoomOnCell = e.target.checked; focusedCell = null; });
@@ -455,6 +836,7 @@
     background: toCanvas(result.background, m.width, m.height),
     plain: toCanvas(result.plainBackground, m.width, m.height),
     template: toCanvas(result.ghost, m.width, m.height),
+    shadow: toCanvas(m.renderShadow(), m.width, m.height),
     writing: toCanvas(m.renderWriting(), m.width, m.height),
     width: toCanvas(m.renderWidth(), m.width, m.height)
   });
@@ -463,20 +845,22 @@
     m = next;
     stroke = null;
     showColors();
+    showShadows();
     showHistory();
   }
 
   function describeImpact(report) {
     const lines = [];
-    if (!report.sameCell) lines.push('The cell size changed: the drawing starts again.');
-    else if (report.lostGlyphs) lines.push(report.lostGlyphs + ' drawn character' + (report.lostGlyphs > 1 ? 's are' : ' is') + ' not in the new layout and will be lost.');
+    if (report.lostGlyphs) lines.push(report.lostGlyphs + ' drawn character' + (report.lostGlyphs > 1 ? 's are' : ' is') + ' not in the new layout and will lose ' + (report.lostGlyphs > 1 ? 'their drawing.' : 'its drawing.'));
+    if (report.croppedPixels) lines.push(report.croppedPixels + ' drawn pixel' + (report.croppedPixels > 1 ? 's' : '') + ' of ' + report.croppedGlyphs + ' character' + (report.croppedGlyphs > 1 ? 's' : '') + ' fall outside the new cell size and will be cut (the left and the bottom edges stay in place).');
+    if (report.lostShadows) lines.push(report.lostShadows + ' drop shadow' + (report.lostShadows > 1 ? 's' : '') + ' will be removed (they are for GB Studio).');
     if (report.lossyColors) lines.push("GB Studio's two light shades will be removed and the two dark ones become black.");
     return lines.join('\n') + '\nContinue?';
   }
 
   // What a layout change (a metadata: {cell, map, target...}) would do to the drawing in hand; see model.impact.
   function impact(meta) {
-    return session ? model.impact(session.model, meta) : { hasWork: false, sameCell: true, lostGlyphs: 0, lossyColors: false };
+    return session ? model.impact(session.model, meta) : { hasWork: false, lostGlyphs: 0, croppedPixels: 0, croppedGlyphs: 0, lossyColors: false, lostShadows: 0 };
   }
 
   // Shows the layers of generate.layers, with the drawing when it has this layout (the session of the editor), and a blank sheet
@@ -512,7 +896,7 @@
     } else {
       if (session) {
         const report = model.impact(session.model, result.meta);
-        if (report.hasWork && (report.lostGlyphs || report.lossyColors) && !window.confirm(describeImpact(report))) return false;
+        if (model.risky(report) && !window.confirm(describeImpact(report))) return false;
         next = model.relayout(session.model, result.meta, result.advances).model;
       } else if (m && model.layoutKey(m.meta) === layout) {
         next = m;                                   // what the viewer shows is the sheet to draw on
@@ -539,6 +923,8 @@
   function update(result) {
     const layout = model.layoutKey(result.meta);
     if (editing && session && session.layout !== layout) {
+      commitFloat();
+      selRect = null;
       const next = model.relayout(session.model, result.meta, result.advances).model;
       session = { layout, model: next, history: historyModule.create() };
       m = next;
@@ -549,6 +935,8 @@
 
   function stop() {
     if (!editing) return;
+    commitFloat();
+    selRect = null; selDrag = null;
     editing = false;
     editorEl.classList.remove('editing');
     document.removeEventListener('keydown', onKeyDown);
@@ -561,9 +949,30 @@
 
   if (typeof ResizeObserver === 'function') new ResizeObserver(resize).observe(stage);
 
+  // The widths the guide font gives (one per cell, as generate.layers: advances), against the ones of the drawing: the glyphs that
+  // would change, [{kind: 'width', cp, before, after}]. Empty unless the font is variable.
+  function widthChanges(advances) {
+    const list = [];
+    if (!m || !m.variable || !advances) return list;
+    m.cells.forEach((cp, i) => {
+      if (cp === null) return;
+      const g = m.glyphs.get(cp), after = Math.max(1, Math.min(m.cellW, advances[i]));
+      if (g.width !== after) list.push({ kind: 'width', cp, before: g.width, after });
+    });
+    return list;
+  }
+
+  // Gives these widths to the glyphs, as one gesture for the history.
+  function applyWidths(changes) {
+    if (!changes.length) return;
+    applyUpdates(changes.map(c => m.setWidth(c.cp, c.after)));
+    history.push(changes);
+    showHistory();
+  }
+
   window.Digiface.editor = {
-    start, update, stop, impact, describe: describeImpact, isOpen: () => editing, model: () => m,
+    hasInk, widthChanges, applyWidths, start, update, stop, impact, describe: describeImpact, isOpen: () => editing, model: () => m,
     warnings: () => (m ? m.warnings() : []),
-    state: () => ({ tool, spaceDown, view: v, guides, handActive: handActive(), color, size, clip, shiftDown, lastPoint, canUndo: history.canUndo(), canRedo: history.canRedo() })
+    state: () => ({ selection: selRect, floating: floating && { x: floating.x, y: floating.y, w: floating.buffer.w, h: floating.buffer.h }, hasClipboard: !!clipboard, tool, spaceDown, view: v, guides, handActive: handActive(), color, size, clip, shiftDown, lastPoint, canUndo: history.canUndo(), canRedo: history.canRedo() })
   };
 })();

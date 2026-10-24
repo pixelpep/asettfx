@@ -111,7 +111,8 @@ test('a drawing follows its characters when the grid changes and the cell keeps 
   old.glyphs.get(0x45).width = 2;
   const moved = Object.assign(meta(), { grid: { cols: 2, rows: 3 }, map: ['0045', '0041-0043'] });   // reordered, E first, F gone
   const report = model.impact(old, moved);
-  assert.deepEqual(report, { hasWork: true, sameCell: true, lostGlyphs: 0, lossyColors: false });
+  assert.deepEqual(report, { hasWork: true, lostGlyphs: 0, croppedPixels: 0, croppedGlyphs: 0, lossyColors: false, lostShadows: 0 });
+  assert.equal(model.risky(report), false);
   const r = model.relayout(old, moved, [4, 4, 4, 4]);
   assert.equal(r.kept, 2);
   assert.equal(r.lost, 0);
@@ -127,24 +128,62 @@ test('characters that leave the layout lose their drawing, the others keep it', 
   old.glyphs.get(0x46).pixels[0] = 1;
   const fewer = Object.assign(meta(), { map: ['0041-0043'] });
   assert.equal(model.impact(old, fewer).lostGlyphs, 1);
+  assert.equal(model.risky(model.impact(old, fewer)), true);
   const r = model.relayout(old, fewer);
   assert.equal(r.lost, 1);
   assert.equal(r.kept, 1);
   assert.equal(r.model.glyphs.has(0x46), false);
 });
 
-test('a change of the cell size starts the drawing again', () => {
-  const old = model.create(meta());
-  old.glyphs.get(0x41).pixels[0] = 1;
-  const bigger = Object.assign(meta(), { cell: { w: 8, h: 8 } });
+test('a bigger cell keeps the pixels, with the left edge and the bottom edge in place', () => {
+  const old = model.create(meta());                                         // 4 x 5 cells
+  const g = old.glyphs.get(0x41);
+  g.pixels[0 * 4 + 0] = 1;                                                  // top-left
+  g.pixels[4 * 4 + 3] = 1;                                                  // bottom-right
+  const bigger = Object.assign(meta(), { cell: { w: 6, h: 8 } });
   const report = model.impact(old, bigger);
-  assert.equal(report.sameCell, false);
-  assert.equal(report.lostGlyphs, 1);
+  assert.deepEqual(report, { hasWork: true, lostGlyphs: 0, croppedPixels: 0, croppedGlyphs: 0, lossyColors: false, lostShadows: 0 });
   const r = model.relayout(old, bigger);
-  assert.equal(r.kept, 0);
-  assert.equal(r.model.glyphs.get(0x41).pixels.every(p => p === 0), true);
+  const p = r.model.glyphs.get(0x41).pixels;
+  assert.equal(p[(0 + 3) * 6 + 0], 1);                                      // three rows more above: the top-left pixel is at row 3
+  assert.equal(p[(4 + 3) * 6 + 3], 1);                                      // the bottom-right pixel is still on the last row
+  assert.equal(p.filter(Boolean).length, 2);
+  assert.equal(r.cut, 0);
+});
+
+test('a smaller cell cuts the right columns and the top rows, and says how many pixels', () => {
+  const old = model.create(meta());                                         // 4 x 5 cells
+  const g = old.glyphs.get(0x41);
+  g.pixels[0 * 4 + 1] = 1;                                                  // top row: cut when the cell is 3 rows high
+  g.pixels[3 * 4 + 3] = 1;                                                  // right column: cut when the cell is 3 wide
+  g.pixels[4 * 4 + 0] = 1;                                                  // bottom-left: kept
+  const smaller = Object.assign(meta(), { cell: { w: 3, h: 3 } });
+  const report = model.impact(old, smaller);
+  assert.deepEqual(report, { hasWork: true, lostGlyphs: 0, croppedPixels: 2, croppedGlyphs: 1, lossyColors: false, lostShadows: 0 });
+  assert.equal(model.risky(report), true);
+  const r = model.relayout(old, smaller);
+  assert.equal(r.cut, 2);
+  const p = r.model.glyphs.get(0x41).pixels;
+  assert.equal(p[2 * 3 + 0], 1);                                            // the bottom-left pixel is on the new last row
+  assert.equal(p.filter(Boolean).length, 1);
   // an empty drawing loses nothing
-  assert.deepEqual(model.impact(model.create(meta()), bigger), { hasWork: false, sameCell: false, lostGlyphs: 0, lossyColors: false });
+  assert.deepEqual(model.impact(model.create(meta()), smaller), { hasWork: false, lostGlyphs: 0, croppedPixels: 0, croppedGlyphs: 0, lossyColors: false, lostShadows: 0 });
+});
+
+test('the width is kept when the font is monospace for a while, and clamped to a narrower cell', () => {
+  const variable = model.create(meta(), [3, 4, 4, 4, 4, 4]);
+  variable.glyphs.get(0x41).width = 2;
+  const mono = model.relayout(variable, meta({ mode: 'mono' })).model;
+  assert.equal(mono.glyphs.get(0x41).width, 4);                             // a monospace glyph is the whole cell
+  assert.equal(mono.glyphs.get(0x41).kept, 2);                              // but it remembers its width
+  const back = model.relayout(mono, meta({ mode: 'var' }), [3, 3, 3, 3, 3, 3]).model;
+  assert.equal(back.glyphs.get(0x41).width, 2);                             // given back, not the one of the guide font
+  assert.equal(back.glyphs.get(0x42).width, 4);                             // the others too: the width they had, not the one of the new guide font
+  const fresh = model.relayout(model.create(meta({ mode: 'mono' })), meta({ mode: 'var' }), [3, 3, 3, 3, 3, 3]).model;
+  assert.equal(fresh.glyphs.get(0x41).width, 3);                            // a monospace glyph that never had a width takes the one of the guide font
+  const narrow = model.relayout(variable, Object.assign(meta(), { cell: { w: 2, h: 5 } })).model;
+  assert.equal(narrow.glyphs.get(0x41).width, 2);
+  assert.equal(narrow.glyphs.get(0x42).width, 2);                           // never wider than the cell
 });
 
 test('going to GB Studio keeps the pixels, going back keeps what is ink and drops what is background', () => {

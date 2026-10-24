@@ -2,11 +2,11 @@
 
 Pixel fonts from Aseprite to TTF. Draw your pixel-art letters in [Aseprite](https://www.aseprite.org/) and turn them into a real TrueType font (`.ttf`) for your game, your interface or your posters. Made for [GB Studio](https://www.gbstudio.dev/) projects (it has the GB Studio character layout and ships its two default fonts) and for any design work that needs a crisp pixel typeface: the font installs like any other and stays sharp at sizes that are multiples of the cell height.
 
-> **Status: version 0.2.0 is released**, with the spec, the web tool and the Aseprite extension (reading, checks, TTF writer, menu and dialogs), tried in Aseprite 1.3.16 on macOS. Since then the web tool has gained an **editor** to draw in the page, a GB Studio mode and a new look (see the [changelog](CHANGELOG.md)), not released yet. Download the extension from the [Releases](https://github.com/pixelpep/digiface/releases) page. See [Roadmap](#roadmap).
+> **Status: the latest release is 0.2.0**, with the spec, the web tool and the Aseprite extension (reading, checks, TTF writer, menu and dialogs), tried in Aseprite 1.3.16 on macOS. Version 0.3.0 is being prepared: the web tool gains an **editor** to draw in the page (brush, eraser, widths, selection, GB Studio palette and drop shadows), a GB Studio mode and a new look (see the [changelog](CHANGELOG.md)). Download the extension from the [Releases](https://github.com/pixelpep/digiface/releases) page. See [Roadmap](#roadmap).
 
 Digiface has two parts:
 
-1. **Digiface Matrix** (`web/`), a small HTML/JS/Canvas tool, with no install: it makes a PNG template for a bitmap font grid, with the settings embedded in the PNG, and it has an **editor** to draw the glyphs right in the page (brush, eraser, width of each character, GB Studio palette).
+1. **Digiface Matrix** (`web/`), a small HTML/JS/Canvas tool, with no install: it makes a PNG template for a bitmap font grid, with the settings embedded in the PNG, and it has an **editor** to draw the glyphs right in the page (brush, eraser, selection, width of each character, GB Studio palette and drop shadows).
 2. **Digiface for Aseprite** (`aseprite-extension/`), the extension: a Lua extension that reads the template settings (or a drawing downloaded from the page) and exports the `.ttf`.
 
 ## Install the extension
@@ -21,9 +21,9 @@ Export a font from the command line, with the same checks the dialog shows: `sh 
 
 ## Workflow
 
-1. Open Digiface Matrix and choose a character set, the spacing (variable by default, or *Monospace*) and the cell size. A guide font (Arial, Times New Roman, one of the bundled pixel fonts, or any pixel font file from your computer, drawn at its own pixel size) shows the character to draw in each cell.
-2. **Draw in the page** (press **Edit**, see below), or download the **Template** and draw on it in Aseprite: glyphs in black on a layer above it, the template layer being only a guide.
-3. Download the **Drawing**: a PNG with what you drew, without any guide, and the settings of the font inside. (Drawn in Aseprite, hide the template layer instead.)
+1. Open Digiface Matrix and choose a character set, the spacing (variable by default, or *Monospace*) and the cell size. A guide font (Arial, Times New Roman, one of the bundled pixel fonts, or any pixel font file from your computer, drawn at its own pixel size) shows the character to draw in each cell; with a pixel font, tick *Use the guide font's cell size* (top of the *Cells* column) to take the cell it needs. The settings (*Guide*, *Cells* and *Spacing*) are in one collapsible *Settings* card.
+2. **Draw in the page** (press **Edit pixel font**, see below), or download the **Template** and draw on it in Aseprite: glyphs in black on a layer above it, the template layer being only a guide.
+3. Download the **Drawing** (available once something is drawn): a PNG with what you drew, without any guide, and the settings of the font inside. (Drawn in Aseprite, hide the template layer instead.)
 4. To make a variable-width font, the unused columns on the right of a glyph are pure magenta `#FF00FF` (the **Width** tool does it in the page). The export dialog of the extension detects magenta and selects variable spacing; with no magenta the font is monospace. You can still choose monospace when magenta is present, and it is then ignored.
 5. In Aseprite, run **File → Scripts → Digiface → Export as TTF...**. Every visible layer is flattened over white (a white or a transparent background are equivalent), and black pixels become the glyphs.
 
@@ -31,7 +31,7 @@ If the settings are missing or corrupted, a dialog asks for the grid parameters.
 
 ## Draw in the page
 
-**Edit** (the first button of the toolbar) folds the settings and adds the tools; **Done**, Escape or the same button brings the settings back, and what is drawn stays in the view. The view has a header with the zoom, **Fit** (enlarges the whole sheet to the window), **Visual guides** (the guide characters, the checkerboard, the baseline ticks and the limits of the cells), **Zoom on cell** and a full screen button.
+**Edit pixel font** (in the header of the view) adds the tools and becomes the red **Close editing** button; Escape or the same button stops the editing, and what is drawn stays in the view. The view has a header with the zoom, **Fit** (enlarges the whole sheet to the window), **Visual guides** (the guide characters, the checkerboard, the baseline ticks and the limits of the cells), undo and redo, **Delete image** (red, with a warning; undo brings the drawing back), **Zoom on cell**, **Stay in cell** and a full screen button. The red **Reset** button, next to the help, starts again from the defaults after a question.
 
 | Key | Does |
 |---|---|
@@ -41,19 +41,23 @@ If the settings are missing or corrupted, a dialog asks for the grid parameters.
 | `W` | Width: click in a cell to set the width of its glyph (variable fonts) |
 | `1` `2` `3` `4` | Size of the brush and of the eraser |
 | `Shift` + click | A line from the last pixel painted |
+| `M` | Selection: drag a rectangle, drag inside it to move the pixels, double-click a cell to select it |
+| Arrows, `Cmd` or `Ctrl` + `X` `C` `V`, `Delete`, `Enter` | Move, cut, copy, paste, clear, place what floats (`Esc` puts it back) |
 | `+` `-`, `0` | Zoom, fit |
 | `Cmd` or `Ctrl` + `Z`, with `Shift` | Undo, redo |
 | `Esc` | Stop editing |
 
-The help (the **?** button) lists them in its *Shortcuts* tab. Colors are black, or the four shades of GB Studio in GB Studio mode. A stroke stays in the cell where it started (*Stay in cell*). The **Width** tool puts the width marker at the nearest border between two columns, shows the new width over the pink, and a click that gives the whole cell clears the marker. A cell with drawing under its width marker (which hides it) is framed in yellow.
+The help (the **?** button) lists them in its *Shortcuts* tab. Colors are black, or the four shades of GB Studio in GB Studio mode. A stroke stays in the cell where it started when *Stay in cell* is ticked. The **selection** (M) lifts a rectangle of pixels off the layer so that it floats while you move it, and places it as one gesture for undo; cut, copy and paste work with the keyboard and with buttons, and a paste floats until you place it. The **Width** tool puts the width marker at the nearest border between two columns, shows the new width over the pink, and a click that gives the whole cell clears the marker. A cell with drawing under its width marker (which hides it) is framed in yellow.
 
-While editing, what would move the drawing is locked (the character set, the cell size, the columns, *Monospace*); the guide font, its padding, the baseline and the other guides stay free. If the layout changes, the drawing follows its characters, and the page asks before it loses anything. The drawing is kept while the page stays open; saving in the browser and a TrueType export from the page are planned (see [docs/EDITOR.md](docs/EDITOR.md)).
+The settings stay editable while you draw (changing *Pre-fill the magenta* asks before it replaces the widths). The drawing follows its characters when the layout changes, and the page asks before it cuts or removes anything. The drawing is kept while the page stays open; saving in the browser and a TrueType export from the page are planned (see [docs/EDITOR.md](docs/EDITOR.md)).
 
 The buttons **Template** and **Drawing** each open a window that explains what is downloaded and asks for the name of the font.
 
 ## GB Studio fonts
 
-Tick **GB Studio** in the toolbar. The layout (GB Studio's own, Windows-1252 order), the 8 x 8 cells and the 16 columns are then fixed, *Baseline ticks* is off, the GB Studio Variable font guides you, and the template and the drawing are **indexed PNGs** with the palette of GB Studio's font sheets: the palest color (`#E0F8CF`) first, for the background, the darkest (`#071821`) second, for the characters, then the magenta for the widths and the two middle shades. Draw in the page, or in Aseprite, where the template stays an indexed image so the glyphs can only use these colors (hide the template layer and save the image as a PNG with *File > Export As...*).
+Tick **GB Studio** at the top of the *Guide* column. The layout (GB Studio's own, Windows-1252 order), the 8 x 8 cells and the 16 columns are then fixed, *Baseline ticks* is off, the GB Studio Variable font guides you, and the template and the drawing are **indexed PNGs** with the palette of GB Studio's font sheets: the palest color (`#E0F8CF`) first, for the background, the darkest (`#071821`) second, for the characters, then the magenta for the widths and the two middle shades. Draw in the page, or in Aseprite, where the template stays an indexed image so the glyphs can only use these colors (hide the template layer and save the image as a PNG with *File > Export As...*).
+
+Two tools are for this mode. **Switch** (under the palette) swaps two colors of the palette everywhere in the image, the background and the drop shadows included. **Shadow** adds a drop shadow: it copies the pixels of one color, moved by an offset and made thicker, in the color you choose, on a layer under the writing that follows what you draw. Each shadow has a tile under the button to change its settings or delete it (red trash). The downloaded drawing is flattened: the shadows are part of the image.
 
 GB Studio classes pixels by their green channel, and ignores their transparency: the darkest shade is the character, the palest opaque shade the background, and magenta (like pure white) is transparent, which trims the columns of each cell and gives the width of each character. Because the palette starts with the background color, the pixels that are transparent in Aseprite (a hidden template layer) are written with that color, not as black.
 
@@ -87,7 +91,7 @@ docs/                 the editor design (EDITOR.md), progress notes, release not
 3. ~~Lua: PNG metadata reader, cell extraction, width detection, export checks~~
 4. ~~Lua: outline tracing and TrueType writer, plus validation tooling~~
 5. ~~Aseprite UI, commands, packaging as `.aseprite-extension`~~
-6. Web editor, in six milestones ([docs/EDITOR.md](docs/EDITOR.md)): the viewer, the brush and the eraser, the width tool and GB Studio are done; selection and clipboard, saving in the browser and a TrueType export from the page are next.
+6. Web editor, in six milestones ([docs/EDITOR.md](docs/EDITOR.md)): the viewer, the brush and the eraser, the width tool, GB Studio and the selection are done; saving in the browser and a TrueType export from the page are next.
 
 Next: see [docs/PROGRESS.md](docs/PROGRESS.md).
 

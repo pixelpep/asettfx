@@ -78,21 +78,12 @@
     $('hint-font').hidden = !panel;
     const f = panel ? currentLoaded() : null;
     $('fontInfoBtn').hidden = !f;
+    showFitRows();
     if (!panel) return;
     $('fontFile').hidden = id !== fonts.FILE;
     $('fontStatus').textContent = message || fontError || (!f ? describeFont(f) : f.pixelFont ? '' : 'Not a pixel font: the characters are fitted to the cell.');
 
-    const pixel = !!(f && f.pixelFont);
-    $('applyFont').hidden = !pixel;
-    $('applyFontAll').hidden = true;
-    if (pixel) {
-      const { letters, all } = fitFor(f);
-      const dims = c => ' (' + c.width + ' x ' + c.height + ')';
-      $('applyFont').textContent = "Use this font's cell size" + dims(letters);
-      $('applyFontAll').hidden = all.height === letters.height && all.width === letters.width && all.baseline === letters.baseline;
-      $('applyFontAll').textContent = 'Make room for the accents too' + dims(all);
-    }
-    applyLocks();  // the cell size buttons are fixed in GB Studio mode and while editing
+    applyLocks();
 
     // the window of the "i" button
     $('fontDialogTitle').textContent = f ? f.label : '';
@@ -159,7 +150,7 @@
       try { await ensureBundled(id); showFontPanel(); }
       catch (e) { fontError = 'This font could not be loaded.'; showFontPanel(); }
     }
-    refresh();
+    if (editing) { showFitRows(); onFitChange(); } else refresh();
   }
 
   let last = null;       // last successful result
@@ -187,25 +178,93 @@
     return Number.isFinite(v) ? v : fallback;
   };
 
-  // The controls that cannot change, now: the layout and the mode while editing (the drawing would move), and the layout in GB
-  // Studio mode. The others (the guide font, the padding, the margin, the baseline, the ticks) can: they only redraw the guides.
+  // The controls that cannot change, now: the layout in GB Studio mode (and the cell size while the guide font decides it). The others can: the guides only redraw, and a change of the layout makes the drawing follow its characters.
   const GB_LOCKED = ['charset', 'cellW', 'cellH', 'cols', 'checker', 'baselineTick'];
-  const EDIT_LOCKED = ['charset', 'custom', 'cellW', 'cellH', 'cols', 'forceMono', 'prefill', 'applyFont', 'applyFontAll'];
+  const EDIT_LOCKED = [];   // nothing: a change of the pre-fill asks first (onPrefillChange)
   let editing = false;
   function applyLocks() {
     const gb = $('gbstudio').checked;
     const locked = new Set();
     if (gb) for (const id of GB_LOCKED) locked.add(id);
     if (editing) for (const id of EDIT_LOCKED) locked.add(id);
-    for (const id of new Set([...GB_LOCKED, ...EDIT_LOCKED])) $(id).disabled = locked.has(id);
-    for (const id of ['applyFont', 'applyFontAll']) {
-      $(id).title = gb ? 'The cell size is fixed in GB Studio mode' : editing ? 'The cell size is fixed while editing' : '';
+    if (fitActive()) { locked.add('cellW'); locked.add('cellH'); }   // the guide font decides the cell size
+    for (const id of new Set([...GB_LOCKED, ...EDIT_LOCKED, 'cellW', 'cellH'])) $(id).disabled = locked.has(id);
+    $('fitFont').disabled = gb || !fitFont();
+    $('fitAccents').disabled = $('fitFont').disabled;
+    $('fitRow').title = gb ? 'The cell size is fixed in GB Studio mode' : fitFont() ? 'Takes the cell size, the baseline and the bottom margin the guide font needs' : 'Only for a pixel font';
+  }
+
+  // "Use the guide font's cell size": the cell size follows the guide font (a pixel font only). The baseline and the bottom
+  // margin are set when the font, the character set or the choice changes, and stay free after that.
+  const fitFont = () => { const f = currentLoaded(); return f && f.pixelFont ? f : null; };
+  const fitActive = () => $('fitFont').checked && !$('gbstudio').checked && !!fitFont();
+  let fitSig = null;
+  function showFitRows() {
+    const f = fitFont();
+    const dims = c => ' (' + c.width + ' x ' + c.height + ')';
+    $('fitFont').disabled = $('gbstudio').checked || !f;
+    $('fitAccents').disabled = $('fitFont').disabled;
+    $('fitAccentsRow').hidden = true;
+    if (!f) return;
+    const { letters, all } = fitFor(f);
+    $('fitLabel').textContent = "Use the guide font's cell size" + dims(letters);
+    const differs = all.height !== letters.height || all.width !== letters.width || all.baseline !== letters.baseline;
+    $('fitAccentsRow').hidden = !differs;
+    $('fitAccentsLabel').textContent = 'Make room for the accents too' + dims(all);
+  }
+  // Applies the fit when its inputs changed; returns true when the cell size or the guides moved.
+  function syncFit() {
+    const f = fitFont();
+    if (!$('fitFont').checked || $('gbstudio').checked || !f) { if (!$('fitFont').checked) fitSig = null; return false; }
+    const { letters, all } = fitFor(f);
+    const wantAll = $('fitAccents').checked && !$('fitAccentsRow').hidden;
+    const c = wantAll ? all : letters;
+    const sig = f.family + '|' + wantAll + '|' + c.width + 'x' + c.height + '|' + c.baseline + '|' + c.lift;
+    const sizeChanged = $('cellW').value !== String(c.width) || $('cellH').value !== String(c.height);
+    $('cellW').value = c.width;
+    $('cellH').value = c.height;
+    if (sig !== fitSig) {
+      fitSig = sig;
+      $('baseline').value = c.baseline;
+      $('hintLift').value = c.lift;
+      $('hintPadding').value = 0;
+      return true;
     }
+    return sizeChanged;
   }
 
   // GB Studio mode: the layout, the 8 x 8 cells and the 16 columns are fixed, the checkerboard is off, and the template uses
   // the colors GB Studio reads as background. Unchecking brings back what was there before. While editing, the drawing follows
   // (see model.relayout) and the page asks before it loses something.
+  // The layout controls while editing: the drawing follows its characters when they change. What is accepted is remembered, so
+  // that a change that would lose something can be refused and put back.
+  const LAYOUT_IDS = ['charset', 'custom', 'cellW', 'cellH', 'cols', 'forceMono'];
+  let layoutSnapshot = null;
+  const readLayout = () => ({ charset: charsetSelect.value, custom: $('custom').value, cellW: $('cellW').value, cellH: $('cellH').value, cols: $('cols').value, mono: $('forceMono').checked,
+    fit: $('fitFont').checked, fitAll: $('fitAccents').checked, baseline: $('baseline').value, lift: $('hintLift').value, padding: $('hintPadding').value, sig: fitSig });
+  function writeLayout(l) {
+    charsetSelect.value = l.charset; $('custom').value = l.custom; $('cellW').value = l.cellW; $('cellH').value = l.cellH; $('cols').value = l.cols; $('forceMono').checked = l.mono;
+    $('fitFont').checked = l.fit; $('fitAccents').checked = l.fitAll;
+    $('baseline').value = l.baseline; $('hintLift').value = l.lift; $('hintPadding').value = l.padding;
+    fitSig = l.sig;
+  }
+  function onLayoutChange() {
+    showFitRows();
+    syncFit();   // the character set can change what the fit needs
+    const { map, errors } = currentMap();
+    const prepared = errors.length ? null : generate.prepare(readSettings(map));
+    if (prepared && prepared.ok) {
+      const report = window.Digiface.editor.impact(prepared.meta);
+      if (window.Digiface.editorModel.risky(report) && !window.confirm(window.Digiface.editor.describe(report))) {
+        writeLayout(layoutSnapshot);
+        applyLocks();
+        schedule();
+        return;
+      }
+    }
+    schedule();
+  }
+
   let beforeGb = null;
   function confirmGbSwitch(on) {
     let target;
@@ -213,7 +272,7 @@
     else if (beforeGb) target = { cell: { w: parseInt(beforeGb.cellW, 10) || 8, h: parseInt(beforeGb.cellH, 10) || 8 }, map: mapOf(beforeGb.charset).map };
     else return true;
     const report = window.Digiface.editor.impact(target);
-    if (!report.hasWork || (!report.lostGlyphs && !report.lossyColors && report.sameCell)) return true;
+    if (!window.Digiface.editorModel.risky(report)) return true;
     return window.confirm(window.Digiface.editor.describe(report));
   }
 
@@ -229,7 +288,9 @@
     if (editing && !confirmGbSwitch(on)) { $('gbstudio').checked = !on; return; }
     if (on) {
       beforeGb = { charset: charsetSelect.value, cellW: $('cellW').value, cellH: $('cellH').value, cols: $('cols').value,
-        checker: $('checker').checked, ticks: $('baselineTick').checked, font: fontSelect.value };
+        checker: $('checker').checked, ticks: $('baselineTick').checked, font: fontSelect.value,
+        fit: $('fitFont').checked, fitAll: $('fitAccents').checked };
+      $('fitFont').checked = false; $('fitAccents').checked = false; fitSig = null;
       charsetSelect.value = 'gbstudio';
       $('cellW').value = 8; $('cellH').value = 8; $('cols').value = 16;
       $('checker').checked = false;
@@ -240,6 +301,7 @@
       $('cellW').value = beforeGb.cellW; $('cellH').value = beforeGb.cellH; $('cols').value = beforeGb.cols;
       $('checker').checked = beforeGb.checker;
       $('baselineTick').checked = beforeGb.ticks;
+      $('fitFont').checked = beforeGb.fit; $('fitAccents').checked = beforeGb.fitAll; fitSig = null;
       if (beforeGb.font && beforeGb.font !== fontSelect.value) { fontSelect.value = beforeGb.font; onFontChoice(); }
       beforeGb = null;
     }
@@ -260,7 +322,7 @@
       guide: {
         checker: $('checker').checked,
         baseline: $('baselineTick').checked,
-        hint: $('hint').checked ? 'ghost' : 'none',
+        hint: 'ghost',
         prefill: $('prefill').checked,
         hintFont: currentFont().hintFont,
         padding: padding(),
@@ -280,16 +342,24 @@
     }
   }
 
+  // The Drawing button is for something drawn: it waits until there is ink.
+  function drawingButton() {
+    $('downloadDrawing').disabled = !last || !window.Digiface.editor.hasInk();
+  }
+  document.addEventListener('digiface-drawing-changed', drawingButton);
+
+  $('resetBtn').addEventListener('click', () => {
+    if (window.confirm('Start again? The settings and the drawing go back to the beginning.')) window.location.reload();
+  });
+
   async function refresh() {
     const run = ++sequence;
     const chosen = charsetSelect.selectedOptions[0];
     if (chosen) charsetSelect.title = chosen.text;  // the closed list may cut a long label
     const isVar = !$('forceMono').checked;
     $('var-options').hidden = !isVar;
-    $('hint-options').hidden = !$('hint').checked;
-    $('prefill').disabled = !$('hint').checked;
-    $('hintPadding').disabled = !$('hint').checked;  // these two place the ghost characters
-    $('hintLift').disabled = !$('hint').checked;
+    showFontPanel();
+    if (!editing) syncFit();   // while editing, a new cell size goes through onFitChange, which asks first
     showFontPanel();
     const custom = charsetSelect.value === CUSTOM_HEX || charsetSelect.value === CUSTOM_TEXT;
     $('custom-row').hidden = !custom;
@@ -320,7 +390,7 @@
       last = null;
       $('download').disabled = true;
       $('edit').disabled = !editing;
-      $('downloadDrawing').disabled = true;
+      drawingButton();
       $('size').textContent = '';
       $('meta').textContent = '';
       showMessages(messages);
@@ -331,11 +401,13 @@
     last = result;
     $('download').disabled = false;
     $('edit').disabled = false;
-    $('size').textContent = result.width + ' x ' + result.height + ' px, ' + (result.png.length / 1024).toFixed(1) + ' KB';
+    $('size').textContent = 'EXPORT: ' + result.width + ' x ' + result.height + ' px, ' + (result.png.length / 1024).toFixed(1) + ' KB';
     $('meta').textContent = JSON.stringify(result.meta, null, 2);
+    if (editing) layoutSnapshot = readLayout();
     if (hint) {  // the viewer shows the template, and the drawing when it has this layout
       const layers = generate.layers(readSettings(map), hint);
-      if (layers.ok) { window.Digiface.editor.update(layers); $('downloadDrawing').disabled = false; }
+      if (layers.ok) window.Digiface.editor.update(layers);
+      drawingButton();
     }
   }
 
@@ -452,6 +524,7 @@
     const result = generate.layers(readSettings(map), hintProvider());
     if (!result.ok || !window.Digiface.editor.start(result)) return;  // start() may ask, and the user may keep the drawing
     editing = true;
+    layoutSnapshot = readLayout();
     const cards = Array.from(document.querySelectorAll('details.card'));
     cardStates = cards.map(c => c.open);
     for (const c of cards) c.open = false;
@@ -459,6 +532,7 @@
     $('edit').classList.add('active');
     $('edit').setAttribute('aria-pressed', 'true');
     $('edit').title = 'Stop editing and show the settings (Esc)';
+    $('edit').textContent = 'Close editing';
     applyLocks();
   }
 
@@ -471,6 +545,7 @@
     $('edit').classList.remove('active');
     $('edit').setAttribute('aria-pressed', 'false');
     $('edit').title = 'Draw the glyphs in the page';
+    $('edit').textContent = 'Edit pixel font';
     applyLocks();
     refresh();
   }
@@ -482,30 +557,53 @@
     const p = charsets.presets.find(x => x.id === charsetSelect.value);
     if (p) $('cols').value = p.cols;
     if (charsetSelect.value === 'gbstudio') useGbFont();   // the GB Studio layout is drawn with the font of GB Studio
-    refresh();
+    if (editing) onLayoutChange(); else refresh();
   });
+
+  // Pre-fill the magenta, while editing: the widths of the guide font replace the ones of the drawing (or the full width, when it is
+  // off), after a question; one gesture for undo. A refusal puts the box back.
+  function onPrefillChange() {
+    const { map, errors } = currentMap();
+    const prepared = errors.length ? null : generate.layers(readSettings(map), hintProvider());
+    const editor = window.Digiface.editor;
+    const changes = prepared && prepared.ok ? editor.widthChanges(prepared.advances) : [];
+    if (changes.length) {
+      const what = $('prefill').checked ? "the widths of the guide font" : 'the full width';
+      if (!window.confirm(changes.length + ' character' + (changes.length > 1 ? 's' : '') + ' will get ' + what + ' instead of the width you set. Undo brings them back.\nContinue?')) {
+        $('prefill').checked = !$('prefill').checked;
+        return;
+      }
+      editor.applyWidths(changes);
+    }
+    schedule();
+  }
 
   let timer = null;
   const schedule = () => { clearTimeout(timer); timer = setTimeout(refresh, 120); };
   for (const el of document.querySelectorAll('#settings input, #settings select, #settings textarea, #checker, #baselineTick')) {
-    el.addEventListener('input', schedule);
-    el.addEventListener('change', schedule);
+    const layout = LAYOUT_IDS.includes(el.id);
+    el.addEventListener('input', () => { if (!(editing && layout)) schedule(); });   // while editing a layout change waits for the end of the typing
+    el.addEventListener('change', () => {
+      if (el.id === 'prefill' && editing) onPrefillChange();
+      else if (!(editing && layout)) schedule();
+      else if (el !== charsetSelect) onLayoutChange();                              // the character set has its own handler
+    });
   }
   $('settings').addEventListener('submit', e => e.preventDefault());
   // opened, the metadata sit beside the image (two thirds / one third); folded, the image has the whole width
   $('metaBox').addEventListener('toggle', () => { document.querySelector('.split').classList.toggle('meta-open', $('metaBox').open); });
   $('fontFile').addEventListener('change', () => { if ($('fontFile').files[0]) loadFontFile($('fontFile').files[0]); });
   fontSelect.addEventListener('change', onFontChoice);
-  function applyFit(which) {
-    const f = currentLoaded();
-    if (!f || !f.pixelFont) return;
-    const c = fitFor(f)[which];
-    $('cellW').value = c.width;
-    $('cellH').value = c.height;
-    $('baseline').value = c.baseline;
-    $('hintLift').value = c.lift;
-    $('hintPadding').value = 0;
-    refresh();
+  // A change of the fit while editing: the new cell size asks before it cuts something, and a refusal puts the old one back.
+  function onFitChange() {
+    showFitRows();
+    syncFit();
+    onLayoutChange();
+  }
+  function onFitToggle() {
+    if (!$('fitFont').checked) fitSig = null;
+    if (editing) { showFitRows(); syncFit(); onLayoutChange(); applyLocks(); }   // a refusal puts the whole snapshot back
+    else refresh();
   }
   $('gbstudio').addEventListener('change', () => setGbStudio($('gbstudio').checked));
   $('fontInfoBtn').addEventListener('click', () => { if (!$('fontInfoBtn').hidden) $('fontDialog').showModal(); });
@@ -520,10 +618,20 @@
       }
     });
   }
+  for (const b of document.querySelectorAll('#helpDialog .scenario')) {
+    b.addEventListener('click', () => {
+      for (const o of document.querySelectorAll('#helpDialog .scenario')) {
+        const on = o === b;
+        o.classList.toggle('active', on);
+        o.setAttribute('aria-selected', on ? 'true' : 'false');
+        $(o.getAttribute('aria-controls')).hidden = !on;
+      }
+    });
+  }
   $('helpDialog').addEventListener('click', e => { if (e.target === $('helpDialog')) $('helpDialog').close(); });
   $('fontDialog').addEventListener('click', e => { if (e.target === $('fontDialog')) $('fontDialog').close(); });  // a click outside closes it
-  $('applyFont').addEventListener('click', () => applyFit('letters'));
-  $('applyFontAll').addEventListener('click', () => applyFit('all'));
+  $('fitFont').addEventListener('change', onFitToggle);
+  $('fitAccents').addEventListener('change', () => { if (editing) { onFitChange(); applyLocks(); } else refresh(); });
 
   window.Digiface.app = { refresh, state: () => last, stopEditing, isEditing: () => editing };
   refresh();

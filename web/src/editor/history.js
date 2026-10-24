@@ -1,5 +1,5 @@
 // Undo and redo of the editor. An entry is the list of what a gesture changed: pixels, [{cp, i, before, after}], and widths,
-// [{kind: 'width', cp, before, after}].
+// [{kind: 'width', cp, before, after}], the list of drop shadows, [{kind: 'shadows', before, after}], and the background color, [{kind: 'background', before, after}].
 // Pure, no DOM. docs/EDITOR.md section 5.
 (function (root, factory) {
   const api = factory();
@@ -16,7 +16,7 @@
     function apply(model, changes, key, reverse) {
       const updated = [];
       const list = reverse ? changes.slice().reverse() : changes;
-      for (const c of list) updated.push(c.kind === 'width' ? model.setWidth(c.cp, c[key]) : model.setPixel(c.cp, c.i, c[key]));
+      for (const c of list) updated.push(c.kind === 'width' ? model.setWidth(c.cp, c[key]) : c.kind === 'shadows' ? model.setShadows(c[key]) : c.kind === 'background' ? model.setBackground(c[key]) : model.setPixel(c.cp, c.i, c[key]));
       return updated;
     }
 

@@ -32,7 +32,8 @@ a { color: var(--cyan); }
 
 header.top, main { max-width: 1500px; margin: 0 auto; }
 header.top { padding: 10px 0 8px; margin-bottom: 12px; border-bottom: 1px solid #006600; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-h1 { margin: 0 0 2px; font-size: 16px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; text-shadow: 0 0 10px var(--green); }
+h1 { display: flex; align-items: center; gap: 10px; margin: 0 0 2px; font-size: 16px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; text-shadow: 0 0 10px var(--green); }
+h1 .logo { flex: none; width: 32px; height: 32px; image-rendering: pixelated; }
 header.top p { margin: 0; color: var(--green-dim); font-size: 12px; }
 
 /* One line above the image: the preview options on the left, the name, size and download on the right */
@@ -45,7 +46,10 @@ header.top p { margin: 0; color: var(--green-dim); font-size: 12px; }
 .toolbar .zoom { display: flex; }
 
 /* The settings sit side by side, as many per row as fit */
-.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; align-items: start; margin-bottom: 16px; }
+.cards { margin-bottom: 16px; }
+.columns { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; align-items: start; padding-bottom: 12px; }
+.col h3 { margin: 0 0 8px; padding-bottom: 6px; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--green-dim); border-bottom: 1px solid var(--green-dark); }
+.col > .body { padding-bottom: 0; }
 details.card { background: var(--bg-panel); border: 1px solid var(--green); border-radius: var(--radius); box-shadow: var(--glow-green-sm); padding: 0 12px; }
 details.card > summary { padding: 9px 0; font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; text-shadow: 0 0 8px var(--green); cursor: pointer; }
 details.card[open] > summary { border-bottom: 1px solid var(--green-dark); margin-bottom: 10px; }
@@ -82,6 +86,9 @@ button.download { padding: 0 16px; background: var(--blue); box-shadow: var(--gl
 button.download:hover { background: var(--blue-hover); box-shadow: 0 0 15px rgba(0,204,255,.8); }
 button.download:disabled { background: #333; box-shadow: none; }
 /* Round help button of the header */
+button.secondary.danger { color: var(--red); border-color: var(--red); }
+button.secondary.danger:hover { color: #000; background: var(--red); box-shadow: var(--glow-red); }
+.top-actions { display: flex; align-items: center; gap: 10px; }
 button.help { width: 36px; height: 36px; padding: 0; font-size: 16px; color: var(--green); background: var(--bg-green); border: 2px solid var(--green); border-radius: 50%; box-shadow: var(--glow-green); }
 button.help:hover { color: #000; background: var(--green); transform: scale(1.1); box-shadow: 0 0 15px rgba(0,255,0,.8); }
 
@@ -112,7 +119,7 @@ dialog { width: min(560px, calc(100vw - 32px)); max-height: 85vh; overflow: auto
 dialog::backdrop { background: rgba(0, 0, 0, .8); }
 dialog h2 { margin: 0 0 10px; padding: 6px 0; text-align: center; font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; border-bottom: 1px solid var(--green-dark); }
 dialog p { margin: 0 12px 10px; font-size: 11px; line-height: 1.5; color: #99ff99; }
-dialog p.note { color: var(--green-dim); }
+dialog p.note { margin: 0 12px 10px; color: var(--green-dim); }
 dialog ol { margin: 0 12px 10px; padding: 0; list-style-position: inside; display: grid; gap: 6px; }
 dialog li { padding: 8px 12px; font-size: 11px; line-height: 1.5; color: #99ff99; background: var(--bg-green); border: 1px solid var(--green); }
 dialog b { color: var(--green); }
@@ -123,7 +130,8 @@ dialog a { color: var(--cyan); }
 
 /* The editor: in the page, where the preview is, and full screen on request */
 /* The viewer, and the editor when it is on: the preview of the page is always this component, with its header and its zoom */
-#edit.active { color: #000; background: var(--green); box-shadow: var(--glow-green); }
+#edit.active { color: #000; background: var(--red); border-color: var(--red); box-shadow: var(--glow-red); }   /* "Close editing": the exit color */
+#edit.active:hover { background: var(--red-hover); }
 .editor { position: relative; min-width: 0; height: clamp(300px, 52vh, 620px); display: grid; grid-template-columns: 0 1fr; grid-template-rows: 44px 1fr 28px;
   grid-template-areas: "top top" "tools stage" "status status"; background: var(--bg); border: 1px solid var(--green); border-radius: var(--radius); box-shadow: var(--glow-green-lg); outline: none; overflow: hidden; }
 .editor.editing { height: max(520px, calc(100vh - 190px)); grid-template-columns: 132px 1fr; }
@@ -164,6 +172,21 @@ dialog a { color: var(--cyan); }
 .ed-sizes .size.active { border-color: var(--green); box-shadow: var(--glow-green); }
 
 
+.switch-row { display: grid; gap: 6px; margin: 0 12px 10px; }
+dialog .ed-colors .swatch.active { border-color: var(--cyan); }
+.shadow-fields { margin: 0 12px 10px; }
+.ed-tools .action-btn { height: 36px; padding: 0; width: 100%; font-size: 10px; color: var(--green); background: var(--bg); border: 1px solid var(--green); box-shadow: none; }
+.ed-tools .action-btn:hover { color: #000; background: var(--green); box-shadow: var(--glow-green); }
+.ed-shadows { display: grid; gap: 4px; margin-top: 4px; }
+.ed-shadows[hidden] { display: none; }
+.shadow-tile { display: grid; grid-template-columns: 1fr 22px; border: 1px solid var(--green-dark); border-radius: var(--radius); background: var(--bg); }
+.shadow-tile:hover { border-color: var(--green); }
+.shadow-tile .open { display: grid; gap: 2px; justify-items: start; height: auto; padding: 4px 6px; font-size: 8px; line-height: 1.2; color: var(--green-dim); background: none; border: 0; box-shadow: none; text-align: left; }
+.shadow-tile .chips { display: flex; align-items: center; gap: 3px; }
+.shadow-tile .chip { display: inline-block; width: 10px; height: 10px; border: 1px solid var(--green-dark); }
+.shadow-tile .trash { height: auto; padding: 0; width: 22px; color: var(--red); background: none; border: 0; border-left: 1px solid var(--green-dark); box-shadow: none; }
+.shadow-tile .trash:hover { color: #000; background: var(--red); }
+.shadow-tile .trash svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 1.5; }
 .ed-options.width-mode .ed-sizes, .ed-options.width-mode .ed-colors { opacity: .35; }
 
 .ed-tools .tool[data-tool=width].active { background: #ff00ff; border-color: #ff00ff; box-shadow: 0 0 10px rgba(255,0,255,.6); }
@@ -183,8 +206,15 @@ dialog a { color: var(--cyan); }
 .tabs { display: flex; gap: 4px; margin: 0 12px 10px; border-bottom: 1px solid var(--green-dark); }
 .tabs .tab { height: 28px; padding: 0 14px; font-size: 10px; color: var(--green); background: var(--bg); border: 1px solid var(--green-dark); border-bottom: 0; border-radius: var(--radius) var(--radius) 0 0; box-shadow: none; }
 .tabs .tab.active { color: #000; background: var(--green); border-color: var(--green); }
+.scenarios { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 12px 10px; }
+.scenarios .scenario { height: 28px; padding: 0 12px; font-size: 10px; color: var(--green); background: var(--bg); border: 1px solid var(--green-dark); box-shadow: none; }
+.scenarios .scenario.active { color: #000; background: var(--green); border-color: var(--green); }
 table.keys { width: calc(100% - 24px); margin: 0 12px 10px; border-collapse: collapse; font-size: 11px; }
 table.keys th { padding: 8px 0 4px; text-align: left; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--green-dim); }
 table.keys td { padding: 3px 0; vertical-align: top; color: #99ff99; }
 table.keys td:first-child { width: 42%; padding-right: 10px; white-space: nowrap; }
 kbd { display: inline-block; min-width: 20px; padding: 1px 5px; text-align: center; font: 600 10px var(--font); color: var(--green); background: var(--bg-green); border: 1px solid var(--green); border-radius: var(--radius); }
+
+.ed-selection { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-top: 2px; }
+.ed-selection button { height: 26px; min-height: 0; padding: 0; font-size: 10px; }
+.ed-selection button:disabled { opacity: .3; }

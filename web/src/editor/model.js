@@ -31,7 +31,7 @@
     const indexOf = new Map();
     cells.forEach((cp, i) => {
       if (cp === null) return;
-      glyphs.set(cp, { pixels: new Uint8Array(w * h), width: variable && advances ? advances[i] : w });
+      glyphs.set(cp, { pixels: new Uint8Array(w * h), width: variable && advances ? advances[i] : w, kept: null });
       indexOf.set(cp, i);
     });
 
@@ -39,6 +39,8 @@
       meta, cellW: w, cellH: h, cols, rows, cells, variable, gb, glyphs,
       width: cols * w, height: rows * h,
       palette: gb ? GB_SHADES : PLAIN,
+      background: gb ? 4 : 0,   // the color of the background (GB Studio: the palest by default; Switch can change it)
+      shadows: [],   // drop shadows (GB Studio): {id, source, color, thickness, dx, dy}, see shadowOf
 
       // The cell under a point of the image (whole pixels), or null outside of it.
       cellAt(x, y) {
@@ -85,6 +87,37 @@
         return list.sort((a, b) => a.index - b.index);
       },
 
+      // Sets the color of the background (GB Studio). Returns {kind: 'background'}.
+      setBackground(value) {
+        model.background = value;
+        return { kind: 'background' };
+      },
+
+      // Replaces the list of drop shadows. Returns {kind: 'shadows'}, the change of the shadow layer.
+      setShadows(list) {
+        model.shadows = list.map(s => Object.assign({}, s));
+        return { kind: 'shadows' };
+      },
+
+      // The shadow layer as an RGBA image of the whole sheet, under the writing (the writing is drawn over it).
+      renderShadow() {
+        const rgba = new Uint8Array(model.width * model.height * 4);
+        if (!model.shadows.length) return rgba;
+        for (const [cp, glyph] of glyphs) {
+          const values = shadowOf(glyph.pixels, w, h, model.shadows);
+          const i = indexOf.get(cp);
+          const x0 = (i % cols) * w, y0 = Math.floor(i / cols) * h;
+          for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+            const k = values[y * w + x];
+            if (!k) continue;
+            const c = model.palette[k - 1];
+            const o = ((y0 + y) * model.width + x0 + x) * 4;
+            rgba[o] = c[0]; rgba[o + 1] = c[1]; rgba[o + 2] = c[2]; rgba[o + 3] = 255;
+          }
+        }
+        return rgba;
+      },
+
       // The RGBA of a pixel value: transparent for 0.
       rgbaOf(value) {
         if (!value) return [0, 0, 0, 0];
@@ -128,24 +161,65 @@
     return model;
   }
 
+  // The drop shadows of a glyph: a copy of the pixels of the source color, moved by (dx, dy) and made thicker by thickness - 1
+  // pixels all around (1 is the plain copy), in the color of the shadow, and cut at the edges of the cell. Several shadows: the
+  // oldest is on top of the newer ones. Returns an array of palette values, 0 where there is no shadow. The writing hides it.
+  function shadowOf(pixels, w, h, shadows) {
+    const out = new Uint8Array(w * h);
+    for (const s of shadows) {
+      const r = Math.max(1, s.thickness | 0) - 1;
+      for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+        if (pixels[y * w + x] !== s.source) continue;
+        for (let j = -r; j <= r; j++) for (let i = -r; i <= r; i++) {
+          const tx = x + s.dx + i, ty = y + s.dy + j;
+          if (tx < 0 || ty < 0 || tx >= w || ty >= h) continue;
+          if (!out[ty * w + tx]) out[ty * w + tx] = s.color;
+        }
+      }
+    }
+    return out;
+  }
+
+  // Where the pixels of a glyph go when the cell changes size: the left edge and the bottom edge stay, so that the baseline keeps
+  // its distance from the bottom. A wider cell adds room on the right, a taller one adds room above, a narrower one cuts the right
+  // columns and a shorter one cuts the top rows. Returns {pixels, cut}: the new pixels and how many drawn ones fall outside.
+  function resizePixels(pixels, oldW, oldH, newW, newH) {
+    const out = new Uint8Array(newW * newH);
+    const shift = newH - oldH;
+    let cut = 0;
+    for (let y = 0; y < oldH; y++) for (let x = 0; x < oldW; x++) {
+      const v = pixels[y * oldW + x];
+      if (!v) continue;
+      const ny = y + shift;
+      if (x >= newW || ny < 0 || ny >= newH) cut++; else out[ny * newW + x] = v;
+    }
+    return { pixels: out, cut };
+  }
+
   // What a change of the layout (the cell size, the grid, the characters, the mode, GB Studio) does to a drawing, before it is made.
-  // old: a model. meta: the new metadata. Returns {hasWork, sameCell, lostGlyphs, lossyColors}: whether anything is drawn, whether
-  // the drawings can follow (they can only when the cell has the same size), how many drawn glyphs would be lost (their
-  // character is not in the new layout, or the cell size changed), and whether going from GB Studio's shades to black loses some
-  // (see convertValue).
+  // old: a model. meta: the new metadata. Returns {hasWork, lostGlyphs, croppedPixels, croppedGlyphs, lossyColors}: whether
+  // anything is drawn, how many drawn glyphs would be lost (their character is not in the new layout), how many drawn pixels
+  // (and in how many glyphs) fall outside a smaller cell (see resizePixels), and whether going from GB Studio's shades to black
+  // loses some (see convertValue).
   function impact(old, meta) {
-    const sameCell = old.cellW === meta.cell.w && old.cellH === meta.cell.h;
     const kept = new Set(charmap.expandMap(meta.map).cells.filter(cp => cp !== null));
     const toGb = meta.target === 'gbstudio';
-    let hasWork = false, lostGlyphs = 0, lossyColors = false;
+    const newW = meta.cell.w, newH = meta.cell.h;
+    let hasWork = false, lostGlyphs = 0, croppedPixels = 0, croppedGlyphs = 0, lossyColors = false;
+    const lostShadows = old.gb && !toGb ? old.shadows.length : 0;   // the drop shadows are for GB Studio
     for (const [cp, glyph] of old.glyphs) {
       if (!glyph.pixels.some(Boolean)) continue;
       hasWork = true;
-      if (!sameCell || !kept.has(cp)) lostGlyphs++;
-      else if (old.gb && !toGb && glyph.pixels.some(p => p > 1)) lossyColors = true;
+      if (!kept.has(cp)) { lostGlyphs++; continue; }
+      const cut = (newW === old.cellW && newH === old.cellH) ? 0 : resizePixels(glyph.pixels, old.cellW, old.cellH, newW, newH).cut;
+      if (cut) { croppedPixels += cut; croppedGlyphs++; }
+      if (old.gb && !toGb && glyph.pixels.some(p => p > 1)) lossyColors = true;
     }
-    return { hasWork, sameCell, lostGlyphs, lossyColors };
+    return { hasWork: hasWork || lostShadows > 0, lostGlyphs, croppedPixels, croppedGlyphs, lossyColors, lostShadows };
   }
+
+  // Whether a change deserves a question: something drawn would be lost.
+  const risky = report => !!(report.lostGlyphs || report.croppedPixels || report.lossyColors || report.lostShadows);
 
   // A pixel value when the palette changes. From black to GB Studio's shades the number stays (1 is the darkest). From the
   // shades to black, what the exporter reads as ink stays ink (the darkest and the dark shade become black) and the light and
@@ -155,21 +229,28 @@
     return value <= 2 ? 1 : 0;
   }
 
-  // The drawing of an old model in a new layout: the glyphs follow their character (when the cell has the same size), with
-  // their widths in variable mode, and the colors are converted. Returns {model, kept, lost} (counts of drawn glyphs).
+  // The drawing of an old model in a new layout: the glyphs follow their character, moved in a cell of another size by
+  // resizePixels, with their widths (kept while the font is monospace, and given back when it is variable again) and the colors
+  // converted. Returns {model, kept, lost, cut}: counts of drawn glyphs kept and lost, and of drawn pixels cut.
   function relayout(old, meta, advances) {
     const next = create(meta, advances);
-    const sameCell = old.cellW === next.cellW && old.cellH === next.cellH;
-    let kept = 0, lost = 0;
+    if (old.gb && next.gb) { next.setShadows(old.shadows); next.setBackground(old.background); }
+    let kept = 0, lost = 0, cut = 0;
     for (const [cp, glyph] of old.glyphs) {
       const drawn = glyph.pixels.some(Boolean);
-      const target = sameCell ? next.glyphs.get(cp) : null;
+      const target = next.glyphs.get(cp);
+      const stored = old.variable ? glyph.width : glyph.kept;   // the width that was chosen, if any
       if (!target) { if (drawn) lost++; continue; }
-      for (let i = 0; i < glyph.pixels.length; i++) target.pixels[i] = convertValue(glyph.pixels[i], old.gb, next.gb);
-      if (next.variable && old.variable) target.width = glyph.width;
+      const moved = resizePixels(glyph.pixels, old.cellW, old.cellH, next.cellW, next.cellH);
+      cut += moved.cut;
+      for (let i = 0; i < moved.pixels.length; i++) target.pixels[i] = convertValue(moved.pixels[i], old.gb, next.gb);
+      if (stored !== null && stored !== undefined) {
+        if (next.variable) target.width = Math.min(stored, next.cellW);
+        target.kept = stored;
+      }
       if (drawn) kept++;
     }
-    return { model: next, kept, lost };
+    return { model: next, kept, lost, cut };
   }
 
   // The part of the metadata that decides the layout and the mode: when it is the same, the drawing needs no change.
@@ -198,5 +279,5 @@
   // Names of the colors of the palette, for the tool tips.
   const COLOR_NAMES = { plain: ['Black'], gbstudio: ['Darkest', 'Dark', 'Light', 'Palest'] };
 
-  return { PLAIN, GB_SHADES, MARKER, COLOR_NAMES, create, describe, label, describeWarning, impact, relayout, convertValue, layoutKey };
+  return { PLAIN, GB_SHADES, MARKER, COLOR_NAMES, create, shadowOf, describe, label, describeWarning, impact, risky, resizePixels, relayout, convertValue, layoutKey };
 });
