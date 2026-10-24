@@ -11,7 +11,7 @@
 <header class="top">
   <div>
     <h1><img class="logo" src="logo.svg" width="32" height="32" alt=""> Digiface Matrix</h1>
-    <p>Make a PNG grid template for a bitmap font. Open it in Aseprite and draw each glyph on a layer above it.</p>
+    <p>All a pixel font designer needs: draw your glyphs here, then download a TrueType font, a GB Studio font, or a template to draw on in Aseprite.</p>
   </div>
   <div class="top-actions">
     <button id="resetBtn" type="button" class="secondary danger" title="Start again: the settings and the drawing go back to the beginning">Reset</button>
@@ -27,7 +27,7 @@
       <section class="col">
         <h3>Guide</h3>
         <div class="body">
-        <label class="check" title="For a font for GB Studio: fixes the layout, the 8 x 8 cells and the 16 columns, and uses the colors of GB Studio's palette. The template and the drawing downloaded after it are made for GB Studio."><input id="gbstudio" type="checkbox"> GB Studio</label>
+        <label class="check" title="For a font for GB Studio: fixes the layout, the 8 x 8 cells and the 16 columns, and uses the colors of GB Studio's palette. The template and the drawing downloaded after it are made for GB Studio."><input id="gbstudio" type="checkbox"> <span id="gbLabel">GB Studio</span></label>
         <label>Character set <select id="charset"></select></label>
         <label id="custom-row" hidden><span id="custom-label"></span>
           <textarea id="custom" rows="3" spellcheck="false"></textarea>
@@ -89,6 +89,7 @@
         <span id="size" class="note"></span>
         <button id="download" type="button" class="secondary" title="The template: the grid to draw on in Aseprite, with the guide characters and the settings">Template</button>
         <button id="downloadDrawing" type="button" class="download" disabled title="What is drawn in the editor, as a PNG, without any guide">Drawing</button>
+        <button id="downloadFont" type="button" class="download" disabled title="The font itself, as a TrueType file (.ttf) made from what is drawn">Font (TTF)</button>
       </div>
     </div>
     <p id="gbNote" class="note" hidden>GB Studio mode: the GB Studio layout, the 8 x 8 cells and the 16 columns are fixed, and the template uses the colors GB Studio reads as background. Uncheck GB Studio to change them.</p>
@@ -97,22 +98,22 @@
       <div id="editor" class="editor" hidden tabindex="-1" role="region" aria-label="Viewer and editor">
         <header class="ed-top">
           <span class="ed-brand"><strong class="ed-title">Digiface Matrix</strong> <span class="ed-mode">Editor</span></span>
-          <button id="edit" type="button" class="secondary" disabled aria-pressed="false" title="Draw the glyphs in the page. Press it again, or Esc, to stop editing and show the settings">Edit pixel font</button>
+          <button id="edit" type="button" class="secondary" disabled aria-pressed="false" title="Draw the glyphs in the page. Press it again, or Esc, to quit editing and show the settings">Edit pixel font</button>
           <span class="ed-zoom">
             <button id="edZoomOut" type="button" class="square secondary" aria-label="Zoom out" title="Zoom out (-)">&minus;</button>
             <span id="edZoomLabel" class="ed-zoom-label">100%</span>
             <button id="edZoomIn" type="button" class="square secondary" aria-label="Zoom in" title="Zoom in (+)">+</button>
           </span>
           <button id="edFit" type="button" class="secondary" title="Enlarge the image to fill the window and center it (0)">Fit</button>
-          <label class="check ed-guides" title="The guide characters, the checkerboard, the baseline ticks and the limits of the cells"><input id="edGuides" type="checkbox" checked> Visual guides</label>
           <span class="ed-history ed-editing-only">
-            <button id="edUndo" type="button" class="secondary" disabled title="Undo (Cmd or Ctrl+Z)">Undo</button>
-            <button id="edRedo" type="button" class="secondary" disabled title="Redo (Cmd or Ctrl+Shift+Z)">Redo</button>
-            <button id="edDeleteImage" type="button" class="secondary danger" title="Clear everything that is drawn (it can be undone)">Delete image</button>
+            <button id="edUndo" type="button" class="secondary blue" disabled title="Undo (Cmd or Ctrl+Z)">Undo</button>
+            <button id="edRedo" type="button" class="secondary blue" disabled title="Redo (Cmd or Ctrl+Shift+Z)">Redo</button>
           </span>
+          <label class="check ed-guides" title="The guide characters, the checkerboard, the baseline ticks and the limits of the cells"><input id="edGuides" type="checkbox" checked> Visual guides</label>
           <label class="check ed-editing-only" title="A stroke stays in the cell where it started"><input id="edClip" type="checkbox" checked> Stay in cell</label>
           <label class="check ed-editing-only" title="A click in a cell first zooms on that cell; the next clicks in it draw"><input id="edZoomCell" type="checkbox"> Zoom on cell</label>
           <span class="ed-spacer"></span>
+          <button id="edDeleteImage" type="button" class="secondary danger ed-editing-only" title="Clear everything that is drawn (it can be undone)">Delete image</button>
           <button id="edFullscreen" type="button" class="secondary" title="Use the whole screen">Full screen</button>
         </header>
         <nav class="ed-tools ed-editing-only" aria-label="Tools">
@@ -222,12 +223,12 @@
       </ol>
     </div>
     <div id="caseTtf" class="case" role="tabpanel" hidden>
-      <p>Draw a pixel font in the page with Digiface Matrix, and export it as a TTF.</p>
+      <p>Draw a pixel font in the page with Digiface Matrix, and download it as a TTF. Aseprite is not needed.</p>
       <ol>
         <li>Choose the character set and the spacing. Optionally pick a pixel font as the guide, and tick <b>Use the guide font's cell size</b> at the top of the <b>Cells</b> card to take the cell size it needs.</li>
         <li>Press <b>Edit pixel font</b>. Draw with the brush and the eraser; with a variable-width font, set the width of each character with the Width tool. The settings stay editable while you draw, and the drawing follows its characters.</li>
-        <li>Download the <b>Drawing</b>: a PNG with what you drew, without any guide.</li>
-        <li>Open it in Aseprite and run <b>File &#9656; Scripts &#9656; Digiface &#9656; Export as TTF&hellip;</b> with the <a href="https://github.com/pixelpep/digiface/releases" target="_blank" rel="noopener">Digiface extension</a>. Install the <code>.ttf</code> like any other font: it stays sharp at sizes that are multiples of the cell height.</li>
+        <li>Press <b>Font (TTF)</b> and give the font a name: the window tells you which characters have no drawing and are left out. Install the <code>.ttf</code> like any other font: it stays sharp at sizes that are multiples of the cell height.</li>
+        <li>To refine the drawing in Aseprite, download the <b>Drawing</b> (a PNG without any guide) instead, and export it there with the <a href="https://github.com/pixelpep/digiface/releases" target="_blank" rel="noopener">Digiface extension</a>: <b>File &#9656; Scripts &#9656; Digiface &#9656; Export as TTF&hellip;</b></li>
       </ol>
     </div>
   </div>
@@ -285,6 +286,7 @@
 <script src="src/editor/selection.js"></script>
 <script src="src/editor/export.js"></script>
 <script src="src/editor/ui.js"></script>
+<script src="src/ttf.js"></script>
 <script src="src/app.js"></script>
 </body>
 </html>

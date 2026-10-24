@@ -184,6 +184,7 @@
   let editing = false;
   function applyLocks() {
     const gb = $('gbstudio').checked;
+    $('gbLabel').textContent = gb ? 'GB Studio Font' : 'GB Studio';
     const locked = new Set();
     if (gb) for (const id of GB_LOCKED) locked.add(id);
     if (editing) for (const id of EDIT_LOCKED) locked.add(id);
@@ -345,6 +346,7 @@
   // The Drawing button is for something drawn: it waits until there is ink.
   function drawingButton() {
     $('downloadDrawing').disabled = !last || !window.Digiface.editor.hasInk();
+    $('downloadFont').disabled = $('downloadDrawing').disabled;
   }
   document.addEventListener('digiface-drawing-changed', drawingButton);
 
@@ -423,15 +425,20 @@
         + '<p>Open it in Aseprite, draw each glyph on a layer above it, hide the template layer, then use the Digiface extension: File &#9656; Scripts &#9656; Digiface &#9656; Export as TTF&hellip;</p>'
         + (gb ? '<p>For GB Studio it is an indexed PNG in the colors of GB Studio: the palest is the background, the darkest the characters, magenta the widths.</p>' : '');
     }
+    if (kind === 'font') {
+      return '<p>The <b>font</b> is a TrueType file (<code>.ttf</code>) made from what you drew: each pixel is a clean square, so it stays sharp at sizes that are multiples of the cell height, and it installs like any other font.</p>'
+        + '<p>Characters with nothing drawn are left out of the font. The typographic quotes, dashes and the no-break space use your plain ones when you did not draw them.</p>'
+        + (gb ? '<p>In GB Studio mode the darkest two shades are the letters and the two light ones are background. GB Studio itself reads the <b>drawing</b> (the PNG), not this file.</p>' : '');
+    }
     return '<p>The <b>drawing</b> is what you drew here, without any guide: ' + (gb ? 'the characters in the shades of GB Studio on its palest color' : 'black on white')
       + ', magenta where a width marker is, and the settings of the font stored in the PNG.</p>'
       + (gb
         ? '<p>It is the <b>font image GB Studio reads</b>: put it in the <code>assets/fonts</code> folder of your project.</p>'
           + '<p>The <b>.json</b> next to it tells GB Studio where the characters beyond the plain Latin-1 letters are (&euro; &lsquo; &rsquo; &ldquo; &rdquo; &hellip; &oelig; &OElig;...): without it, typing them shows another glyph. If your texts only use letters, digits and the accented letters of Latin-1, you can leave it out. It must have the same name as the image.</p>'
-        : '<p>Open it in Aseprite to refine it, and export a font with the Digiface extension (File &#9656; Scripts &#9656; Digiface &#9656; Export as TTF&hellip;).</p>');
+        : '<p>Open it in Aseprite to refine it, and export a font with the Digiface extension (File &#9656; Scripts &#9656; Digiface &#9656; Export as TTF&hellip;). To get the font straight from the page, use the <b>Font (TTF)</b> button.</p>');
   }
 
-  // Asks for the name of the font in a window before a download, with what the download is. kind: 'template' or 'drawing'.
+  // Asks for the name of the font in a window before a download, with what the download is. kind: 'template', 'drawing' or 'font'.
   // Returns {name, json} (json: the .json of GB Studio is wanted too), or null when the user cancels. The name stays as it was
   // typed except for control characters, at most 64 characters.
   function askFontName(kind) {
@@ -440,19 +447,28 @@
       const form = dialog.querySelector('form');
       const gb = $('gbstudio').checked;
       const withJson = kind === 'drawing' && gb;
-      $('nameTitle').textContent = kind === 'template' ? 'Download the template' : 'Download the drawing';
+      $('nameTitle').textContent = kind === 'template' ? 'Download the template' : kind === 'font' ? 'Download the font' : 'Download the drawing';
       $('nameInfo').innerHTML = describeDownload(kind, gb);
       $('nameInput').value = fontName;
       $('nameOk').textContent = 'Download';
       $('nameJsonRow').hidden = !withJson;
       $('nameJson').checked = true;
       const warn = $('nameWarn');
-      const hidden = kind === 'drawing' ? window.Digiface.editor.warnings() : [];
+      const hidden = kind !== 'template' ? window.Digiface.editor.warnings() : [];
       warn.hidden = !hidden.length;
       if (hidden.length) {
         const label = window.Digiface.editorModel.label;
         warn.textContent = hidden.length + (hidden.length === 1 ? ' character has' : ' characters have') + ' drawing under the width marker, which hides it: '
           + hidden.slice(0, 5).map(w => label(w.cp)).join(', ') + (hidden.length > 5 ? ' and ' + (hidden.length - 5) + ' more' : '') + '. The hidden pixels are lost in the download.';
+      }
+      if (kind === 'font') {
+        const w = window.Digiface.ttf.fromModel(window.Digiface.editor.model()).warnings;
+        if (w.empty.length) {
+          const label = window.Digiface.editorModel.label;
+          warn.hidden = false;
+          warn.textContent = (warn.textContent ? warn.textContent + ' ' : '') + w.empty.length + (w.empty.length === 1 ? ' character has' : ' characters have') + ' no drawing and will not be in the font: '
+            + w.empty.slice(0, 5).map(cp => label(cp)).join(', ') + (w.empty.length > 5 ? ' and ' + (w.empty.length - 5) + ' more' : '') + '.';
+        }
       }
       let settled = false;
       const finish = result => {
@@ -515,6 +531,23 @@
     }
   });
 
+  // The font itself, as a TrueType file, from the drawing (web/src/ttf.js, the same writer as the Aseprite extension).
+  $('downloadFont').addEventListener('click', async () => {
+    const m = window.Digiface.editor.model();
+    if (!m) return;
+    const answer = await askFontName('font');
+    if (!answer) return;
+    const name = fontName = answer.name || 'My Pixel Font';
+    const read = window.Digiface.ttf.fromModel(m);
+    read.settings.name = name;
+    try {
+      const built = window.Digiface.ttf.build(read.analysis, read.settings, { family: name });
+      save(built.font, 'font/ttf', generate.fontFileName(name));
+    } catch (e) {
+      window.alert('The font could not be made: ' + (e && e.message === 'no glyph to export' ? 'nothing is drawn.' : (e && e.message) || 'unknown error.'));
+    }
+  });
+
   // The Edit button: the settings fold away and the editor takes the place of the preview. Stopping brings them back.
   let cardStates = [];
   function startEditing() {
@@ -531,8 +564,8 @@
     document.body.classList.add('editing');
     $('edit').classList.add('active');
     $('edit').setAttribute('aria-pressed', 'true');
-    $('edit').title = 'Stop editing and show the settings (Esc)';
-    $('edit').textContent = 'Close editing';
+    $('edit').title = 'Quit editing and show the settings (Esc)';
+    $('edit').textContent = 'Quit editing';
     applyLocks();
   }
 

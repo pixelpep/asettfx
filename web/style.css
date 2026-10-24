@@ -24,6 +24,7 @@
 [hidden] { display: none !important; }
 body { margin: 0; padding: 0 16px 24px; background: var(--bg); color: var(--green); font: 12px/1.5 var(--font); }
 a { color: var(--cyan); }
+::selection { background: var(--green); color: #000; text-shadow: none; }
 
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: #000; }
@@ -86,6 +87,8 @@ button.download { padding: 0 16px; background: var(--blue); box-shadow: var(--gl
 button.download:hover { background: var(--blue-hover); box-shadow: 0 0 15px rgba(0,204,255,.8); }
 button.download:disabled { background: #333; box-shadow: none; }
 /* Round help button of the header */
+button.secondary.blue { color: var(--blue); border-color: var(--blue); }
+button.secondary.blue:hover:not(:disabled) { color: #000; background: var(--blue); box-shadow: var(--glow-blue); }
 button.secondary.danger { color: var(--red); border-color: var(--red); }
 button.secondary.danger:hover { color: #000; background: var(--red); box-shadow: var(--glow-red); }
 .top-actions { display: flex; align-items: center; gap: 10px; }
@@ -130,8 +133,8 @@ dialog a { color: var(--cyan); }
 
 /* The editor: in the page, where the preview is, and full screen on request */
 /* The viewer, and the editor when it is on: the preview of the page is always this component, with its header and its zoom */
-#edit.active { color: #000; background: var(--red); border-color: var(--red); box-shadow: var(--glow-red); }   /* "Close editing": the exit color */
-#edit.active:hover { background: var(--red-hover); }
+#edit.active { color: #000; background: var(--green); box-shadow: var(--glow-green); }   /* "Quit editing" */
+#edit.active:hover { background: var(--green-hover); }
 .editor { position: relative; min-width: 0; height: clamp(300px, 52vh, 620px); display: grid; grid-template-columns: 0 1fr; grid-template-rows: 44px 1fr 28px;
   grid-template-areas: "top top" "tools stage" "status status"; background: var(--bg); border: 1px solid var(--green); border-radius: var(--radius); box-shadow: var(--glow-green-lg); outline: none; overflow: hidden; }
 .editor.editing { height: max(520px, calc(100vh - 190px)); grid-template-columns: 132px 1fr; }

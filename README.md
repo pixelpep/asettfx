@@ -7,7 +7,7 @@ Pixel fonts from Aseprite to TTF. Draw your pixel-art letters in [Aseprite](http
 Digiface has two parts:
 
 1. **Digiface Matrix** (`web/`), a small HTML/JS/Canvas tool, with no install: it makes a PNG template for a bitmap font grid, with the settings embedded in the PNG, and it has an **editor** to draw the glyphs right in the page (brush, eraser, selection, width of each character, GB Studio palette and drop shadows).
-2. **Digiface for Aseprite** (`aseprite-extension/`), the extension: a Lua extension that reads the template settings (or a drawing downloaded from the page) and exports the `.ttf`.
+2. **Digiface for Aseprite** (`aseprite-extension/`), the extension: a Lua extension that reads the template settings (or a drawing downloaded from the page) and exports the `.ttf`. It is for drawing in Aseprite: the page also downloads the `.ttf` itself.
 
 ## Install the extension
 
@@ -23,15 +23,15 @@ Export a font from the command line, with the same checks the dialog shows: `sh 
 
 1. Open Digiface Matrix and choose a character set, the spacing (variable by default, or *Monospace*) and the cell size. A guide font (Arial, Times New Roman, one of the bundled pixel fonts, or any pixel font file from your computer, drawn at its own pixel size) shows the character to draw in each cell; with a pixel font, tick *Use the guide font's cell size* (top of the *Cells* column) to take the cell it needs. The settings (*Guide*, *Cells* and *Spacing*) are in one collapsible *Settings* card.
 2. **Draw in the page** (press **Edit pixel font**, see below), or download the **Template** and draw on it in Aseprite: glyphs in black on a layer above it, the template layer being only a guide.
-3. Download the **Drawing** (available once something is drawn): a PNG with what you drew, without any guide, and the settings of the font inside. (Drawn in Aseprite, hide the template layer instead.)
+3. Press **Font (TTF)** (available once something is drawn) to download the font itself, or download the **Drawing**: a PNG with what you drew, without any guide, and the settings of the font inside. (Drawn in Aseprite, hide the template layer instead.)
 4. To make a variable-width font, the unused columns on the right of a glyph are pure magenta `#FF00FF` (the **Width** tool does it in the page). The export dialog of the extension detects magenta and selects variable spacing; with no magenta the font is monospace. You can still choose monospace when magenta is present, and it is then ignored.
-5. In Aseprite, run **File → Scripts → Digiface → Export as TTF...**. Every visible layer is flattened over white (a white or a transparent background are equivalent), and black pixels become the glyphs.
+5. To export a drawing made or refined in Aseprite, run **File → Scripts → Digiface → Export as TTF...**. Every visible layer is flattened over white (a white or a transparent background are equivalent), and black pixels become the glyphs.
 
 If the settings are missing or corrupted, a dialog asks for the grid parameters. Before exporting, the dialog lists any problems it found: wrong image size, empty characters, pixels that are not pure black, white or magenta, partial magenta columns and more. Warnings do not block the export; errors do. See [spec/CHECKS.md](spec/CHECKS.md).
 
 ## Draw in the page
 
-**Edit pixel font** (in the header of the view) adds the tools and becomes the red **Close editing** button; Escape or the same button stops the editing, and what is drawn stays in the view. The view has a header with the zoom, **Fit** (enlarges the whole sheet to the window), **Visual guides** (the guide characters, the checkerboard, the baseline ticks and the limits of the cells), undo and redo, **Delete image** (red, with a warning; undo brings the drawing back), **Zoom on cell**, **Stay in cell** and a full screen button. The red **Reset** button, next to the help, starts again from the defaults after a question.
+**Edit pixel font** (in the header of the view) adds the tools and becomes the **Quit editing** button; Escape or the same button stops the editing, and what is drawn stays in the view. The view has a header with the zoom, **Fit** (enlarges the whole sheet to the window), **Visual guides** (the guide characters, the checkerboard, the baseline ticks and the limits of the cells), undo and redo, **Delete image** (red, with a warning; undo brings the drawing back), **Zoom on cell**, **Stay in cell** and a full screen button. The red **Reset** button, next to the help, starts again from the defaults after a question.
 
 | Key | Does |
 |---|---|
@@ -91,7 +91,7 @@ docs/                 the editor design (EDITOR.md), progress notes, release not
 3. ~~Lua: PNG metadata reader, cell extraction, width detection, export checks~~
 4. ~~Lua: outline tracing and TrueType writer, plus validation tooling~~
 5. ~~Aseprite UI, commands, packaging as `.aseprite-extension`~~
-6. Web editor, in six milestones ([docs/EDITOR.md](docs/EDITOR.md)): the viewer, the brush and the eraser, the width tool, GB Studio and the selection are done; saving in the browser and a TrueType export from the page are next.
+6. Web editor, in six milestones ([docs/EDITOR.md](docs/EDITOR.md)): the viewer, the brush and the eraser, the width tool, GB Studio, the selection and the TrueType export from the page are done; saving in the browser is next.
 
 Next: see [docs/PROGRESS.md](docs/PROGRESS.md).
 

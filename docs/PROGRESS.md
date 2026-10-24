@@ -16,7 +16,7 @@ The menu appeared at the right place. Feedback and what was done: many file perm
 2. [ ] **Try a font in GB Studio itself**: a PNG of the *Drawing* and its `.json` in `assets/fonts` of a project, then a text with the euro sign, the curly quotes and oe.
 3. [ ] **Publish 0.3.0**: commit, tag `v0.3.0`, and create the GitHub release with `docs/releases/0.3.0.md` and `dist/digiface-0.3.0.aseprite-extension`. Then rebuild the hosted copy and the itch.io zip.
 4. [ ] A bigger real font end to end, drawn in the editor: draw, download the drawing, export the TTF in Aseprite, install it, use it in a design tool. (Done with GB Studio's own `gbs-mono.png` and `gbs-var.png`: 213 characters each export to a valid TTF.)
-5. [ ] A TrueType export from the page (and OpenType), by porting the Lua writer; see "Later" in `docs/EDITOR.md`.
+5. [x] A TrueType export from the page, a port of the Lua writer checked byte for byte against it (`docs/EDITOR.md` section 10). OpenType (CFF) is still to do.
 6. [ ] A way to open Digiface Matrix without cloning the repository: a hosted page, or GitHub Pages on `web/`, or a zip of `web/` attached to the release.
 7. [ ] User documentation: a short guide with screenshots of the editor and of the export dialog, and the usual questions (variable width and magenta, why a cell needs 8 rows for accents, installing the font).
 8. [ ] Try the extension on Windows or Linux and on other Aseprite versions.

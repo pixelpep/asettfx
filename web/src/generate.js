@@ -88,5 +88,10 @@
     return fileName(name, cellW, cellH).replace(/-template\.png$/, '.png');
   }
 
-  return { TOOL, MAX_DIMENSION, rowsFor, fileName, drawingFileName, prepare, generate, layers, gbMapping };
+  // The name of the downloaded font: the font name in lowercase with hyphens, then ".ttf".
+  function fontFileName(name) {
+    return fileName(name, 0, 0).replace(/-0x0-template\.png$/, '.ttf');
+  }
+
+  return { TOOL, MAX_DIMENSION, rowsFor, fileName, drawingFileName, fontFileName, prepare, generate, layers, gbMapping };
 });

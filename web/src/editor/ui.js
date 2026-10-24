@@ -100,10 +100,46 @@
       ctx.restore();
     }
     drawHiddenInkCue(ctx, dpr);
+    drawCellLabels(ctx, dpr);
     drawSelection(ctx, dpr);
     drawBrushOutline(ctx, dpr);
     $('edZoomLabel').textContent = Math.round(v.zoom * 100) + '%';
     showStatus();
+  }
+
+  // Above 3000 % of zoom, the character of each cell in view, in a small square box set in its top left corner, with no margin:
+  // white on black, framed by 1 pixel of the green of the page (a character that cannot be seen, such as a space, shows its code,
+  // in a wider box).
+  const LABEL_ZOOM = 30;
+  function drawCellLabels(ctx, dpr) {
+    if (v.zoom <= LABEL_ZOOM) return;
+    const s = stageSize();
+    const cw = m.cellW * v.zoom, ch = m.cellH * v.zoom;
+    const col0 = Math.max(0, Math.floor(-v.x / cw)), col1 = Math.min(m.cols - 1, Math.floor((s.width - v.x) / cw));
+    const row0 = Math.max(0, Math.floor(-v.y / ch)), row1 = Math.min(m.rows - 1, Math.floor((s.height - v.y) / ch));
+    const size = Math.round(24 * dpr);
+    ctx.save();
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    for (let row = row0; row <= row1; row++) for (let col = col0; col <= col1; col++) {
+      const cp = m.cells[row * m.cols + col];
+      if (cp === null || cp === undefined) continue;
+      const char = String.fromCodePoint(cp);
+      const blank = /^[\p{Cc}\p{Zs}\p{Cf}]$/u.test(char);
+      const text = blank ? 'U+' + cp.toString(16).toUpperCase().padStart(4, '0') : char;
+      ctx.font = '600 ' + Math.round((blank ? 9 : 15) * dpr) + 'px "Source Sans 3", system-ui, sans-serif';
+      const w = blank ? Math.max(size, Math.round(ctx.measureText(text).width + 10 * dpr)) : size;
+      const a = view.toStage(v, col * m.cellW, row * m.cellH);
+      const x = Math.round(a.x * dpr), y = Math.round(a.y * dpr);
+      ctx.fillStyle = '#000';
+      ctx.fillRect(x, y, w, size);
+      ctx.strokeStyle = '#00ff00';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(x + 0.5, y + 0.5, w - 1, size - 1);
+      ctx.fillStyle = '#fff';
+      ctx.fillText(text, x + w / 2, y + size / 2 + Math.round(dpr));
+    }
+    ctx.restore();
   }
 
   // A yellow frame on each cell that has drawing under its width marker: the marker hides it, so it could not be seen otherwise.
