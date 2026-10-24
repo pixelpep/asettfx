@@ -755,7 +755,7 @@
   function showShadows() {
     const box = $('edShadows');
     const on = !!(m && m.gb);
-    $('edShadow').hidden = !on;
+    $('edShadowGroup').hidden = !on;
     box.hidden = !on || !m.shadows.length;
     box.textContent = '';
     if (!on) return;

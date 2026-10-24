@@ -87,6 +87,8 @@ button.download { padding: 0 16px; background: var(--blue); box-shadow: var(--gl
 button.download:hover { background: var(--blue-hover); box-shadow: 0 0 15px rgba(0,204,255,.8); }
 button.download:disabled { background: #333; box-shadow: none; }
 /* Round help button of the header */
+a.button-link { display: inline-flex; align-items: center; min-height: 28px; padding: 4px 10px; font: 600 10px var(--font); letter-spacing: .5px; text-transform: uppercase; text-decoration: none; color: var(--cyan); background: var(--bg); border: 1px solid var(--cyan); border-radius: var(--radius); }
+a.button-link:hover { color: #000; background: var(--cyan); box-shadow: var(--glow-cyan); }
 button.secondary.blue { color: var(--blue); border-color: var(--blue); }
 button.secondary.blue:hover:not(:disabled) { color: #000; background: var(--blue); box-shadow: var(--glow-blue); }
 button.secondary.danger { color: var(--red); border-color: var(--red); }
@@ -178,16 +180,17 @@ dialog a { color: var(--cyan); }
 .switch-row { display: grid; gap: 6px; margin: 0 12px 10px; }
 dialog .ed-colors .swatch.active { border-color: var(--cyan); }
 .shadow-fields { margin: 0 12px 10px; }
-.ed-tools .action-btn { height: 36px; padding: 0; width: 100%; font-size: 10px; color: var(--green); background: var(--bg); border: 1px solid var(--green); box-shadow: none; }
-.ed-tools .action-btn:hover { color: #000; background: var(--green); box-shadow: var(--glow-green); }
-.ed-shadows { display: grid; gap: 4px; margin-top: 4px; }
+.shadow-group { display: grid; gap: 4px; padding: 6px; border: 1px solid var(--blue); border-radius: var(--radius); box-shadow: var(--glow-blue); }   /* the Add shadow button and the tiles of the shadows, framed together */
+.ed-tools .action-btn { height: 36px; padding: 0; width: 100%; font-size: 10px; color: var(--blue); background: var(--bg); border: 1px solid var(--blue); box-shadow: none; }
+.ed-tools .action-btn:hover { color: #000; background: var(--blue); box-shadow: var(--glow-blue); }
+.ed-shadows { display: grid; gap: 4px; }
 .ed-shadows[hidden] { display: none; }
-.shadow-tile { display: grid; grid-template-columns: 1fr 22px; border: 1px solid var(--green-dark); border-radius: var(--radius); background: var(--bg); }
-.shadow-tile:hover { border-color: var(--green); }
-.shadow-tile .open { display: grid; gap: 2px; justify-items: start; height: auto; padding: 4px 6px; font-size: 8px; line-height: 1.2; color: var(--green-dim); background: none; border: 0; box-shadow: none; text-align: left; }
+.shadow-tile { display: grid; grid-template-columns: 1fr 22px; border: 1px solid var(--blue); border-radius: var(--radius); background: var(--bg); }
+.shadow-tile:hover { box-shadow: var(--glow-blue); }
+.shadow-tile .open { display: grid; gap: 2px; justify-items: start; height: auto; padding: 4px 6px; font-size: 8px; line-height: 1.2; color: var(--blue); background: none; border: 0; box-shadow: none; text-align: left; }
 .shadow-tile .chips { display: flex; align-items: center; gap: 3px; }
-.shadow-tile .chip { display: inline-block; width: 10px; height: 10px; border: 1px solid var(--green-dark); }
-.shadow-tile .trash { height: auto; padding: 0; width: 22px; color: var(--red); background: none; border: 0; border-left: 1px solid var(--green-dark); box-shadow: none; }
+.shadow-tile .chip { display: inline-block; width: 10px; height: 10px; border: 1px solid var(--blue); }
+.shadow-tile .trash { height: auto; padding: 0; width: 22px; color: var(--red); background: none; border: 0; border-left: 1px solid var(--blue); box-shadow: none; }
 .shadow-tile .trash:hover { color: #000; background: var(--red); }
 .shadow-tile .trash svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 1.5; }
 .ed-options.width-mode .ed-sizes, .ed-options.width-mode .ed-colors { opacity: .35; }

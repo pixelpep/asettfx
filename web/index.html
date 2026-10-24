@@ -14,6 +14,7 @@
     <p>All a pixel font designer needs: draw your glyphs here, then download a TrueType font, a GB Studio font, or a template to draw on in Aseprite.</p>
   </div>
   <div class="top-actions">
+    <a id="extensionLink" class="button-link" href="https://github.com/pixelpep/digiface/releases/latest" target="_blank" rel="noopener" title="Digiface for Aseprite: the extension that exports a drawing made in Aseprite as a TTF (download on GitHub)">Aseprite Extension</a>
     <button id="resetBtn" type="button" class="secondary danger" title="Start again: the settings and the drawing go back to the beginning">Reset</button>
     <button id="helpBtn" type="button" class="help" aria-label="How to use" title="How to use">?</button>
   </div>
@@ -128,8 +129,10 @@
             <button type="button" id="edSelPaste" class="secondary" disabled title="Paste (Cmd or Ctrl+V): the pasted pixels float until you click elsewhere or press Enter">Paste</button>
             <button type="button" id="edSelDelete" class="secondary" disabled title="Delete the selected pixels (Delete)">Delete</button>
           </div>
-          <button type="button" id="edShadow" class="action-btn" hidden title="Drop shadow: duplicates the pixels of a color on a shadow layer, under the writing">Shadow</button>
-          <div id="edShadows" class="ed-shadows" hidden aria-label="Drop shadows"></div>
+          <div id="edShadowGroup" class="shadow-group" hidden>
+            <button type="button" id="edShadow" class="action-btn" title="Add a drop shadow: duplicates the pixels of a color on a shadow layer, under the writing">Add shadow</button>
+            <div id="edShadows" class="ed-shadows" hidden aria-label="Drop shadows"></div>
+          </div>
           <div class="ed-options">
             <span class="ed-label">Size</span>
             <div id="edSizes" class="ed-sizes" role="group" aria-label="Size of the brush and of the eraser">
