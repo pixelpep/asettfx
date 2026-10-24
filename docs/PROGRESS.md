@@ -14,7 +14,7 @@ The menu appeared at the right place. Feedback and what was done: many file perm
 
 1. [ ] **Editor, milestone 5**: automatic saving in the browser, and the list of what is wrong in the download window. Then milestone 6 (adjustments). See [docs/EDITOR.md](EDITOR.md).
 2. [ ] **Try a font in GB Studio itself**: a PNG of the *Drawing* and its `.json` in `assets/fonts` of a project, then a text with the euro sign, the curly quotes and oe.
-3. [ ] **Publish 0.3.0**: commit, tag `v0.3.0`, and create the GitHub release with `docs/releases/0.3.0.md` and `dist/digiface-0.3.0.aseprite-extension`. Then rebuild the hosted copy and the itch.io zip.
+3. [x] **Publish 0.3.0**: done on 2026-10-24 (tag `v0.3.0`, GitHub release with `docs/releases/0.3.0.md` and `dist/digiface-0.3.0.aseprite-extension`). The hosted copy is rebuilt with `sh private/build.sh`.
 4. [ ] A bigger real font end to end, drawn in the editor: draw, download the drawing, export the TTF in Aseprite, install it, use it in a design tool. (Done with GB Studio's own `gbs-mono.png` and `gbs-var.png`: 213 characters each export to a valid TTF.)
 5. [x] A TrueType export from the page, a port of the Lua writer checked byte for byte against it (`docs/EDITOR.md` section 10). OpenType (CFF) is still to do.
 6. [ ] A way to open Digiface Matrix without cloning the repository: a hosted page, or GitHub Pages on `web/`, or a zip of `web/` attached to the release.
