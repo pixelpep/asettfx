@@ -1,12 +1,12 @@
 # Digiface
 
-Pixel fonts from Aseprite to TTF. Draw your pixel-art letters in [Aseprite](https://www.aseprite.org/) and turn them into a real TrueType font (`.ttf`) for your game, your interface or your posters. Made for [GB Studio](https://www.gbstudio.dev/) projects (it has the GB Studio character layout and ships its two default fonts) and for any design work that needs a crisp pixel typeface: the font installs like any other and stays sharp at sizes that are multiples of the cell height.
+Draw a pixel font in your browser and download it as a real TrueType font (`.ttf`) for your game, your interface or your posters, or as a font image for [GB Studio](https://www.gbstudio.dev/) (the GB Studio character layout, its palette, drop shadows and its two default fonts are built in). Prefer drawing in [Aseprite](https://www.aseprite.org/)? Download a grid template to draw on, and the extension turns your drawing into the same font. The `.ttf` installs like any other font and stays sharp at sizes that are multiples of the cell height.
 
-> **Status: the latest release is 0.2.0**, with the spec, the web tool and the Aseprite extension (reading, checks, TTF writer, menu and dialogs), tried in Aseprite 1.3.16 on macOS. Version 0.3.0 is being prepared: the web tool gains an **editor** to draw in the page (brush, eraser, widths, selection, GB Studio palette and drop shadows), a GB Studio mode and a new look (see the [changelog](CHANGELOG.md)). Download the extension from the [Releases](https://github.com/pixelpep/digiface/releases) page. See [Roadmap](#roadmap).
+> **Status: the latest release is 0.2.0**, with the spec, the web tool and the Aseprite extension (reading, checks, TTF writer, menu and dialogs), tried in Aseprite 1.3.16 on macOS. Version 0.3.0 is being prepared: the web tool gains an **editor** to draw in the page (brush, eraser, widths, selection, GB Studio palette and drop shadows), the **TrueType export from the page**, a GB Studio mode and a new look (see the [changelog](CHANGELOG.md)). Download the extension from the [Releases](https://github.com/pixelpep/digiface/releases) page. See [Roadmap](#roadmap).
 
 Digiface has two parts:
 
-1. **Digiface Matrix** (`web/`), a small HTML/JS/Canvas tool, with no install: it makes a PNG template for a bitmap font grid, with the settings embedded in the PNG, and it has an **editor** to draw the glyphs right in the page (brush, eraser, selection, width of each character, GB Studio palette and drop shadows).
+1. **Digiface Matrix** (`web/`), a small HTML/JS/Canvas tool, with no install: an **editor** to draw the glyphs right in the page (brush, eraser, selection, width of each character, GB Studio palette and drop shadows) that **downloads the font as a `.ttf`**; it also makes a PNG template for a bitmap font grid, with the settings embedded in the PNG, to draw on in Aseprite.
 2. **Digiface for Aseprite** (`aseprite-extension/`), the extension: a Lua extension that reads the template settings (or a drawing downloaded from the page) and exports the `.ttf`. It is for drawing in Aseprite: the page also downloads the `.ttf` itself.
 
 ## Install the extension
