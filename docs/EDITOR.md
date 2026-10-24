@@ -1,6 +1,6 @@
 # Digiface Matrix editor: design and state
 
-Status: milestones 1 to 4 of 6 are written: the editor in the page, the brush, the eraser, the width tool, the downloads (tried and adjusted three times), and the rectangle selection with its clipboard (milestone 4, not tried by hand yet). Next: automatic saving (milestone 5). Last updated: 2026-10-23.
+Status: milestones 1 to 4 of 6 are written: the editor in the page, the brush, the eraser, the width tool, the downloads (tried and adjusted three times), and the rectangle selection with its clipboard (milestone 4, not tried by hand yet). The TrueType export from the page (section 10) and the GB Studio image tools (*Switch*, *Add shadow*) are done too. Next: automatic saving (milestone 5). Last updated: 2026-10-24.
 
 The idea: draw the glyphs in the browser, on the template, with a few tools, instead of only downloading a template to draw in Aseprite. This file records what was decided, how it works, and what is left.
 
@@ -15,7 +15,7 @@ The idea: draw the glyphs in the browser, on the template, with a few tools, ins
 | Cell grid | Part of the visual guides (check box in the header). |
 | GB Studio from inside the editor | Yes: the drawing follows (section 6). |
 | Changing the grid while editing | Free, except *Pre-fill the magenta*. The drawing follows its characters; a smaller cell, a shorter set or fewer columns ask first (section 3). |
-| What the editor downloads | **Template** and **Drawing** as PNGs, the drawing with its GB Studio `.json` in GB Studio mode. A TrueType font comes later, and an OpenType one with it (section 9). |
+| What the editor downloads | **Template** and **Drawing** as PNGs, the drawing with its GB Studio `.json` in GB Studio mode, and **Font (TTF)**, a TrueType font (section 10). An OpenType (CFF) one comes later (section 9). |
 | Name of the font | Asked in a window when something is downloaded, with an explanation of that download. |
 | Warnings panel | None: a yellow frame in the editor and a note in the window of the download. |
 | Names in the interface | English: Width, Writing, Template, Background. |
@@ -79,7 +79,7 @@ Two buttons of the toolbar download, **Template** and **Drawing**. Each opens a 
 - **Template**: the grid to draw on, with the guide characters, the baseline ticks and the settings in the PNG, to open in Aseprite. Generated again with the name that was given. In GB Studio mode an indexed PNG in GB Studio's colors.
 - **Drawing**: the writing and the width layers over the background, without any guide, with the `digiface` metadata chunk so that the Aseprite extension recognizes the settings: black on white and magenta in the normal modes, an indexed PNG with GB Studio's palette in GB Studio mode (`editor/export.js`).
 - **The GB Studio `.json`**: in GB Studio mode the window of the drawing offers it (ticked) and saves it with the image under the same name. GB Studio needs it only for the characters beyond the plain Latin-1 letters (the euro sign, the curly quotes, the ellipsis, oe...): typed without it they show another glyph.
-- **Hidden drawing**: a cell that has drawing under its width marker (the marker hides it, so it is lost in the download) is framed in yellow in the editor, and the window of the drawing says so. The download stays possible. Later the same window can list the characters with nothing drawn, and for GB Studio the pixels of the Light shade, which the TrueType export reads as background (the Mid shade is ink).
+- **Hidden drawing**: a cell that has drawing under its width marker (the marker hides it, so it is lost in the download) is framed in yellow in the editor, and the window of the drawing says so. The download stays possible. The same window lists the characters with nothing drawn; later it can also name, for GB Studio, the pixels of the Light shade, which the TrueType export reads as background (the Mid shade is ink).
 
 ## 8. Saving
 

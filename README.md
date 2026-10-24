@@ -15,7 +15,7 @@ Download `digiface-<version>.aseprite-extension` from the [Releases](https://git
 
 ## Try Digiface Matrix
 
-Online, with nothing to install: http://pixelpep.com/digiface/. Or locally, with no build and no server: open `web/index.html` in a browser. Tests: `npm test` (node 18 or later, no dependencies). The Lua tests run inside Aseprite: `npm run test:aseprite` (set `ASEPRITE` to the executable if it is not at the macOS default path). To see what the exporter reads from your own file: `sh tools/inspect.sh my-font.png [characters]` (or `.aseprite`). It prints the settings found, the export checks and the width of every character.
+Online, with nothing to install: https://pixelpep.com/digiface/. Or locally, with no build and no server: open `web/index.html` in a browser. Tests: `npm test` (node 18 or later, no dependencies). The Lua tests run inside Aseprite: `npm run test:aseprite` (set `ASEPRITE` to the executable if it is not at the macOS default path). To see what the exporter reads from your own file: `sh tools/inspect.sh my-font.png [characters]` (or `.aseprite`). It prints the settings found, the export checks and the width of every character.
 
 Export a font from the command line, with the same checks the dialog shows: `sh tools/export.sh my-font.aseprite my-font.ttf "My Font"`. A complete example (A to Z, variable width) is built by `sh tools/make-sample.sh some-folder`. To validate a font independently of the Lua writer: `pip install fonttools`, then `python3 tools/validate_ttf.py my-font.ttf 8` (the second argument is the cell height).
 
@@ -49,7 +49,7 @@ If the settings are missing or corrupted, a dialog asks for the grid parameters.
 
 The help (the **?** button) lists them in its *Shortcuts* tab. Colors are black, or the four shades of GB Studio in GB Studio mode. A stroke stays in the cell where it started when *Stay in cell* is ticked. The **selection** (M) lifts a rectangle of pixels off the layer so that it floats while you move it, and places it as one gesture for undo; cut, copy and paste work with the keyboard and with buttons, and a paste floats until you place it. The **Width** tool puts the width marker at the nearest border between two columns, shows the new width over the pink, and a click that gives the whole cell clears the marker. A cell with drawing under its width marker (which hides it) is framed in yellow.
 
-The settings stay editable while you draw (changing *Pre-fill the magenta* asks before it replaces the widths). The drawing follows its characters when the layout changes, and the page asks before it cuts or removes anything. The drawing is kept while the page stays open; saving in the browser and a TrueType export from the page are planned (see [docs/EDITOR.md](docs/EDITOR.md)).
+The settings stay editable while you draw (changing *Pre-fill the magenta* asks before it replaces the widths). The drawing follows its characters when the layout changes, and the page asks before it cuts or removes anything. The drawing is kept while the page stays open; saving in the browser is planned (see [docs/EDITOR.md](docs/EDITOR.md)).
 
 The buttons **Template** and **Drawing** each open a window that explains what is downloaded and asks for the name of the font.
 

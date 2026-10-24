@@ -1,10 +1,10 @@
 # Progress
 
-Last updated: 2026-10-23
+Last updated: 2026-10-24
 
 ## Status
 
-Version 0.3.0 is ready to publish (notes in `docs/releases/0.3.0.md`); 0.2.0 is published (the spec, the web template generator, the Lua pipeline, and the Aseprite menu commands and dialogs with packaging). What 0.3.0 adds (see the changelog): the **editor** in the page (milestones 1 to 4 of 6, `docs/EDITOR.md`), a **GB Studio mode** (layout, indexed PNGs with GB Studio's palette, the `.json` of the mapping, `target` in the metadata), the two downloads **Template** and **Drawing** with their explanation windows, the neon design with Source Sans 3, and the project docs. It is tested automatically (node tests of the web tool and the editor, Lua tests run inside Aseprite, tests of the private hosting code) and tried by hand in Aseprite 1.3.16 on macOS and in Chrome. GB Studio itself has not been tried with a PNG made here.
+Version 0.3.0 is published (notes in `docs/releases/0.3.0.md`), and so is 0.2.0 (the spec, the web template generator, the Lua pipeline, and the Aseprite menu commands and dialogs with packaging). What 0.3.0 adds (see the changelog): the **editor** in the page (milestones 1 to 4 of 6, `docs/EDITOR.md`), a **GB Studio mode** (layout, indexed PNGs with GB Studio's palette, the `.json` of the mapping, `target` in the metadata), the two downloads **Template** and **Drawing** with their explanation windows, the neon design with Source Sans 3, and the project docs. It is tested automatically (node tests of the web tool and the editor, Lua tests run inside Aseprite, tests of the private hosting code) and tried by hand in Aseprite 1.3.16 on macOS and in Chrome. GB Studio itself has not been tried with a PNG made here.
 
 ## First trial in Aseprite (2026-10-16)
 
@@ -17,7 +17,7 @@ The menu appeared at the right place. Feedback and what was done: many file perm
 3. [x] **Publish 0.3.0**: done on 2026-10-24 (tag `v0.3.0`, GitHub release with `docs/releases/0.3.0.md` and `dist/digiface-0.3.0.aseprite-extension`). The hosted copy is rebuilt with `sh private/build.sh`.
 4. [ ] A bigger real font end to end, drawn in the editor: draw, download the drawing, export the TTF in Aseprite, install it, use it in a design tool. (Done with GB Studio's own `gbs-mono.png` and `gbs-var.png`: 213 characters each export to a valid TTF.)
 5. [x] A TrueType export from the page, a port of the Lua writer checked byte for byte against it (`docs/EDITOR.md` section 10). OpenType (CFF) is still to do.
-6. [ ] A way to open Digiface Matrix without cloning the repository: a hosted page, or GitHub Pages on `web/`, or a zip of `web/` attached to the release.
+6. [x] A way to open Digiface Matrix without cloning the repository: the hosted page at https://pixelpep.com/digiface/.
 7. [ ] User documentation: a short guide with screenshots of the editor and of the export dialog, and the usual questions (variable width and magenta, why a cell needs 8 rows for accents, installing the font).
 8. [ ] Try the extension on Windows or Linux and on other Aseprite versions.
 
@@ -41,7 +41,7 @@ The menu appeared at the right place. Feedback and what was done: many file perm
 
 ## Later (not planned yet)
 
-- What stays under "Later" in [docs/EDITOR.md](EDITOR.md): the TrueType and OpenType export from the page, the project file and the import of a PNG, testing the font with a live text, the lasso and the other tools.
+- What stays under "Later" in [docs/EDITOR.md](EDITOR.md): the OpenType (CFF) export from the page, the project file and the import of a PNG, testing the font with a live text, the lasso and the other tools.
 - Kerning.
 - More bundled pixel fonts, if their license is confirmed (DaFont's own FAQ says the license shown there is only an indication, and that a missing license does not mean a font is free). Candidates: Alagard (author's note: "Give credit if used. That's it."), Early GameBoy (CC BY-SA 3.0 in the file, a different author on DaFont). Fonts with no statement, or with a personal-use restriction, are left to *Pixel font from a file...*.
 
